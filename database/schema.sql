@@ -3,13 +3,12 @@
 -- https://www.phpmyadmin.net/
 --
 -- Εξυπηρετητής: 127.0.0.1
--- Χρόνος δημιουργίας: 25 Φεβ 2026 στις 18:14:34
+-- Χρόνος δημιουργίας: 28 Φεβ 2026 στις 11:18:07
 -- Έκδοση διακομιστή: 10.4.32-MariaDB
 -- Έκδοση PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
-SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -20,8 +19,6 @@ SET time_zone = "+00:00";
 --
 -- Βάση δεδομένων: `system_b_support`
 --
-CREATE DATABASE IF NOT EXISTS `system_b_support` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `system_b_support`;
 
 -- --------------------------------------------------------
 
@@ -136,18 +133,27 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL,
+  `role` enum('user','admin') NOT NULL DEFAULT 'user',
   `university` varchar(100) DEFAULT NULL,
   `year` varchar(20) DEFAULT NULL,
   `department` varchar(100) DEFAULT NULL,
-  `token_balance` int(11) DEFAULT 0
+  `token_balance` int(11) DEFAULT 0,
+  `referral_code` varchar(20) NOT NULL,
+  `referred_by` varchar(20) DEFAULT NULL,
+   FOREIGN KEY (`referred_by`) REFERENCES `users`(`user_id`)
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_expires` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Άδειασμα δεδομένων του πίνακα `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `university`, `year`, `department`, `token_balance`) VALUES
-(1, 'testuser', '$2y$10$tyhk4Kz5xfHTwRqgnDM47uX2C85jgrpx6tZL0rll9Yam3U.nBNzb6', 'test@test.com', NULL, NULL, NULL, 0);
+INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`, `university`, `year`, `department`, `token_balance`, `referral_code`, `referred_by`, `reset_token`, `reset_expires`) VALUES(1, 'testuser', '$2y$10$tyhk4Kz5xfHTwRqgnDM47uX2C85jgrpx6tZL0rll9Yam3U.nBNzb6', 'test@test.com', 'admin', NULL, NULL, NULL, 0, NULL, NULL, '45d3a9576a29eab91d53d7b9155dd2d4f7e7c1d8ebf1e0b52e8f5b79260c1e14', '2026-02-27 14:12:16');
+INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`, `university`, `year`, `department`, `token_balance`, `referral_code`, `referred_by`, `reset_token`, `reset_expires`) VALUES(2, 'testuser1', '$2y$10$Ok4dgDy2PVBmWKgZVFOsqutMV.BWwgmsOZHKtV5sFa51MunCZ6JGK', 'test1@test.com', 'user', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL);
+INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`, `university`, `year`, `department`, `token_balance`, `referral_code`, `referred_by`, `reset_token`, `reset_expires`) VALUES(3, 'testuser2', '$2y$10$0ke0LK71wbWWbjN6/nWTx.X5K.nlVjrQ4IIbouRB.20rGxXMIO10W', 'test2@test.com', 'user', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL);
+INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`, `university`, `year`, `department`, `token_balance`, `referral_code`, `referred_by`, `reset_token`, `reset_expires`) VALUES(4, 'testuser3', '$2y$10$1N9gu.LFmNlgTF1CORwPg.5ddECXk/9Jf1/5yM5oVFnArRkDgoOsm', 'test3@test.com', 'user', NULL, NULL, NULL, 10, '692BC6BF', NULL, NULL, NULL);
+INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`, `university`, `year`, `department`, `token_balance`, `referral_code`, `referred_by`, `reset_token`, `reset_expires`) VALUES(5, 'testuser4', '$2y$10$uctWm8009AqBT5R4gW9tZud3CWvFR/oJZncVFThBBh7qbIYMdnrIm', 'test4@test.com', 'user', NULL, NULL, NULL, 10, '57A69531', '692BC6BF', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -220,7 +226,8 @@ ALTER TABLE `transactions`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `referral_code` (`referral_code`);
 
 --
 -- Ευρετήρια για πίνακα `user_interest`
@@ -273,7 +280,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT για πίνακα `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Περιορισμοί για άχρηστους πίνακες
