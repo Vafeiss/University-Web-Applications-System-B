@@ -4,7 +4,7 @@ class Search {
 
     private $conn;
 
-    public function __construct($connection) {
+    public function __construct($connection) { 
         $this->conn = $connection;
     }
 
