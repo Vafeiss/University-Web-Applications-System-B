@@ -405,3 +405,237 @@ button:hover{
         text-align:center;
     }
 }
+
+
+/* COMMENTS */
+
+.comments-section{
+    margin-top:30px;
+}
+
+#commentsList{
+    max-height:260px;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+    scrollbar-width:thin;
+    scrollbar-color:#c3d1ea #eef3fb;
+    padding:8px;
+    border:1px solid #e2e8f3;
+    border-radius:12px;
+    background:#fdfefe;
+}
+
+#commentsList::-webkit-scrollbar{
+    width:8px;
+}
+
+#commentsList::-webkit-scrollbar-track{
+    background:#eef3fb;
+    border-radius:999px;
+}
+
+#commentsList::-webkit-scrollbar-thumb{
+    background:#c3d1ea;
+    border-radius:999px;
+}
+
+#commentsList::-webkit-scrollbar-thumb:hover{
+    background:#aebfdd;
+}
+
+.comment{
+    margin-top:12px;
+    padding:10px 14px;
+
+    border-radius:10px;
+    background:#fafafa;
+    border:1px solid #eee;
+}
+
+.comment-header{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:8px;
+
+    font-size:13px;
+}
+
+.comment-user{
+    font-weight:400;
+    font-size:10px;
+    color:#222;
+}
+
+.comment-time{
+    color:#777;
+    font-size:10px;
+}
+
+.comment-text{
+    margin-top:0;
+    font-size:11px;
+    font-weight:600;
+}
+.comment-form{
+    display:block;
+    margin-top:15px;
+    padding:14px;
+    border:1px solid #dde6f3;
+    border-radius:12px;
+    background:#fbfdff;
+}
+
+.comment-input-wrap{
+    position:relative;
+}
+
+.comment-form textarea{
+    width:100%;
+    min-height:44px;
+    margin-bottom:0;
+    max-height:220px;
+    padding:10px 54px 10px 12px;
+    border:1px solid #cfd9e8;
+    border-radius:10px;
+    font-size:14px;
+    line-height:1.4;
+    background:#ffffff;
+    resize:none;
+    overflow:hidden;
+    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comment-form textarea::placeholder{
+    color:#9aa6bc;
+}
+
+.comment-form textarea:focus{
+    outline:none;
+    border-color:#89a8ee;
+    box-shadow:0 0 0 2px rgba(102, 143, 230, 0.14);
+}
+
+.comment-send-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:auto;
+    height:auto;
+    position:absolute;
+    right:12px;
+    bottom:12px;
+    padding:0;
+    border-radius:0;
+    font-weight:600;
+    font-size:14px;
+    line-height:1;
+    background:none;
+    border:none;
+    box-shadow:none;
+}
+
+.comment-send-btn:disabled{
+    color:#bcc8e8;
+    cursor:default;
+}
+
+.comment-send-btn:not(:disabled){
+    color:#5b78d6;
+    cursor:pointer;
+}
+
+.comment-send-btn:not(:disabled):hover{
+    color:#4464c9;
+    background:none;
+    text-decoration:none;
+}
+
+.comment-send-btn:focus,
+.comment-send-btn:focus-visible{
+    outline:none;
+    background:none;
+    text-decoration:none;
+}
+
+.comment-policy-dialog{
+    position:fixed;
+    inset:0;
+    z-index:1300;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px;
+    background:rgba(15, 23, 42, 0.28);
+}
+
+.comment-policy-dialog[hidden]{
+    display:none !important;
+}
+
+.comment-policy-card{
+    width:min(420px, 100%);
+    background:#fff;
+    border:1px solid #dbe4f3;
+    border-radius:12px;
+    padding:14px;
+    box-shadow:0 14px 30px rgba(15, 23, 42, 0.2);
+}
+
+.comment-policy-card h4{
+    margin:0 0 6px;
+    font-size:18px;
+    color:#233250;
+}
+
+.comment-policy-card p{
+    margin:0;
+    color:#5d687b;
+    font-size:13px;
+    line-height:1.45;
+}
+
+.comment-policy-actions{
+    margin-top:12px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.policy-link{
+    border:none;
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.policy-link.cancel{
+    background:#eef2f8;
+    color:#4f5f78;
+}
+
+.policy-link.accept{
+    background:#2f66df;
+    color:#fff;
+}
+
+.policy-link.accept:hover{
+    background:#2453bc;
+}
+
+.policy-link.cancel:hover{
+    background:#e4e9f1;
+}
+
+body.comment-dialog-open{
+    overflow:hidden;
+}
+
+@media (max-width: 640px){
+    .comment-send-btn{
+        font-size:15px;
+    }
+}
