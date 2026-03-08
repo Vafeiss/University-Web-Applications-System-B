@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 <html>
 <head>
     <title>Create Post</title>
-    <link rel="stylesheet" href="assets/css/post.css">
+    <link rel="stylesheet" href="css/post.css">
 </head>
 
 <body>
@@ -51,7 +51,7 @@ if (!isset($_SESSION['user_id'])) {
 
 </div>
 
-<script src="assets/js/createPost.js"></script>
+<script src="js/createPost.js"></script>
 
 </body>
 </html>
