@@ -34,12 +34,16 @@ if (!isset($_SESSION['user_id'])) {
             placeholder="Write your content..."
             required
         ></textarea>
+        
+        <label>Category</label>
+        <select name="category_id" required>
 
-        <input 
-            type="number"
-            name="category_id"
-            placeholder="Category ID"
-        >
+        <option value="">Select Category</option>
+        <option value="1">Computer Science</option>
+        <option value="2">Electrical Engineering</option>
+        <option value="3">Business Administration</option>
+        <option value="4">Mechanical Engineering</option>
+        </select>
 
         <button type="submit">
             Publish

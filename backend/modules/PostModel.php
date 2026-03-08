@@ -31,11 +31,11 @@ class PostModel {
     // Show_Post()
     public function getApprovedPosts() {
 
-        $query = "SELECT p.*, u.username, c.name AS category
+        $query = "SELECT p.post_id,p.title,p.content,p.timestamp,u.username,c.name AS category
                   FROM posts p
-                  JOIN users u ON p.user_id = u.user_id
-                  LEFT JOIN categories c ON p.category_id = c.category_id
-                  WHERE p.status = 1 AND p.deleted = 0
+                  JOIN users u ON p.user_id = u.user_id --bring in username
+                  LEFT JOIN categories c ON p.category_id = c.category_id   --bring in category name (if exists)
+                  WHERE p.status = 1 AND p.deleted = 0  -- Only show approved and not deleted posts
                   ORDER BY p.timestamp DESC";
 
         $stmt = $this->conn->prepare($query);
