@@ -20,21 +20,22 @@ if (!isset($_SESSION['user_id'])) {
 
     <h2>Create New Post</h2>
 
-    <form id="postForm">
+        <!-- input για attachments -->
+        <form id="postForm" enctype="multipart/form-data">
 
         <input 
-            type="text" 
-            name="title" 
-            placeholder="Post title"
-            required
+        type="text" 
+        name="title" 
+        placeholder="Post title"
+        required
         >
 
         <textarea 
-            name="content"
-            placeholder="Write your content..."
-            required
+        name="content"
+        placeholder="Write your content..."
+        required
         ></textarea>
-        
+
         <label>Category</label>
         <select name="category_id" required>
 
@@ -43,19 +44,37 @@ if (!isset($_SESSION['user_id'])) {
         <option value="2">Electrical Engineering</option>
         <option value="3">Business Administration</option>
         <option value="4">Mechanical Engineering</option>
+
         </select>
 
+        <!-- Attachments -->
+        <div class="attachments-upload">
+            <div class="attachments-head">
+                <span class="attachments-title">Attachments</span>
+                <span class="attachments-hint">Up to 5 files (jpg, png, pdf, doc, docx, txt, zip)</span>
+            </div>
+
+            <input 
+            type="file"
+            id="attachmentsInput"
+            name="attachments[]"
+            multiple
+            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt,.zip"
+            >
+
+            <small id="selectedFiles" class="selected-files"></small>
+        </div>
+
         <button type="submit">
-            Publish
+        Publish
         </button>
+        </form>
 
-    </form>
+        <p id="response" class="response-message" aria-live="polite"></p>
 
-    <p id="response"></p>
+        </div>
 
-</div>
-
-<script src="js/createPost.js"></script>
+        <script src="js/createPost.js"></script>
 
 </body>
 </html>

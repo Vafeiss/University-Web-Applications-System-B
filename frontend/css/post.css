@@ -71,6 +71,90 @@ button:hover{
     background:#0056b3;
 }
 
+/* =========================
+   Create post response
+========================= */
+
+.response-message{
+    display:none;
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:6px;
+    font-size:14px;
+}
+
+.response-message.success{
+    display:block;
+    background:#e8f7ee;
+    color:#116b3a;
+    border:1px solid #a9dfbf;
+}
+
+.response-message.error{
+    display:block;
+    background:#fdecec;
+    color:#8f1d1d;
+    border:1px solid #f3b6b6;
+}
+
+.selected-files{
+    display:block;
+    margin-top:10px;
+    margin-bottom:4px;
+    color:#4b5563;
+    font-size:12px;
+}
+
+.attachments-upload{
+    margin-top:8px;
+    margin-bottom:16px;
+    padding:14px;
+    border:1px solid #d7deea;
+    border-radius:10px;
+    background:#f8faff;
+}
+
+.attachments-head{
+    margin-bottom:10px;
+}
+
+.attachments-title{
+    display:block;
+    font-size:14px;
+    font-weight:700;
+    color:#1f2937;
+}
+
+.attachments-hint{
+    display:block;
+    margin-top:2px;
+    font-size:12px;
+    color:#6b7280;
+}
+
+#attachmentsInput{
+    width:100%;
+    margin-bottom:0;
+    padding:10px;
+    border:1px dashed #9db4de;
+    border-radius:8px;
+    background:#ffffff;
+}
+
+#attachmentsInput::file-selector-button{
+    margin-right:10px;
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    background:#1f6feb;
+    color:#ffffff;
+    cursor:pointer;
+}
+
+#attachmentsInput::file-selector-button:hover{
+    background:#1857b7;
+}
+
 
 /* =========================
    Feed posts (posts.php)
@@ -199,4 +283,125 @@ button:hover{
 
 .back-link:hover{
     text-decoration:underline;
+}
+/* modern attachments section on post view */
+
+.attachments-panel{
+    margin-top:26px;
+    border:1px solid #d9e2f1;
+    border-radius:12px;
+    background:#fbfdff;
+    overflow:hidden;
+}
+
+.attachments-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    background:linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+    color:#0f2a56;
+    border:none;
+    border-bottom:1px solid #d9e2f1;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.attachments-count{
+    min-width:30px;
+    text-align:center;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#1f6feb;
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+}
+
+.attachments-list{
+    padding:12px;
+    background:#ffffff;
+}
+
+.attachment-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 12px;
+    border:1px solid #e5ebf5;
+    border-radius:9px;
+    background:#fff;
+}
+
+.attachment-item + .attachment-item{
+    margin-top:10px;
+}
+
+.attachment-meta{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+}
+
+.attachment-name{
+    color:#1f2937;
+    font-size:14px;
+    font-weight:600;
+}
+
+.attachment-name-wrap{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+}
+
+.attachment-doc-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:30px;
+    height:18px;
+    padding:0 6px;
+    border-radius:999px;
+    background:#eaf1ff;
+    border:1px solid #c9d8f8;
+    color:#1f4fa3;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.3px;
+}
+
+.attachment-size{
+    color:#6b7280;
+    font-size:12px;
+}
+
+.attachment-action{
+    text-decoration:none;
+    color:#fff;
+    background:#1f6feb;
+    padding:7px 12px;
+    border-radius:7px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.attachment-action:hover{
+    background:#1857b7;
+}
+
+@media (max-width: 640px){
+    .attachment-item{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .attachment-action{
+        width:100%;
+        text-align:center;
+    }
 }

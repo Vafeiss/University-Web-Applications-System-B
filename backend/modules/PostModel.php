@@ -20,11 +20,31 @@ class PostModel {
 
         $stmt = $this->conn->prepare($query);
 
-        return $stmt->execute([
+        $stmt->execute([
             ':user_id' => $user_id,
             ':title' => $title,
             ':content' => $content,
             ':category_id' => $category_id
+        ]);
+
+    // επιστρέφει το ID του post ,με post_id ως primary key, για να χρησιμοποιηθεί για την αποθήκευση των attachments
+    return $this->conn->lastInsertId();
+}
+    // Save attachment
+    public function saveAttachment($post_id, $file_name, $file_path, $file_size, $file_type) {
+
+        $query = "INSERT INTO attachments 
+                  (post_id, file_name, file_path, file_size, file_type)
+                  VALUES (:post_id, :file_name, :file_path, :file_size, :file_type)";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            ':post_id' => $post_id,
+            ':file_name' => $file_name,
+            ':file_path' => $file_path,
+            ':file_size' => $file_size,
+            ':file_type' => $file_type
         ]);
     }
 
@@ -58,6 +78,22 @@ class PostModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Get attachments for a post
+    public function getAttachmentsByPost($post_id) {
+
+        $query = "SELECT * 
+                  FROM attachments
+                  WHERE post_id = :post_id
+                  ORDER BY timestamp ASC";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute([
+            ':post_id' => $post_id
+        ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
     // Delete_Post()
     public function deletePost($post_id, $user_id) {
 

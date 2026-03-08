@@ -1,19 +1,79 @@
+const responseEl = document.getElementById("response");
+const postForm = document.getElementById("postForm");
+const attachmentsInput = document.getElementById("attachmentsInput");
+const selectedFilesEl = document.getElementById("selectedFiles");
+const MAX_ATTACHMENTS = 5;
+let hideResponseTimer;
+let selectedFiles = [];
+
+function showResponseMessage(message, type) {
+    responseEl.textContent = message;
+    responseEl.className = `response-message ${type}`;
+
+    clearTimeout(hideResponseTimer);
+    hideResponseTimer = setTimeout(() => {
+        responseEl.textContent = "";
+        responseEl.className = "response-message";
+    }, 3500);
+}
+
+function renderSelectedFiles() {
+    if (selectedFiles.length === 0) {
+        selectedFilesEl.textContent = "No files selected";
+        return;
+    }
+
+    selectedFilesEl.textContent = `Selected ${selectedFiles.length}/${MAX_ATTACHMENTS}: ${selectedFiles.map((f) => f.name).join(", ")}`;
+}
+
+attachmentsInput.addEventListener("change", function() {
+    const incomingFiles = Array.from(this.files);
+
+    if (incomingFiles.length === 0) {
+        return;
+    }
+
+    const merged = [...selectedFiles];
+
+    incomingFiles.forEach((file) => {
+        const exists = merged.some(
+            (f) => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified
+        );
+
+        if (!exists) {
+            merged.push(file);
+        }
+    });
+
+    if (merged.length > MAX_ATTACHMENTS) {
+        showResponseMessage("Maximum 5 files allowed", "error");
+        selectedFiles = merged.slice(0, MAX_ATTACHMENTS);
+    } else {
+        selectedFiles = merged;
+    }
+
+    // Allow selecting files again in a new picker action.
+    this.value = "";
+    renderSelectedFiles();
+});
+
+renderSelectedFiles();
+
 // Listen for form submission
-document.getElementById("postForm").addEventListener("submit", async function(e){
+postForm.addEventListener("submit", async function(e){
 
     // Prevent page reload
     e.preventDefault();
 
-    // Get form values
-    const title = document.querySelector("input[name='title']").value;
-    const content = document.querySelector("textarea[name='content']").value;
-    const categoryValue = document.querySelector("select[name='category_id']").value;
-    const category_id = categoryValue === "" ? null : Number(categoryValue);
-    const data = {
-        title: title,
-        content: content,
-        category_id: category_id
-    };
+    // Build FormData manually to guarantee all selected files are appended.
+    const formData = new FormData();
+    formData.append("title", postForm.elements["title"].value);
+    formData.append("content", postForm.elements["content"].value);
+    formData.append("category_id", postForm.elements["category_id"].value);
+
+    selectedFiles.forEach((file) => {
+        formData.append("attachments[]", file);
+    });
 
     try {
 
@@ -21,10 +81,7 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
             "/University-Web-Applications-System-B/backend/controllers/PostController.php?action=create",
             {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
+                body: formData
             }
         );
 
@@ -34,13 +91,18 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
 
         const result = await response.json();
 
-        document.getElementById("response").innerText = result.message;
+        showResponseMessage(result.message, "success");
+
+        // Reset form μετά τη δημιουργία
         this.reset();
+        selectedFiles = [];
+        attachmentsInput.value = "";
+        renderSelectedFiles();
 
     } catch(error) {
 
         console.error(error);
-        document.getElementById("response").innerText = "Error creating post";
+        showResponseMessage("Error creating post", "error");
 
     }
 

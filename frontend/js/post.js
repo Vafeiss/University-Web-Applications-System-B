@@ -65,8 +65,69 @@ async function loadPost(postId){
 
         <div class="single-content">
             ${post.content}
-    </div>
+        </div>
+
+        ${renderAttachments(post.attachments)}
 
     </div>
-    `;  
+    `;
 }
+function renderAttachments(attachments){
+
+        if(!attachments || attachments.length === 0){
+            return "";
+        }
+
+        let html = `
+        <section class="attachments-panel">
+            <button type="button" class="attachments-toggle" id="attachmentsToggle" aria-expanded="false" aria-controls="attachmentsList">
+                <span>View Attachments</span>
+                <span class="attachments-count">${attachments.length}</span>
+            </button>
+            <div class="attachments-list" id="attachmentsList" hidden>
+        `;
+
+        attachments.forEach(file => {
+
+            const fileUrl = file.file_url || file.file_path || "#";
+            const fileName = file.file_name || "Attachment";
+            const fileType = (file.file_type || "FILE").toUpperCase();
+            const fileSize = file.file_size ? `${Math.max(1, Math.round(file.file_size / 1024))} KB` : "Unknown size";
+
+            html += `
+            <article class="attachment-item">
+                <div class="attachment-meta">
+                    <span class="attachment-name-wrap">
+                    <span class="attachment-doc-badge">${fileType}</span>
+                    <span class="attachment-name">${fileName}</span>
+                    </span>
+                    <span class="attachment-size">${fileSize}</span>
+                </div>
+                <a class="attachment-action" href="${fileUrl}" download>Download</a>
+            </article>
+            `;
+        });
+
+        html += `
+            </div>
+        </section>
+        `;
+
+        return html;
+}
+
+document.addEventListener("click", function (event) {
+    const toggleButton = event.target.closest("#attachmentsToggle");
+    if (!toggleButton) {
+        return;
+    }
+
+    const list = document.getElementById("attachmentsList");
+    if (!list) {
+        return;
+    }
+
+    const shouldExpand = list.hidden;
+    list.hidden = !shouldExpand;
+    toggleButton.setAttribute("aria-expanded", String(shouldExpand));
+});
