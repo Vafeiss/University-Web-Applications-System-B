@@ -95,28 +95,42 @@ class PostController {
             "message" => "Post deleted"
         ]);
     }
+    // Επιστροφή ενός post
+    public function get() {
+
+        if (!isset($_GET['id'])) {
+            echo json_encode(["message" => "Post not found"]);
+            return;
+        }
+
+        $post_id = $_GET['id'];
+
+        $post = $this->postModel->getPostById($post_id);
+
+        echo json_encode($post);
+    }
 }
 
-/*
- Simple router
- Determines which controller action to execute
-*/
+// Βασικός router για το PostController
 if (isset($_GET['action'])) {
-
+    // Δημιουργία instance του controller
     $controller = new PostController();
 
     switch ($_GET['action']) {
 
-        case 'create':
+        case 'create':  // Create_Post()
             $controller->create();
             break;
 
-        case 'list':
+        case 'list':    // Show_Post()
             $controller->list();
             break;
 
-        case 'delete':
+        case 'delete':  // Delete_Post()
             $controller->delete($_GET['id']);
+            break;
+        case 'get':  // Get_Post()
+            $controller->get();
             break;
     }
 }

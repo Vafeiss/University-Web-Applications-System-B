@@ -1,7 +1,7 @@
 <?php
-session_start();
+session_start();    
 
-// Only logged-in users can see posts
+/* Έλεγχος αν ο χρήστης είναι συνδεδεμένος */
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -12,10 +12,11 @@ if (!isset($_SESSION['user_id'])) {
 <html>
 
 <head>
-    <title>Posts Feed</title>
 
-    <!-- Post styling -->
-    <link rel="stylesheet" href="css/post.css">
+<title>Posts Feed</title>
+<!-- Προσθήκη CSS για styling των posts -->
+<link rel="stylesheet" href="css/post.css">
+
 </head>
 
 <body>
@@ -24,13 +25,13 @@ if (!isset($_SESSION['user_id'])) {
 
 <h2>Posts Feed</h2>
 
-<!-- Posts will appear here -->
+<!-- εμφανίζονται τα posts -->
 <div id="postsList"></div>
 
 </div>
-
-<!-- Load posts script -->
+<!-- Προσθήκη JavaScript για φόρτωση των posts -->
 <script src="js/posts.js"></script>
 
 </body>
+
 </html>

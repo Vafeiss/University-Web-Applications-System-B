@@ -1,20 +1,33 @@
-/* Φόντο σελίδας */
+/* =========================
+   Βασικό στυλ σελίδας
+========================= */
+
 body{
     font-family: Arial, Helvetica, sans-serif;
     background:#f4f4f4;
 }
 
-/* Κεντρικό πλαίσιο φόρμας */
+
+/* =========================
+   Κεντρικό container
+========================= */
+
 .post-container{
-    width:600px;
+    max-width:700px;
     margin:40px auto;
+
     background:white;
     padding:20px;
+
     border-radius:8px;
     box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* Κοινό στυλ για πεδία φόρμας */
+
+/* =========================
+   Φόρμα create post
+========================= */
+
 input,
 textarea,
 select{
@@ -29,19 +42,20 @@ select{
     box-sizing:border-box;
 }
 
-/* Πεδίο κειμένου για το περιεχόμενο του post */
 textarea{
     height:150px;
 }
 
-/* Ετικέτες πεδίων */
+/* labels */
+
 label{
     display:block;
     margin-top:15px;
     font-weight:bold;
 }
 
-/* Κουμπί δημοσίευσης */
+/* κουμπί */
+
 button{
     background:#007bff;
     color:white;
@@ -53,7 +67,136 @@ button{
     cursor:pointer;
 }
 
-/* Εφέ όταν περνάει ο δείκτης */
 button:hover{
     background:#0056b3;
+}
+
+
+/* =========================
+   Feed posts (posts.php)
+========================= */
+
+/* link που περιέχει το card */
+
+.post-link{
+    text-decoration:none;
+    color:inherit;
+    display:block;
+}
+
+/* κάρτα post */
+.post-card{
+    border:1px solid #e5e5e5;
+    padding:20px;
+    margin-bottom:15px;
+
+    border-radius:10px;
+    background:white;
+
+    cursor:pointer;
+
+    transition:all 0.25s ease;
+}
+
+/* hover effect */
+
+.post-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    border-color:#007bff;
+}
+
+
+/* τίτλος post */
+.post-title{
+    margin:0;
+    font-size:22px;
+    font-weight:600;
+}
+
+/* πληροφορίες post */
+.post-meta{
+    color:#777;
+    margin-top:8px;
+    font-size:14px;
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+
+/* =========================
+   Category badge
+========================= */
+.category-badge{
+    display:inline-block;
+
+    background:#eef4ff;
+    color:#2c5cc5;
+
+    padding:4px 10px;
+    border-radius:20px;
+
+    font-size:12px;
+}
+
+/* =========================
+   Single post page
+========================= */
+
+.single-post{
+    max-width:700px;
+}
+
+/* τίτλος */
+
+.single-title{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+/* meta info */
+
+.single-meta{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    color:#666;
+    font-size:14px;
+
+    margin-bottom:25px;
+}
+/* τελείες μεταξύ meta */
+
+.meta-separator{
+    color:#aaa;
+}
+
+/* περιεχόμενο post */
+/* κενό πριν content για να μην κολλάει με το meta info */
+
+.single-content{
+    font-size:18px;
+    line-height:1.7;
+
+    margin-top:20px;
+}
+
+/* =========================
+   Back link
+========================= */
+
+.back-link{
+    display:inline-block;
+
+    margin-bottom:20px;
+
+    text-decoration:none;
+    color:#007bff;
+}
+
+.back-link:hover{
+    text-decoration:underline;
 }
