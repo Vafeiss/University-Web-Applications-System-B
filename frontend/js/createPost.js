@@ -2,9 +2,20 @@ const responseEl = document.getElementById("response");
 const postForm = document.getElementById("postForm");
 const attachmentsInput = document.getElementById("attachmentsInput");
 const selectedFilesEl = document.getElementById("selectedFiles");
+const postPolicyDialog = document.getElementById("postPolicyDialog");
 const MAX_ATTACHMENTS = 5;
 let hideResponseTimer;
 let selectedFiles = [];
+let postPolicyAccepted = false;
+
+function togglePostPolicyDialog(show) {
+    if (!postPolicyDialog) {
+        return;
+    }
+
+    postPolicyDialog.hidden = !show;
+    document.body.classList.toggle("comment-dialog-open", show);
+}
 
 function showResponseMessage(message, type) {
     responseEl.textContent = message;
@@ -70,6 +81,14 @@ postForm.addEventListener("submit", async function(e){
         return;
     }
 
+    if (!postPolicyAccepted) {
+        togglePostPolicyDialog(true);
+        return;
+    }
+
+    postPolicyAccepted = false;
+    togglePostPolicyDialog(false);
+
     // Build FormData manually to guarantee all selected files are appended.
     const formData = new FormData();
     formData.append("title", postForm.elements["title"].value);
@@ -111,4 +130,48 @@ postForm.addEventListener("submit", async function(e){
 
     }
 
+});
+
+document.addEventListener("click", function(event) {
+    if (!postPolicyDialog) {
+        return;
+    }
+
+    if (event.target === postPolicyDialog) {
+        postPolicyAccepted = false;
+        togglePostPolicyDialog(false);
+        return;
+    }
+
+    const acceptBtn = event.target.closest("#postPolicyAccept");
+    if (acceptBtn) {
+        postPolicyAccepted = true;
+        togglePostPolicyDialog(false);
+
+        if (typeof postForm.requestSubmit === "function") {
+            postForm.requestSubmit();
+        } else {
+            postForm.dispatchEvent(new Event("submit", { cancelable: true }));
+        }
+        return;
+    }
+
+    const cancelBtn = event.target.closest("#postPolicyCancel");
+    if (cancelBtn) {
+        postPolicyAccepted = false;
+        togglePostPolicyDialog(false);
+    }
+});
+
+document.addEventListener("keydown", function(event) {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    if (!postPolicyDialog || postPolicyDialog.hidden) {
+        return;
+    }
+
+    postPolicyAccepted = false;
+    togglePostPolicyDialog(false);
 });

@@ -77,6 +77,17 @@ if (!isset($_SESSION['user_id'])) {
 
         <p id="response" class="response-message" aria-live="polite"></p>
 
+        <div id="postPolicyDialog" class="comment-policy-dialog" hidden>
+            <div class="comment-policy-card" role="dialog" aria-modal="true" aria-labelledby="postPolicyTitle">
+                <h4 id="postPolicyTitle">Confirm Publication</h4>
+                <p>After publishing, this post cannot be deleted directly and requires a delete request.</p>
+                <div class="comment-policy-actions">
+                    <button type="button" id="postPolicyCancel" class="policy-link cancel">Cancel</button>
+                    <button type="button" id="postPolicyAccept" class="policy-link accept">Accept</button>
+                </div>
+            </div>
+        </div>
+
         </div>
 
         <script src="js/createPost.js"></script>
