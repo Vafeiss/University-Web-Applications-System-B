@@ -50,13 +50,18 @@ if (!isset($_SESSION['user_id'])) {
         <!-- Attachments -->
         <div class="attachments-upload">
             <div class="attachments-head">
-                <span class="attachments-title">Attachments</span>
-                <span class="attachments-hint">Up to 5 files (jpg, png, pdf, doc, docx, txt, zip)</span>
+                <div class="attachments-head-text">
+                    <span class="attachments-title">Attachments</span>
+                    <span class="attachments-hint">At least 1 file required, up to 5 files (jpg, png, pdf, doc, docx, txt, zip)</span>
+                </div>
+
+                <label for="attachmentsInput" class="attachments-choose-btn">Choose Files</label>
             </div>
 
             <input 
             type="file"
             id="attachmentsInput"
+            class="attachments-native-input"
             name="attachments[]"
             multiple
             accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt,.zip"

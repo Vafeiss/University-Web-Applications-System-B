@@ -19,7 +19,7 @@ function showResponseMessage(message, type) {
 
 function renderSelectedFiles() {
     if (selectedFiles.length === 0) {
-        selectedFilesEl.textContent = "No files selected";
+        selectedFilesEl.textContent = "";
         return;
     }
 
@@ -64,6 +64,11 @@ postForm.addEventListener("submit", async function(e){
 
     // Prevent page reload
     e.preventDefault();
+
+    if (selectedFiles.length === 0) {
+        showResponseMessage("No files selected. Please add at least one file before publishing.", "error");
+        return;
+    }
 
     // Build FormData manually to guarantee all selected files are appended.
     const formData = new FormData();
