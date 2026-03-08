@@ -1,29 +1,50 @@
 <?php
 /**
  * File: logout.php
+ * Layer: Frontend
  * Module: Session Management
+ * System: University Web Applications System B
  *
  * Description:
- * Destroys user session and redirects to login page.
+ * Terminates the current user session and logs the user out
+ * of the application.
  *
- * Security:
- * - session_unset()
- * - session_destroy()
+ * The script performs a complete session cleanup by:
+ * - Removing all session variables
+ * - Deleting the session cookie
+ * - Destroying the session
  *
- * Author: Your Name
+ * After the logout process is completed, the user is redirected
+ * to the login page.
+ *
+ * Security Measures:
+ * - Prevents session reuse
+ * - Removes session cookie from the browser
+ * - Destroys session data stored on the server
+ *
+ * Access Level:
+ * - Authenticated users
+ *
+ * Author: Pela Koniotaki
+ * Date: 2026
  */
+
 session_start();
 
-/**
- * Clear all session variables
- */
+/* =========================
+   CLEAR SESSION VARIABLES
+========================= */
+
 $_SESSION = [];
 
-/**
- * Delete session cookie (important for security)
- */
+/* =========================
+   DELETE SESSION COOKIE
+========================= */
+
 if (ini_get("session.use_cookies")) {
+
     $params = session_get_cookie_params();
+
     setcookie(
         session_name(),
         '',
@@ -35,14 +56,15 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-/**
- * Destroy the session completely
- */
+/* =========================
+   DESTROY SESSION
+========================= */
+
 session_destroy();
 
+/* =========================
+   REDIRECT USER
+========================= */
 
-/**
- * Redirect to login page
- */
 header("Location: /University-Web-Applications-System-B/frontend/login.php");
 exit;

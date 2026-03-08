@@ -24,7 +24,7 @@
  * - index.php
  * - admin.php
  *
- * Author: Your Name
+ * Author: Pela Koniotaki
  * Date: 2026
  */
 

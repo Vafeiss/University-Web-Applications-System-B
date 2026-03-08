@@ -1,0 +1,106 @@
+/* ======================================================
+   GLOBAL PAGE STYLE
+   Applies to the entire application
+====================================================== */
+
+body {
+    background-color: #f5f5f5;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* ======================================================
+   CENTERED AUTH CONTAINERS
+   Used for login / register / profile setup
+====================================================== */
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ======================================================
+   CARD STYLING
+   Used for login/register/profile/admin pages
+====================================================== */
+
+.card {
+    border-radius: 10px;
+    border: none;
+}
+
+
+/* ======================================================
+   PAGE TITLES
+====================================================== */
+
+h2, h3 {
+    font-weight: 600;
+}
+
+
+/* ======================================================
+   BUTTON STYLING
+====================================================== */
+
+.btn-primary {
+    background-color: #2a6df4;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #1f55c5;
+}
+
+.btn-dark {
+    border-radius: 6px;
+}
+
+
+/* ======================================================
+   FORM ELEMENTS
+====================================================== */
+
+.form-control,
+.form-select {
+    border-radius: 6px;
+}
+
+
+/* ======================================================
+   CHECKBOX / RADIO SPACING
+====================================================== */
+
+.form-check {
+    margin-bottom: 6px;
+}
+
+
+/* ======================================================
+   PROFILE SETUP INTERESTS BOX
+====================================================== */
+
+.interests-box {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+
+/* ======================================================
+   SMALL UI IMPROVEMENTS
+====================================================== */
+
+hr {
+    opacity: 0.2;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

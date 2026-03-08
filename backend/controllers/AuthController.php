@@ -1,4 +1,3 @@
-
 <?php
 /**
  * File: AuthController.php
@@ -7,29 +6,41 @@
  * System: University Web Applications System B
  *
  * Description:
- * Handles all authentication-related operations:
- * - User Registration
- * - Login
- * - Password Reset (token-based)
- * - Referral Code Processing
- * - Token Reward System
+ * This controller manages all authentication-related operations
+ * of the system. It handles user registration, login, password
+ * recovery, and referral code processing.
+ *
+ * The controller interacts with the `users` table and ensures
+ * secure authentication using modern security practices.
  *
  * Core Responsibilities:
- * - Secure password hashing & verification
- * - Referral validation
- * - Token reward logic (transaction-safe)
- * - Password reset token generation & validation
+ * - User Registration
+ * - User Login Authentication
+ * - Referral Code Validation
+ * - Token Reward Distribution
+ * - Password Reset Request (Email-based)
+ * - Password Reset Token Verification
  *
- * Security:
- * - password_hash() / password_verify()
- * - PDO prepared statements
+ * Email System:
+ * - Sends password reset links using PHPMailer
+ * - SMTP credentials are loaded from environment variables (.env)
+ *
+ * Security Measures:
+ * - password_hash() for password storage
+ * - password_verify() for login authentication
+ * - PDO prepared statements (SQL Injection protection)
  * - Database transactions for atomic operations
- * - Reset tokens with expiration
+ * - Cryptographically secure token generation (random_bytes)
+ * - Token expiration validation
+ *
+ * External Libraries:
+ * - PHPMailer (Email delivery via SMTP)
+ * - PHP Dotenv (Environment variable management)
  *
  * Database Tables Used:
  * - users
  *
- * Author: Your Name
+ * Author: Pela Koniotaki
  * Date: 2026
  */
 require_once __DIR__ . "/../config/database.php";
@@ -37,6 +48,10 @@ require_once __DIR__ . "/../../vendor/autoload.php";
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
+// ευρεση .env αρχείου για mail configuration
+$dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
+$dotenv->load();
 
 date_default_timezone_set('Europe/Athens');
 
@@ -264,7 +279,7 @@ class AuthController {
 
         // Load mail configuration
         $mailConfig = require __DIR__ . '/../config/mail.php';
-
+       
         $mail = new PHPMailer(true);
 
         $mail->isSMTP();
