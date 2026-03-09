@@ -89,15 +89,18 @@ function initCommentComposer(){
 let commentPolicyAccepted = false;
 let deleteRequestCommentId = null;
 let deleteRequestPostId = null;
+let reportPostId = null;
 
 function updateDialogBodyLock(){
     const commentDialog = document.getElementById("commentPolicyDialog");
     const deleteDialog = document.getElementById("deleteRequestDialog");
     const postDeleteDialog = document.getElementById("postDeleteRequestDialog");
+    const postReportDialog = document.getElementById("postReportDialog");
     const hasOpenDialog = Boolean(
         (commentDialog && !commentDialog.hidden) ||
         (deleteDialog && !deleteDialog.hidden) ||
-        (postDeleteDialog && !postDeleteDialog.hidden)
+        (postDeleteDialog && !postDeleteDialog.hidden) ||
+        (postReportDialog && !postReportDialog.hidden)
     );
 
     document.body.classList.toggle("comment-dialog-open", hasOpenDialog);
@@ -165,6 +168,32 @@ function togglePostDeleteRequestDialog(show){
     updateDialogBodyLock();
 }
 
+function togglePostReportDialog(show){
+    const dialog = document.getElementById("postReportDialog");
+    const reasonField = document.getElementById("postReportReason");
+
+    if (!dialog) {
+        return;
+    }
+
+    dialog.hidden = !show;
+
+    if (reasonField) {
+        reasonField.value = "";
+        autoResizeDeleteReasonTextarea(reasonField);
+    }
+
+    if (show && reasonField) {
+        setTimeout(() => reasonField.focus(), 0);
+    }
+
+    if (!show) {
+        reportPostId = null;
+    }
+
+    updateDialogBodyLock();
+}
+
 
 /* Φόρτωση ενός post από το backend */
 
@@ -207,9 +236,11 @@ async function loadPost(postId){
             ${post.content}
         </div>
         ${renderPostDeleteButton(post)} 
+        ${renderPostReportButton(post)}
         ${renderAttachments(post.attachments)} 
         ${renderCommentsSection(postId)} 
         ${renderPostDeleteDialog()}
+        ${renderPostReportDialog()}
     </div>
     `;
     loadComments(postId); // Φόρτωση των σχολίων μετά την απόδοση του post
@@ -369,6 +400,23 @@ function renderPostDeleteButton(post){
     `;
 }
 
+function renderPostReportButton(post){
+    const currentUser = window.currentUserId;
+    if(post.user_id == currentUser){
+        return "";
+    }
+
+    const hasReported = Number(post.has_reported) === 1 || post.has_reported === true;
+
+    return `
+        <div class="post-report-section">
+            <button class="post-report-btn${hasReported ? " is-disabled" : ""}" data-id="${post.post_id}" data-reported="${hasReported ? "1" : "0"}" aria-disabled="${hasReported ? "true" : "false"}" aria-label="Report post" title="${hasReported ? "Post already reported" : "Report post"}">
+                Report post
+            </button>
+        </div>
+    `;
+}
+
 function renderPostDeleteDialog(){
     return `
     <div id="postDeleteRequestDialog" class="comment-policy-dialog" hidden>
@@ -378,6 +426,22 @@ function renderPostDeleteDialog(){
             <textarea id="postDeleteRequestReason" class="delete-request-reason" rows="1" placeholder="Write your reason..." required></textarea>
             <div class="comment-policy-actions">
                 <button type="button" id="postDeleteRequestCancel" class="policy-link cancel">Cancel</button>
+                <button type="submit" class="policy-link accept">Submit</button>
+            </div>
+        </form>
+    </div>
+    `;
+}
+
+function renderPostReportDialog(){
+    return `
+    <div id="postReportDialog" class="comment-policy-dialog" hidden>
+        <form id="postReportForm" class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="postReportTitle">
+            <h4 id="postReportTitle">Report Post</h4>
+            <p>Please explain why this post should be reported.</p>
+            <textarea id="postReportReason" class="delete-request-reason" rows="1" placeholder="Write your reason..." required></textarea>
+            <div class="comment-policy-actions">
+                <button type="button" id="postReportCancel" class="policy-link cancel">Cancel</button>
                 <button type="submit" class="policy-link accept">Submit</button>
             </div>
         </form>
@@ -404,6 +468,12 @@ document.addEventListener("click", function (event) {
     const postDeleteDialog = document.getElementById("postDeleteRequestDialog");
     if (postDeleteDialog && event.target === postDeleteDialog) {
         togglePostDeleteRequestDialog(false);
+        return;
+    }
+
+    const postReportDialog = document.getElementById("postReportDialog");
+    if (postReportDialog && event.target === postReportDialog) {
+        togglePostReportDialog(false);
         return;
     }
 
@@ -439,6 +509,12 @@ document.addEventListener("click", function (event) {
     const postDeleteCancelBtn = event.target.closest("#postDeleteRequestCancel");
     if (postDeleteCancelBtn) {
         togglePostDeleteRequestDialog(false);
+        return;
+    }
+
+    const postReportCancelBtn = event.target.closest("#postReportCancel");
+    if (postReportCancelBtn) {
+        togglePostReportDialog(false);
         return;
     }
 
@@ -509,7 +585,7 @@ document.addEventListener("submit", async function(e){
 
 document.addEventListener("input", function (event) {
     if (event.target.id !== "commentContent") {
-        if (event.target.id === "deleteRequestReason" || event.target.id === "postDeleteRequestReason") {
+        if (event.target.id === "deleteRequestReason" || event.target.id === "postDeleteRequestReason" || event.target.id === "postReportReason") {
             autoResizeDeleteReasonTextarea(event.target);
         }
         return;
@@ -523,6 +599,12 @@ document.addEventListener("input", function (event) {
 
 document.addEventListener("keydown", function (event) {
     if (event.key !== "Escape") {
+        return;
+    }
+
+    const postReportDialog = document.getElementById("postReportDialog");
+    if (postReportDialog && !postReportDialog.hidden) {
+        togglePostReportDialog(false);
         return;
     }
 
@@ -579,6 +661,8 @@ document.addEventListener("submit", async function (event) {
         return;
     }
 
+    const submittedCommentId = deleteRequestCommentId;
+
     const reasonField = document.getElementById("deleteRequestReason");
     const reason = reasonField ? reasonField.value.trim() : "";
     if (reason === "") {
@@ -599,7 +683,7 @@ document.addEventListener("submit", async function (event) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    comment_id: deleteRequestCommentId,
+                    comment_id: submittedCommentId,
                     reason: reason
                 })
             }
@@ -615,7 +699,7 @@ document.addEventListener("submit", async function (event) {
         // Ενημέρωση χωρίς blocking browser alert
         showInlineNotice(result.message || "Your delete request was submitted for moderation.", "success");
 
-        const activeButton = document.querySelector(`.delete-request-btn[data-id="${deleteRequestCommentId}"]`);
+        const activeButton = document.querySelector(`.delete-request-btn[data-id="${submittedCommentId}"]`);
         if (activeButton) {
             activeButton.dataset.deleteRequested = "1";
             activeButton.classList.add("is-disabled");
@@ -663,6 +747,8 @@ document.addEventListener("submit", async function(event){
         return;
     }
 
+    const submittedPostDeleteId = deleteRequestPostId;
+
     const reasonField = document.getElementById("postDeleteRequestReason");
     const reason = reasonField ? reasonField.value.trim() : "";
     if (reason === "") {
@@ -681,7 +767,7 @@ document.addEventListener("submit", async function(event){
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    post_id: deleteRequestPostId,
+                    post_id: submittedPostDeleteId,
                     reason: reason
                 })
             }
@@ -695,7 +781,7 @@ document.addEventListener("submit", async function(event){
         togglePostDeleteRequestDialog(false);
         showInlineNotice(result.message || "Post delete request submitted", "success");
 
-        const activeButton = document.querySelector(`.post-delete-request-btn[data-id="${deleteRequestPostId}"]`);
+        const activeButton = document.querySelector(`.post-delete-request-btn[data-id="${submittedPostDeleteId}"]`);
         if (activeButton) {
             activeButton.dataset.deleteRequested = "1";
             activeButton.classList.add("is-disabled");
@@ -704,5 +790,82 @@ document.addEventListener("submit", async function(event){
         }
     } catch (error) {
         showInlineNotice(error.message || "Failed to submit post delete request.", "error");
+    }
+});
+
+document.addEventListener("click", function(event){
+    const button = event.target.closest(".post-report-btn");
+    if (!button) {
+        return;
+    }
+
+    if (button.dataset.reported === "1") {
+        showInlineNotice("You have already reported this post.", "error");
+        return;
+    }
+
+    reportPostId = button.dataset.id || null;
+    if (!reportPostId) {
+        return;
+    }
+
+    togglePostReportDialog(true);
+});
+
+document.addEventListener("submit", async function(event){
+    if (event.target.id !== "postReportForm") {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (!reportPostId) {
+        togglePostReportDialog(false);
+        return;
+    }
+
+    const submittedReportPostId = reportPostId;
+
+    const reasonField = document.getElementById("postReportReason");
+    const reason = reasonField ? reasonField.value.trim() : "";
+    if (reason === "") {
+        if (reasonField) {
+            reasonField.focus();
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=requestReport",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    post_id: submittedReportPostId,
+                    reason: reason
+                })
+            }
+        );
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || "Request failed");
+        }
+
+        togglePostReportDialog(false);
+        showInlineNotice(result.message || "Post report submitted", "success");
+
+        const activeButton = document.querySelector(`.post-report-btn[data-id="${submittedReportPostId}"]`);
+        if (activeButton) {
+            activeButton.dataset.reported = "1";
+            activeButton.classList.add("is-disabled");
+            activeButton.setAttribute("aria-disabled", "true");
+            activeButton.setAttribute("title", "Post already reported");
+        }
+    } catch (error) {
+        showInlineNotice(error.message || "Failed to submit post report.", "error");
     }
 });

@@ -321,6 +321,12 @@ button:hover {
     right: 30px;
 }
 
+.post-report-section {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+}
+
 .post-delete-request-btn {
     display: inline-flex;
     align-items: center;
@@ -358,6 +364,48 @@ button:hover {
 .post-delete-request-btn.is-disabled:hover,
 .post-delete-request-btn.is-disabled:focus,
 .post-delete-request-btn.is-disabled:focus-visible {
+    color: #d1a3a3;
+    opacity: 0.65;
+    background: transparent;
+}
+
+.post-report-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: #c34747;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.post-report-btn:hover,
+.post-report-btn:focus,
+.post-report-btn:focus-visible {
+    outline: none;
+    color: #c12727;
+    background: transparent;
+    text-decoration: none;
+}
+
+.post-report-btn.is-disabled {
+    color: #d1a3a3;
+    opacity: 0.65;
+    cursor: default;
+}
+
+.post-report-btn.is-disabled:hover,
+.post-report-btn.is-disabled:focus,
+.post-report-btn.is-disabled:focus-visible {
     color: #d1a3a3;
     opacity: 0.65;
     background: transparent;
@@ -701,6 +749,10 @@ button:hover {
     color: #c12727;
 }
 
+#postReportTitle {
+    color: #c12727;
+}
+
 .policy-link.cancel:hover {
     background: #e4e9f1;
 }
@@ -830,6 +882,11 @@ body.comment-dialog-open {
 
 @media (max-width: 640px) {
     .post-delete-section {
+        top: 22px;
+        right: 22px;
+    }
+
+    .post-report-section {
         top: 22px;
         right: 22px;
     }

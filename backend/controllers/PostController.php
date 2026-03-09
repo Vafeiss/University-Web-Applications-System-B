@@ -161,6 +161,9 @@ class PostController extends BaseController {
         $post['has_requested_delete'] = $currentUserId
             ? $this->postModel->postDeleteRequestExists($post_id, $currentUserId)
             : false;
+        $post['has_reported'] = $currentUserId
+            ? $this->postModel->postReportExists($post_id, $currentUserId)
+            : false;
 
         // προσθέτουμε τα attachments στο post object
         $post['attachments'] = $attachments;
@@ -200,6 +203,39 @@ class PostController extends BaseController {
 
         $this->jsonResponse(["message" => "Post delete request submitted"]);
     }
+
+    public function requestReport() {
+        $user_id = $this->requireLogin();
+        $data = $this->getJSONInput();
+
+        if (!$data || !isset($data['post_id']) || !isset($data['reason'])) {
+            $this->jsonResponse(["message" => "Invalid request"], 400);
+        }
+
+        $post_id = $data['post_id'];
+        $reason = trim($data['reason']);
+
+        if ($reason === '') {
+            $this->jsonResponse(["message" => "Reason is required"], 400);
+        }
+
+        $post = $this->postModel->getPostById($post_id);
+        if (!$post) {
+            $this->jsonResponse(["message" => "Post not found"], 404);
+        }
+
+        if ($post['user_id'] == $user_id) {
+            $this->jsonResponse(["message" => "You cannot report your own post"], 403);
+        }
+
+        if ($this->postModel->postReportExists($post_id, $user_id)) {
+            $this->jsonResponse(["message" => "You already reported this post"], 409);
+        }
+
+        $this->postModel->createPostReport($post_id, $user_id, $reason);
+
+        $this->jsonResponse(["message" => "Post report submitted"]);
+    }
 }
 
 // Βασικός router για το PostController
@@ -225,6 +261,9 @@ if (isset($_GET['action'])) {
             break;
         case 'requestDelete':
             $controller->requestDelete();
+            break;
+        case 'requestReport':
+            $controller->requestReport();
             break;
     }
 }

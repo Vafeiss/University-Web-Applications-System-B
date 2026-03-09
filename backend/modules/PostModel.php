@@ -126,4 +126,38 @@ public function createPostDeleteRequest($post_id,$user_id,$reason){
         ":reason"=>$reason
     ]);
 }
+
+public function postReportExists($post_id, $user_id){
+
+    $query = "SELECT report_id
+              FROM content_reports
+              WHERE content_type = 'post'
+              AND content_id = :post_id
+              AND reported_by = :user_id
+              LIMIT 1";
+
+    $stmt = $this->conn->prepare($query);
+
+    $stmt->execute([
+        ":post_id" => $post_id,
+        ":user_id" => $user_id
+    ]);
+
+    return $stmt->fetch() ? true : false;
+}
+
+public function createPostReport($post_id, $user_id, $reason){
+
+    $query = "INSERT INTO content_reports
+              (content_type, content_id, reported_by, reason)
+              VALUES ('post', :post_id, :user_id, :reason)";
+
+    $stmt = $this->conn->prepare($query);
+
+    return $stmt->execute([
+        ":post_id" => $post_id,
+        ":user_id" => $user_id,
+        ":reason" => $reason
+    ]);
+}
 }
