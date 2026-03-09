@@ -31,6 +31,7 @@ class PostController extends BaseController {
         $title = $_POST['title'];
         $content = $_POST['content'];
         $categoryId = $_POST['category_id'] ?? null;
+        $isAnonymous = isset($_POST['is_anonymous']) && $_POST['is_anonymous'] === '1' ? 1 : 0;
 
         if ($categoryId === "") {
             $categoryId = null;
@@ -43,7 +44,8 @@ class PostController extends BaseController {
                 $user_id,
                 $title,
                 $content,
-                $categoryId
+                $categoryId,
+                $isAnonymous
             );
 
             // Upload attachments
@@ -104,7 +106,22 @@ class PostController extends BaseController {
     // Show_Post()
     public function list() {
 
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+
         $posts = $this->postModel->getApprovedPosts();
+
+        if (!$isAdmin) {
+            foreach ($posts as &$post) {
+                if (!empty($post['is_anonymous'])) {
+                    $post['username'] = 'Anonymous';
+                }
+            }
+            unset($post);
+        }
 
         $this->jsonResponse($posts);
     }
@@ -158,6 +175,12 @@ class PostController extends BaseController {
         unset($attachment);
 
         $currentUserId = $_SESSION['user_id'] ?? null;
+        $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+
+        if (!$isAdmin && !empty($post['is_anonymous'])) {
+            $post['username'] = 'Anonymous';
+        }
+
         $post['has_requested_delete'] = $currentUserId
             ? $this->postModel->postDeleteRequestExists($post_id, $currentUserId)
             : false;

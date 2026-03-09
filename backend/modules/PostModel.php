@@ -12,11 +12,11 @@ class PostModel {
     }
 
     // Create_Post()
-    public function createPost($user_id, $title, $content, $category_id) {
+    public function createPost($user_id, $title, $content, $category_id, $is_anonymous = 0) {
 
         $query = "INSERT INTO posts 
-                  (user_id, title, content, category_id, status) 
-                  VALUES (:user_id, :title, :content, :category_id, 0)";
+                  (user_id, title, content, category_id, status, is_anonymous) 
+                  VALUES (:user_id, :title, :content, :category_id, 0, :is_anonymous)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -24,7 +24,8 @@ class PostModel {
             ':user_id' => $user_id,
             ':title' => $title,
             ':content' => $content,
-            ':category_id' => $category_id
+            ':category_id' => $category_id,
+            ':is_anonymous' => $is_anonymous
         ]);
 
     // επιστρέφει το ID του post ,με post_id ως primary key, για να χρησιμοποιηθεί για την αποθήκευση των attachments

@@ -47,6 +47,18 @@ if (!isset($_SESSION['user_id'])) {
 
         </select>
 
+        <div class="anonymous-setting">
+            <div class="anonymous-setting-text">
+                <span class="anonymous-setting-title">Publish anonymously</span>
+                <small class="anonymous-setting-hint">Your name will be hidden for users. Admins can still view the post owner.</small>
+            </div>
+
+            <label class="anonymous-switch" for="anonymousToggle">
+                <input type="checkbox" id="anonymousToggle" name="is_anonymous" value="1">
+                <span class="anonymous-slider" aria-hidden="true"></span>
+            </label>
+        </div>
+
         <!-- Attachments -->
         <div class="attachments-upload">
             <div class="attachments-head">

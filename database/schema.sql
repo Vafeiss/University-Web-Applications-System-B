@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Εξυπηρετητής: 127.0.0.1
--- Χρόνος δημιουργίας: 08 Μαρ 2026 στις 12:21:53
+-- Χρόνος δημιουργίας: 09 Μαρ 2026 στις 10:20:13
 -- Έκδοση διακομιστή: 10.4.32-MariaDB
 -- Έκδοση PHP: 8.2.12
 
@@ -43,6 +43,7 @@ CREATE TABLE `attachments` (
   `attachment_id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
   `file_name` varchar(255) DEFAULT NULL,
+  `file_path` varchar(255) NOT NULL,
   `file_size` int(11) DEFAULT NULL,
   `file_type` varchar(100) DEFAULT NULL,
   `timestamp` datetime DEFAULT current_timestamp()
@@ -131,7 +132,8 @@ CREATE TABLE `posts` (
   `timestamp` datetime DEFAULT current_timestamp(),
   `status` tinyint(4) DEFAULT 0,
   `category_id` int(11) DEFAULT NULL,
-  `deleted` tinyint(4) DEFAULT 0
+  `deleted` tinyint(4) DEFAULT 0,
+  `is_anonymous` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

@@ -94,6 +94,7 @@ postForm.addEventListener("submit", async function(e){
     formData.append("title", postForm.elements["title"].value);
     formData.append("content", postForm.elements["content"].value);
     formData.append("category_id", postForm.elements["category_id"].value);
+    formData.append("is_anonymous", postForm.elements["is_anonymous"].checked ? "1" : "0");
 
     selectedFiles.forEach((file) => {
         formData.append("attachments[]", file);
