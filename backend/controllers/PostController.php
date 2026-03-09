@@ -3,13 +3,14 @@
 // Return JSON responses
 header("Content-Type: application/json");
 
+require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../modules/PostModel.php';
 
 /*
  Controller responsible for handling Post operations
  such as creating, listing and deleting posts
 */
-class PostController {
+class PostController extends BaseController {
 
     private PostModel $postModel;
 
@@ -18,137 +19,118 @@ class PostController {
     }
 
     // Create_Post()
-public function create() {
+    public function create() {
+        $user_id = $this->requireLogin();
 
-    session_start();
-
-    // Ensure user is logged in
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode([
-            "message" => "User not logged in"
-        ]);
-        return;
-    }
-
-    if (!isset($_POST['title']) || !isset($_POST['content'])) {
-        echo json_encode([
-            "message" => "Invalid post data"
-        ]);
-        return;
-    }
-
-    $title = $_POST['title'];
-    $content = $_POST['content'];
-    $categoryId = $_POST['category_id'] ?? null;
-
-    if ($categoryId === "") {
-        $categoryId = null;
-    }
-
-    try {
-
-        // Δημιουργία post
-        $post_id = $this->postModel->createPost(
-            $_SESSION['user_id'],
-            $title,
-            $content,
-            $categoryId
-        );
-
-        // Upload attachments
-        if (!empty($_FILES['attachments']['name'][0])) {
-
-            $uploadDir = __DIR__ . '/../../frontend/uploads/';
-            $totalFiles = count($_FILES['attachments']['name']);
-
-            if ($totalFiles > 5) {
-                echo json_encode(["message" => "Maximum 5 files allowed"]);
-                return;
-            }
-
-            for ($i = 0; $i < $totalFiles; $i++) {
-
-            // Αν δεν υπάρχει πραγματικό αρχείο, το αγνοούμε
-            if ($_FILES['attachments']['error'][$i] !== UPLOAD_ERR_OK) {
-                continue;
-            }
-
-            $fileName = $_FILES['attachments']['name'][$i];
-            $fileTmp = $_FILES['attachments']['tmp_name'][$i];
-            $fileSize = $_FILES['attachments']['size'][$i];
-            $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-            $allowed = ['jpg','jpeg','png','pdf','doc','docx','txt','zip'];
-
-            if (!in_array($fileType, $allowed)) {
-                continue;
-            }
-
-            $newName = time() . "_" . uniqid() . "_" . $fileName;
-            $filePath = $uploadDir . $newName;
-
-            if (move_uploaded_file($fileTmp, $filePath)) {
-
-                $this->postModel->saveAttachment(
-                    $post_id,
-                    $fileName,
-                    "uploads/" . $newName,
-                    $fileSize,
-                    $fileType
-                );
-                }
-            }
+        if (!isset($_POST['title']) || !isset($_POST['content'])) {
+            $this->jsonResponse([
+                "message" => "Invalid post data"
+            ], 400);
         }
 
-        echo json_encode([
-            "message" => "Post submitted for review"
-        ]);
+        $title = $_POST['title'];
+        $content = $_POST['content'];
+        $categoryId = $_POST['category_id'] ?? null;
 
-    } catch (Throwable $e) {
+        if ($categoryId === "") {
+            $categoryId = null;
+        }
 
-        http_response_code(500);
+        try {
 
-        echo json_encode([
-            "message" => "Could not create post"
-        ]);
+            // Δημιουργία post
+            $post_id = $this->postModel->createPost(
+                $user_id,
+                $title,
+                $content,
+                $categoryId
+            );
+
+            // Upload attachments
+            if (!empty($_FILES['attachments']['name'][0])) {
+
+                $uploadDir = __DIR__ . '/../../frontend/uploads/';
+                $totalFiles = count($_FILES['attachments']['name']);
+
+                if ($totalFiles > 5) {
+                    $this->jsonResponse(["message" => "Maximum 5 files allowed"], 400);
+                }
+
+                for ($i = 0; $i < $totalFiles; $i++) {
+
+                    // Αν δεν υπάρχει πραγματικό αρχείο, το αγνοούμε
+                    if ($_FILES['attachments']['error'][$i] !== UPLOAD_ERR_OK) {
+                        continue;
+                    }
+
+                    $fileName = $_FILES['attachments']['name'][$i];
+                    $fileTmp = $_FILES['attachments']['tmp_name'][$i];
+                    $fileSize = $_FILES['attachments']['size'][$i];
+                    $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+                    $allowed = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'txt', 'zip'];
+
+                    if (!in_array($fileType, $allowed)) {
+                        continue;
+                    }
+
+                    $newName = time() . "_" . uniqid() . "_" . $fileName;
+                    $filePath = $uploadDir . $newName;
+
+                    if (move_uploaded_file($fileTmp, $filePath)) {
+
+                        $this->postModel->saveAttachment(
+                            $post_id,
+                            $fileName,
+                            "uploads/" . $newName,
+                            $fileSize,
+                            $fileType
+                        );
+                    }
+                }
+            }
+
+            $this->jsonResponse([
+                "message" => "Post submitted for review"
+            ]);
+
+        } catch (Throwable $e) {
+            $this->jsonResponse([
+                "message" => "Could not create post"
+            ], 500);
+        }
     }
-}
 
     // Show_Post()
     public function list() {
 
         $posts = $this->postModel->getApprovedPosts();
 
-        echo json_encode($posts);
+        $this->jsonResponse($posts);
     }
 
     // Delete_Post()
     public function delete($post_id) {
-
-        session_start();
-
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode([
-                "message" => "User not logged in"
-            ]);
-            return;
-        }
+        $user_id = $this->requireLogin();
 
         $this->postModel->deletePost(
             $post_id,
-            $_SESSION['user_id']
+            $user_id
         );
 
-        echo json_encode([
+        $this->jsonResponse([
             "message" => "Post deleted"
         ]);
     }
     // Get_Post()
     public function get() {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
         // Επιστρέφει ένα post με βάση το ID, μαζί με τα attachments του
         if (!isset($_GET['id'])) {
-            echo json_encode(["message" => "Post not found"]);
-            return;
+            $this->jsonResponse(["message" => "Post not found"], 404);
         }
         // φορτώνει ένα post μαζί με το username του δημιουργού και την κατηγορία
         $post_id = $_GET['id'];
@@ -156,9 +138,7 @@ public function create() {
         $post = $this->postModel->getPostById($post_id);
 
         if (!$post) {
-            http_response_code(404);
-            echo json_encode(["message" => "Post not found"]);
-            return;
+            $this->jsonResponse(["message" => "Post not found"], 404);
         }
 
         // Φέρνουμε attachments
@@ -177,10 +157,48 @@ public function create() {
         }
         unset($attachment);
 
+        $currentUserId = $_SESSION['user_id'] ?? null;
+        $post['has_requested_delete'] = $currentUserId
+            ? $this->postModel->postDeleteRequestExists($post_id, $currentUserId)
+            : false;
+
         // προσθέτουμε τα attachments στο post object
         $post['attachments'] = $attachments;
         // επιστρέφουμε το post με τα attachments
-        echo json_encode($post);
+        $this->jsonResponse($post);
+    }
+
+    // Request post deletion
+    public function requestDelete() {
+        $user_id = $this->requireLogin();
+        $data = $this->getJSONInput();
+
+        if (!$data || !isset($data['post_id']) || !isset($data['reason'])) {
+            $this->jsonResponse(["message" => "Invalid request"], 400);
+        }
+
+        $post_id = $data['post_id'];
+        $reason = trim($data['reason']);
+
+        if ($reason === '') {
+            $this->jsonResponse(["message" => "Reason is required"], 400);
+        }
+
+        // Έλεγχος αν το post ανήκει στον user
+        $post = $this->postModel->getPostById($post_id);
+
+        if (!$post || $post['user_id'] != $user_id) {
+            $this->jsonResponse(["message" => "You can only request deletion for your own post"], 403);
+        }
+
+        // Έλεγχος αν υπάρχει ήδη request
+        if ($this->postModel->postDeleteRequestExists($post_id, $user_id)) {
+            $this->jsonResponse(["message" => "You already requested deletion for this post"], 409);
+        }
+
+        $this->postModel->createPostDeleteRequest($post_id, $user_id, $reason);
+
+        $this->jsonResponse(["message" => "Post delete request submitted"]);
     }
 }
 
@@ -204,6 +222,9 @@ if (isset($_GET['action'])) {
             break;
         case 'get':  // Get_Post()
             $controller->get();
+            break;
+        case 'requestDelete':
+            $controller->requestDelete();
             break;
     }
 }

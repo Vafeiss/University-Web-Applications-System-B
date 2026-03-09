@@ -94,19 +94,36 @@ class PostModel {
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-    // Delete_Post()
-    public function deletePost($post_id, $user_id) {
+// Delete_Post()
+    public function postDeleteRequestExists($post_id,$user_id){
 
-        $query = "UPDATE posts 
-                  SET deleted = 1 
-                  WHERE post_id = :post_id 
-                  AND user_id = :user_id";
+    $query = "SELECT request_id
+              FROM post_delete_requests
+              WHERE post_id = :post_id
+              AND requested_by = :user_id";
 
-        $stmt = $this->conn->prepare($query);
+    $stmt = $this->conn->prepare($query);
 
-        return $stmt->execute([
-            ':post_id' => $post_id,
-            ':user_id' => $user_id
-        ]);
-    }
+    $stmt->execute([
+        ":post_id"=>$post_id,
+        ":user_id"=>$user_id
+    ]);
+
+    return $stmt->fetch() ? true : false;
+}
+// Create post delete request
+public function createPostDeleteRequest($post_id,$user_id,$reason){
+
+    $query = "INSERT INTO post_delete_requests
+              (post_id, requested_by, reason)
+              VALUES (:post_id,:user_id,:reason)";
+
+    $stmt = $this->conn->prepare($query);
+
+    return $stmt->execute([
+        ":post_id"=>$post_id,
+        ":user_id"=>$user_id,
+        ":reason"=>$reason
+    ]);
+}
 }

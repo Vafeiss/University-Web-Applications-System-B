@@ -14,6 +14,8 @@ if (!isset($_GET['id'])) {
 }
 
 $post_id = $_GET['id'];
+$css_version = filemtime(__DIR__ . '/css/post.css');
+$js_version = filemtime(__DIR__ . '/js/post.js');
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +24,7 @@ $post_id = $_GET['id'];
 <head>
 
 <title>View Post</title>
-<link rel="stylesheet" href="css/post.css">
+<link rel="stylesheet" href="css/post.css?v=<?php echo $css_version; ?>">
 
 </head>
 
@@ -37,9 +39,10 @@ $post_id = $_GET['id'];
 </div>
 
 <!-- Φόρτωση JS αρχείου -->
-<script src="js/post.js"></script>
+<script src="js/post.js?v=<?php echo $js_version; ?>"></script>
 
 <script>
+window.currentUserId = <?php echo (int) $_SESSION['user_id']; ?>;
 loadPost(<?php echo $post_id; ?>);
 </script>
 </body>

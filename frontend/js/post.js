@@ -88,13 +88,16 @@ function initCommentComposer(){
 
 let commentPolicyAccepted = false;
 let deleteRequestCommentId = null;
+let deleteRequestPostId = null;
 
 function updateDialogBodyLock(){
     const commentDialog = document.getElementById("commentPolicyDialog");
     const deleteDialog = document.getElementById("deleteRequestDialog");
+    const postDeleteDialog = document.getElementById("postDeleteRequestDialog");
     const hasOpenDialog = Boolean(
         (commentDialog && !commentDialog.hidden) ||
-        (deleteDialog && !deleteDialog.hidden)
+        (deleteDialog && !deleteDialog.hidden) ||
+        (postDeleteDialog && !postDeleteDialog.hidden)
     );
 
     document.body.classList.toggle("comment-dialog-open", hasOpenDialog);
@@ -131,6 +134,32 @@ function toggleDeleteRequestDialog(show){
 
     if (!show) {
         deleteRequestCommentId = null;
+    }
+
+    updateDialogBodyLock();
+}
+
+function togglePostDeleteRequestDialog(show){
+    const dialog = document.getElementById("postDeleteRequestDialog");
+    const reasonField = document.getElementById("postDeleteRequestReason");
+
+    if (!dialog) {
+        return;
+    }
+
+    dialog.hidden = !show;
+
+    if (reasonField) {
+        reasonField.value = "";
+        autoResizeDeleteReasonTextarea(reasonField);
+    }
+
+    if (show && reasonField) {
+        setTimeout(() => reasonField.focus(), 0);
+    }
+
+    if (!show) {
+        deleteRequestPostId = null;
     }
 
     updateDialogBodyLock();
@@ -177,9 +206,10 @@ async function loadPost(postId){
         <div class="single-content">
             ${post.content}
         </div>
-
+        ${renderPostDeleteButton(post)} 
         ${renderAttachments(post.attachments)} 
         ${renderCommentsSection(postId)} 
+        ${renderPostDeleteDialog()}
     </div>
     `;
     loadComments(postId); // Φόρτωση των σχολίων μετά την απόδοση του post
@@ -319,6 +349,43 @@ async function loadComments(postId){
         });
 
 }
+// Αν post ανήκει στον τρέχοντα χρήστη, εμφανίζει κουμπί διαγραφής
+function renderPostDeleteButton(post){
+    // Ελέγχουμε αν ο χρήστης είναι ο δημιουργός του post
+    const currentUser = window.currentUserId;
+    // Αν δεν είναι, δεν εμφανίζουμε το κουμπί διαγραφής
+    if(post.user_id != currentUser){
+        return "";
+    }
+
+    const hasRequestedDelete = Number(post.has_requested_delete) === 1 || post.has_requested_delete === true;
+
+    return `
+        <div class="post-delete-section">
+            <button class="post-delete-request-btn${hasRequestedDelete ? " is-disabled" : ""}" data-id="${post.post_id}" data-delete-requested="${hasRequestedDelete ? "1" : "0"}" aria-disabled="${hasRequestedDelete ? "true" : "false"}" aria-label="Request post deletion" title="${hasRequestedDelete ? "Deletion request already submitted" : "Request post deletion"}">
+                Request post deletion
+            </button>
+        </div>
+    `;
+}
+
+function renderPostDeleteDialog(){
+    return `
+    <div id="postDeleteRequestDialog" class="comment-policy-dialog" hidden>
+        <form id="postDeleteRequestForm" class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="postDeleteRequestTitle">
+            <h4 id="postDeleteRequestTitle">Request Post Deletion</h4>
+            <p>Please explain why this post should be deleted.</p>
+            <textarea id="postDeleteRequestReason" class="delete-request-reason" rows="1" placeholder="Write your reason..." required></textarea>
+            <div class="comment-policy-actions">
+                <button type="button" id="postDeleteRequestCancel" class="policy-link cancel">Cancel</button>
+                <button type="submit" class="policy-link accept">Submit</button>
+            </div>
+        </form>
+    </div>
+    `;
+}
+
+
 // Toggle εμφάνισης συνημμένων αρχείων
 document.addEventListener("click", function (event) {
     const dialog = document.getElementById("commentPolicyDialog");
@@ -331,6 +398,12 @@ document.addEventListener("click", function (event) {
     const deleteDialog = document.getElementById("deleteRequestDialog");
     if (deleteDialog && event.target === deleteDialog) {
         toggleDeleteRequestDialog(false);
+        return;
+    }
+
+    const postDeleteDialog = document.getElementById("postDeleteRequestDialog");
+    if (postDeleteDialog && event.target === postDeleteDialog) {
+        togglePostDeleteRequestDialog(false);
         return;
     }
 
@@ -360,6 +433,12 @@ document.addEventListener("click", function (event) {
     const deleteCancelBtn = event.target.closest("#deleteRequestCancel");
     if (deleteCancelBtn) {
         toggleDeleteRequestDialog(false);
+        return;
+    }
+
+    const postDeleteCancelBtn = event.target.closest("#postDeleteRequestCancel");
+    if (postDeleteCancelBtn) {
+        togglePostDeleteRequestDialog(false);
         return;
     }
 
@@ -430,7 +509,7 @@ document.addEventListener("submit", async function(e){
 
 document.addEventListener("input", function (event) {
     if (event.target.id !== "commentContent") {
-        if (event.target.id === "deleteRequestReason") {
+        if (event.target.id === "deleteRequestReason" || event.target.id === "postDeleteRequestReason") {
             autoResizeDeleteReasonTextarea(event.target);
         }
         return;
@@ -444,6 +523,12 @@ document.addEventListener("input", function (event) {
 
 document.addEventListener("keydown", function (event) {
     if (event.key !== "Escape") {
+        return;
+    }
+
+    const postDeleteDialog = document.getElementById("postDeleteRequestDialog");
+    if (postDeleteDialog && !postDeleteDialog.hidden) {
+        togglePostDeleteRequestDialog(false);
         return;
     }
 
@@ -544,4 +629,80 @@ document.addEventListener("submit", async function (event) {
 
     }
 
+});
+// Post deletion request
+document.addEventListener("click", function(event){
+    // Εντοπισμός του κουμπιού διαγραφής που πατήθηκε
+    const button = event.target.closest(".post-delete-request-btn");
+    if(!button){
+        return;
+    }
+
+    if (button.dataset.deleteRequested === "1") {
+        showInlineNotice("You have already submitted a delete request for this post.", "error");
+        return;
+    }
+
+    deleteRequestPostId = button.dataset.id || null;
+    if(!deleteRequestPostId){
+        return;
+    }
+
+    togglePostDeleteRequestDialog(true);
+});
+
+document.addEventListener("submit", async function(event){
+    if (event.target.id !== "postDeleteRequestForm") {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (!deleteRequestPostId) {
+        togglePostDeleteRequestDialog(false);
+        return;
+    }
+
+    const reasonField = document.getElementById("postDeleteRequestReason");
+    const reason = reasonField ? reasonField.value.trim() : "";
+    if (reason === "") {
+        if (reasonField) {
+            reasonField.focus();
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=requestDelete",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    post_id: deleteRequestPostId,
+                    reason: reason
+                })
+            }
+        );
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || "Request failed");
+        }
+
+        togglePostDeleteRequestDialog(false);
+        showInlineNotice(result.message || "Post delete request submitted", "success");
+
+        const activeButton = document.querySelector(`.post-delete-request-btn[data-id="${deleteRequestPostId}"]`);
+        if (activeButton) {
+            activeButton.dataset.deleteRequested = "1";
+            activeButton.classList.add("is-disabled");
+            activeButton.setAttribute("aria-disabled", "true");
+            activeButton.setAttribute("title", "Deletion request already submitted");
+        }
+    } catch (error) {
+        showInlineNotice(error.message || "Failed to submit post delete request.", "error");
+    }
 });
