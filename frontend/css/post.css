@@ -1,718 +1,792 @@
-/* =========================
-   Βασικό στυλ σελίδας
-========================= */
+/* ========================================
+   1) Βασικά
+======================================== */
 
-body{
+body {
     font-family: Arial, Helvetica, sans-serif;
-    background:#f4f4f4;
+    background: #f4f4f4;
 }
 
+/* ========================================
+   2) Κεντρικό container
+======================================== */
 
-/* =========================
-   Κεντρικό container
-========================= */
-
-.post-container{
-    max-width:720px;
-    margin:50px auto;
-
-    background:white;
-    padding:30px;
-
-    border-radius:12px;
-    box-shadow:0 4px 20px rgba(0,0,0,0.08);
-}
-.post-container h2{
-    margin-bottom:25px;
-    font-size:28px;
+.post-container {
+    max-width: 720px;
+    margin: 50px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* =========================
-   Φόρμα create post
-========================= */
+.post-container h2 {
+    margin-bottom: 25px;
+    font-size: 28px;
+}
+
+/* ========================================
+   3) Φόρμα create post
+======================================== */
 
 input,
 textarea,
-select{
-    width:100%;
-    padding:12px;
-    margin-bottom:18px;
-
-    border:1px solid #dcdcdc;
-    border-radius:8px;
-
-    font-size:15px;
-
-    transition:border 0.2s;
+select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 18px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border 0.2s;
 }
 
 input:focus,
 textarea:focus,
-select:focus{
-    outline:none;
-    border-color:#3b82f6;
-}
-textarea{
-    height:160px;
-    resize:vertical;
-    line-height:1.5;
+select:focus {
+    outline: none;
+    border-color: #3b82f6;
 }
 
-/* labels */
-
-label{
-    display:block;
-    margin-bottom:6px;
-    font-weight:600;
+textarea {
+    height: 160px;
+    resize: vertical;
+    line-height: 1.5;
 }
 
-/* κουμπί */
-button{
-    background:#2563eb;
-    color:white;
-
-    border:none;
-    padding:12px 22px;
-
-    border-radius:8px;
-    cursor:pointer;
-
-    font-size:15px;
-    font-weight:600;
-
-    transition:background 0.2s;
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
 }
 
-button:hover{
-    background:#1d4ed8;
+button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background 0.2s;
 }
 
-/* =========================
-   Create post response
-========================= */
-
-.response-message{
-    display:none;
-    margin-top:14px;
-    padding:10px 12px;
-    border-radius:6px;
-    font-size:14px;
+button:hover {
+    background: #1d4ed8;
 }
 
-.response-message.success{
-    display:block;
-    background:#e8f7ee;
-    color:#116b3a;
-    border:1px solid #a9dfbf;
+/* ========================================
+   4) Μηνύματα απόκρισης (create post)
+======================================== */
+
+.response-message {
+    display: none;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
-.response-message.error{
-    display:block;
-    background:#fdecec;
-    color:#8f1d1d;
-    border:1px solid #f3b6b6;
+.response-message.success,
+.response-message.error {
+    display: block;
 }
 
-.selected-files{
-    display:block;
-    margin-top:10px;
-    margin-bottom:4px;
-    color:#4b5563;
-    font-size:12px;
+.response-message.success {
+    background: #e8f7ee;
+    color: #116b3a;
+    border: 1px solid #a9dfbf;
 }
 
-.attachments-upload{
-    margin-top:16px;
-    margin-bottom:22px;
-    padding:18px;
-    border:1px solid #d8e1ef;
-    border-radius:14px;
-    background:linear-gradient(180deg, #fbfdff 0%, #f5f8fd 100%);
-    box-shadow:0 2px 10px rgba(15, 23, 42, 0.05);
+.response-message.error {
+    background: #fdecec;
+    color: #8f1d1d;
+    border: 1px solid #f3b6b6;
 }
 
-.attachments-title{
-    font-size:16px;
-    font-weight:700;
-    color:#1f2e45;
+/* ========================================
+   5) Upload συνημμένων (create post)
+======================================== */
+
+.attachments-upload {
+    margin-top: 16px;
+    margin-bottom: 22px;
+    padding: 18px;
+    border: 1px solid #d8e1ef;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fbfdff 0%, #f5f8fd 100%);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
 }
 
-.attachments-head{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:12px;
+.attachments-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2e45;
 }
 
-.attachments-head-text{
-    min-width:0;
+.attachments-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.attachments-hint{
-    display:block;
-    margin-top:4px;
-    font-size:12px;
-    color:#64748b;
+.attachments-head-text {
+    min-width: 0;
 }
 
-#attachmentsInput{
-    width:100%;
-    margin-bottom:0;
-    padding:10px;
-    border:1px dashed #9db4de;
-    border-radius:8px;
-    background:#ffffff;
+.attachments-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #64748b;
 }
 
-#attachmentsInput::file-selector-button{
-    margin-right:10px;
-    padding:8px 12px;
-    border:none;
-    border-radius:6px;
-    background:#1f6feb;
-    color:#ffffff;
-    cursor:pointer;
+#attachmentsInput {
+    width: 100%;
+    margin-bottom: 0;
+    padding: 10px;
+    border: 1px dashed #9db4de;
+    border-radius: 8px;
+    background: #fff;
 }
 
-#attachmentsInput::file-selector-button:hover{
-    background:#1857b7;
+#attachmentsInput::file-selector-button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #1f6feb;
+    color: #fff;
+    cursor: pointer;
 }
 
-.attachments-native-input{
-    position:absolute;
-    width:1px;
-    height:1px;
-    margin:-1px;
-    padding:0;
-    border:0;
-    overflow:hidden;
-    clip:rect(0 0 0 0);
-    clip-path:inset(50%);
+#attachmentsInput::file-selector-button:hover {
+    background: #1857b7;
 }
 
-.attachments-choose-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    min-height:32px;
-    padding:0 12px;
-    border-radius:8px;
-    border:1px solid #cad6eb;
-    background:#ffffff;
-    color:#49618d;
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
-    white-space:nowrap;
-    flex-shrink:0;
-    box-shadow:none;
-    transition:transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+.attachments-native-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
 }
 
-.attachments-choose-btn:hover{
-    background:#f4f7fc;
-    border-color:#b8c8e3;
-    color:#35517f;
-    transform:none;
-    box-shadow:none;
+.attachments-choose-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #cad6eb;
+    background: #fff;
+    color: #49618d;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: none;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.attachments-choose-btn:hover {
+    background: #f4f7fc;
+    border-color: #b8c8e3;
+    color: #35517f;
+    transform: none;
+    box-shadow: none;
 }
 
 .attachments-native-input:focus + .attachments-choose-btn,
-.attachments-choose-btn:focus-visible{
-    outline:none;
-    box-shadow:0 0 0 3px rgba(155, 179, 226, 0.35);
+.attachments-choose-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(155, 179, 226, 0.35);
 }
 
-.selected-files{
-    margin-top:12px;
-    margin-bottom:0;
-    color:#506079;
-    font-size:13px;
-    font-weight:500;
+.selected-files {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 0;
+    color: #506079;
+    font-size: 13px;
+    font-weight: 500;
 }
 
+/* ========================================
+   6) Feed posts (posts.php)
+======================================== */
 
-/* =========================
-   Feed posts (posts.php)
-========================= */
-
-/* link που περιέχει το card */
-
-.post-link{
-    text-decoration:none;
-    color:inherit;
-    display:block;
+.post-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
-/* κάρτα post */
-.post-card{
-    border:1px solid #e5e5e5;
-    padding:20px;
-    margin-bottom:15px;
-
-    border-radius:10px;
-    background:white;
-
-    cursor:pointer;
-
-    transition:all 0.25s ease;
+.post-card {
+    border: 1px solid #e5e5e5;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
 
-/* hover effect */
-
-.post-card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
-    border-color:#007bff;
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: #007bff;
 }
 
-
-/* τίτλος post */
-.post-title{
-    margin:0;
-    font-size:22px;
-    font-weight:600;
+.post-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
 }
 
-/* πληροφορίες post */
-.post-meta{
-    color:#777;
-    margin-top:8px;
-    font-size:14px;
-
-    display:flex;
-    align-items:center;
-    gap:8px;
+.post-meta {
+    color: #777;
+    margin-top: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-
-/* =========================
-   Category badge
-========================= */
-.category-badge{
-    display:inline-block;
-
-    background:#eef4ff;
-    color:#2c5cc5;
-
-    padding:4px 10px;
-    border-radius:20px;
-
-    font-size:12px;
+.category-badge {
+    display: inline-block;
+    background: #eef4ff;
+    color: #2c5cc5;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
 }
 
-/* =========================
-   Single post page
-========================= */
+/* ========================================
+   7) Single post page
+======================================== */
 
-.single-post{
-    max-width:700px;
+.single-post {
+    max-width: 700px;
 }
 
-/* τίτλος */
-
-.single-title{
-    font-size:34px;
-    margin-bottom:10px;
+.single-title {
+    font-size: 34px;
+    margin-bottom: 10px;
 }
 
-/* meta info */
-
-.single-meta{
-    display:flex;
-    align-items:center;
-    gap:10px;
-
-    color:#666;
-    font-size:14px;
-
-    margin-bottom:25px;
-}
-/* τελείες μεταξύ meta */
-
-.meta-separator{
-    color:#aaa;
+.single-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 25px;
 }
 
-/* περιεχόμενο post */
-/* κενό πριν content για να μην κολλάει με το meta info */
-
-.single-content{
-    font-size:18px;
-    line-height:1.7;
-
-    margin-top:20px;
+.meta-separator {
+    color: #aaa;
 }
 
-/* =========================
-   Back link
-========================= */
-
-.back-link{
-    display:inline-block;
-
-    margin-bottom:20px;
-
-    text-decoration:none;
-    color:#007bff;
+.single-content {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-top: 20px;
 }
 
-.back-link:hover{
-    text-decoration:underline;
-}
-/* modern attachments section on post view */
-
-.attachments-panel{
-    margin-top:26px;
-    border:1px solid #d9e2f1;
-    border-radius:12px;
-    background:#fbfdff;
-    overflow:hidden;
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #007bff;
 }
 
-.attachments-toggle{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 16px;
-    background:linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
-    color:#0f2a56;
-    border:none;
-    border-bottom:1px solid #d9e2f1;
-    font-size:15px;
-    font-weight:700;
-    cursor:pointer;
+.back-link:hover {
+    text-decoration: underline;
 }
 
-.attachments-count{
-    min-width:30px;
-    text-align:center;
-    padding:3px 8px;
-    border-radius:999px;
-    background:#1f6feb;
-    color:#fff;
-    font-size:12px;
-    font-weight:700;
+/* ========================================
+   8) Attachments panel (single post)
+======================================== */
+
+.attachments-panel {
+    margin-top: 26px;
+    border: 1px solid #d9e2f1;
+    border-radius: 12px;
+    background: #fbfdff;
+    overflow: hidden;
 }
 
-.attachments-list{
-    padding:12px;
-    background:#ffffff;
+.attachments-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+    color: #0f2a56;
+    border: none;
+    border-bottom: 1px solid #d9e2f1;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
 }
 
-.attachment-item{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    padding:10px 12px;
-    border:1px solid #e5ebf5;
-    border-radius:9px;
-    background:#fff;
+.attachments-count {
+    min-width: 30px;
+    text-align: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #1f6feb;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.attachment-item + .attachment-item{
-    margin-top:10px;
+.attachments-list {
+    padding: 12px;
+    background: #fff;
 }
 
-.attachment-meta{
-    display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    gap:8px;
+.attachment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e5ebf5;
+    border-radius: 9px;
+    background: #fff;
 }
 
-.attachment-name{
-    color:#1f2937;
-    font-size:14px;
-    font-weight:600;
+.attachment-item + .attachment-item {
+    margin-top: 10px;
 }
 
-.attachment-name-wrap{
-    display:inline-flex;
-    align-items:center;
-    gap:7px;
+.attachment-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
 }
 
-.attachment-doc-badge{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    min-width:30px;
-    height:18px;
-    padding:0 6px;
-    border-radius:999px;
-    background:#eaf1ff;
-    border:1px solid #c9d8f8;
-    color:#1f4fa3;
-    font-size:10px;
-    font-weight:700;
-    letter-spacing:0.3px;
+.attachment-name {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-.attachment-size{
-    color:#6b7280;
-    font-size:12px;
+.attachment-name-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
 }
 
-.attachment-action{
-    text-decoration:none;
-    color:#fff;
-    background:#1f6feb;
-    padding:7px 12px;
-    border-radius:7px;
-    font-size:12px;
-    font-weight:700;
+.attachment-doc-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #eaf1ff;
+    border: 1px solid #c9d8f8;
+    color: #1f4fa3;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
 }
 
-.attachment-action:hover{
-    background:#1857b7;
+.attachment-size {
+    color: #6b7280;
+    font-size: 12px;
 }
 
-@media (max-width: 640px){
-    .attachment-item{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    .attachment-action{
-        width:100%;
-        text-align:center;
-    }
+.attachment-action {
+    text-decoration: none;
+    color: #fff;
+    background: #1f6feb;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-
-/* COMMENTS */
-
-.comments-section{
-    margin-top:30px;
+.attachment-action:hover {
+    background: #1857b7;
 }
 
-#commentsList{
-    max-height:260px;
-    overflow-y:auto;
-    overscroll-behavior:contain;
-    scrollbar-gutter:stable;
-    scrollbar-width:thin;
-    scrollbar-color:#c3d1ea #eef3fb;
-    padding:8px;
-    border:1px solid #e2e8f3;
-    border-radius:12px;
-    background:#fdfefe;
+/* ========================================
+   9) Comments
+======================================== */
+
+.comments-section {
+    margin-top: 30px;
 }
 
-#commentsList::-webkit-scrollbar{
-    width:8px;
+#commentsList {
+    max-height: 260px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #c3d1ea #eef3fb;
+    padding: 8px;
+    border: 1px solid #e2e8f3;
+    border-radius: 12px;
+    background: #fdfefe;
 }
 
-#commentsList::-webkit-scrollbar-track{
-    background:#eef3fb;
-    border-radius:999px;
+#commentsList::-webkit-scrollbar {
+    width: 8px;
 }
 
-#commentsList::-webkit-scrollbar-thumb{
-    background:#c3d1ea;
-    border-radius:999px;
+#commentsList::-webkit-scrollbar-track {
+    background: #eef3fb;
+    border-radius: 999px;
 }
 
-#commentsList::-webkit-scrollbar-thumb:hover{
-    background:#aebfdd;
+#commentsList::-webkit-scrollbar-thumb {
+    background: #c3d1ea;
+    border-radius: 999px;
 }
 
-.comment{
-    margin-top:12px;
-    padding:10px 14px;
-
-    border-radius:10px;
-    background:#fafafa;
-    border:1px solid #eee;
+#commentsList::-webkit-scrollbar-thumb:hover {
+    background: #aebfdd;
 }
 
-.comment-header{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    margin-top:8px;
-
-    font-size:13px;
+.comment {
+    position: relative;
+    margin-top: 12px;
+    padding: 10px 36px 10px 14px;
+    border-radius: 10px;
+    background: #fafafa;
+    border: 1px solid #eee;
 }
 
-.comment-user{
-    font-weight:400;
-    font-size:10px;
-    color:#222;
+.comment-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 13px;
 }
 
-.comment-time{
-    color:#777;
-    font-size:10px;
+.comment-user {
+    font-weight: 400;
+    font-size: 10px;
+    color: #222;
 }
 
-.comment-text{
-    margin-top:0;
-    font-size:11px;
-    font-weight:600;
-}
-.comment-form{
-    display:block;
-    margin-top:15px;
-    padding:14px;
-    border:1px solid #dde6f3;
-    border-radius:12px;
-    background:#fbfdff;
+.comment-time {
+    color: #777;
+    font-size: 10px;
 }
 
-.comment-input-wrap{
-    position:relative;
+.comment-text {
+    margin-top: 0;
+    font-size: 11px;
+    font-weight: 600;
 }
 
-.comment-form textarea{
-    width:100%;
-    min-height:44px;
-    margin-bottom:0;
-    max-height:220px;
-    padding:10px 54px 10px 12px;
-    border:1px solid #cfd9e8;
-    border-radius:10px;
-    font-size:14px;
-    line-height:1.4;
-    background:#ffffff;
-    resize:none;
-    overflow:hidden;
-    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+.comment-form {
+    display: block;
+    margin-top: 15px;
+    padding: 14px;
+    border: 1px solid #dde6f3;
+    border-radius: 12px;
+    background: #fbfdff;
 }
 
-.comment-form textarea::placeholder{
-    color:#9aa6bc;
+.comment-input-wrap {
+    position: relative;
 }
 
-.comment-form textarea:focus{
-    outline:none;
-    border-color:#89a8ee;
-    box-shadow:0 0 0 2px rgba(102, 143, 230, 0.14);
+.comment-form textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    max-height: 220px;
+    margin-bottom: 0;
+    padding: 10px 54px 10px 12px;
+    border: 1px solid #cfd9e8;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    background: #fff;
+    resize: none;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.comment-send-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    width:auto;
-    height:auto;
-    position:absolute;
-    right:12px;
-    bottom:12px;
-    padding:0;
-    border-radius:0;
-    font-weight:600;
-    font-size:14px;
-    line-height:1;
-    background:none;
-    border:none;
-    box-shadow:none;
+.comment-form textarea::placeholder {
+    color: #9aa6bc;
 }
 
-.comment-send-btn:disabled{
-    color:#bcc8e8;
-    cursor:default;
+.comment-form textarea:focus {
+    outline: none;
+    border-color: #89a8ee;
+    box-shadow: 0 0 0 2px rgba(102, 143, 230, 0.14);
 }
 
-.comment-send-btn:not(:disabled){
-    color:#5b78d6;
-    cursor:pointer;
+.comment-send-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 0;
+    border-radius: 0;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    background: none;
+    border: none;
+    box-shadow: none;
 }
 
-.comment-send-btn:not(:disabled):hover{
-    color:#4464c9;
-    background:none;
-    text-decoration:none;
+.comment-send-btn:disabled {
+    color: #bcc8e8;
+    cursor: default;
+}
+
+.comment-send-btn:not(:disabled) {
+    color: #5b78d6;
+    cursor: pointer;
+}
+
+.comment-send-btn:not(:disabled):hover {
+    color: #4464c9;
+    background: none;
+    text-decoration: none;
 }
 
 .comment-send-btn:focus,
-.comment-send-btn:focus-visible{
-    outline:none;
-    background:none;
-    text-decoration:none;
+.comment-send-btn:focus-visible {
+    outline: none;
+    background: none;
+    text-decoration: none;
 }
 
-.comment-policy-dialog{
-    position:fixed;
-    inset:0;
-    z-index:1300;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:14px;
-    background:rgba(15, 23, 42, 0.28);
+.comment-policy-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(15, 23, 42, 0.28);
 }
 
-.comment-policy-dialog[hidden]{
-    display:none !important;
+.comment-policy-dialog[hidden] {
+    display: none !important;
 }
 
-.comment-policy-card{
-    width:min(420px, 100%);
-    background:#fff;
-    border:1px solid #dbe4f3;
-    border-radius:12px;
-    padding:14px;
-    box-shadow:0 14px 30px rgba(15, 23, 42, 0.2);
+.comment-policy-card {
+    width: min(420px, 100%);
+    background: #fff;
+    border: 1px solid #dbe4f3;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
 }
 
-.comment-policy-card h4{
-    margin:0 0 6px;
-    font-size:18px;
-    color:#233250;
+.comment-policy-card h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #233250;
 }
 
-.comment-policy-card p{
-    margin:0;
-    color:#5d687b;
-    font-size:13px;
-    line-height:1.45;
+.comment-policy-card p {
+    margin: 0;
+    color: #5d687b;
+    font-size: 13px;
+    line-height: 1.45;
 }
 
-.comment-policy-actions{
-    margin-top:12px;
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
+.comment-policy-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
-.policy-link{
-    border:none;
-    border-radius:8px;
-    padding:7px 12px;
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
+.policy-link {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.policy-link.cancel{
-    background:#eef2f8;
-    color:#4f5f78;
+.policy-link.cancel {
+    background: #eef2f8;
+    color: #4f5f78;
 }
 
-.policy-link.accept{
-    background:#2f66df;
-    color:#fff;
+.policy-link.accept {
+    background: #2f66df;
+    color: #fff;
 }
 
-.policy-link.accept:hover{
-    background:#2453bc;
+.policy-link.accept:hover {
+    background: #2453bc;
 }
 
-.policy-link.cancel:hover{
-    background:#e4e9f1;
+.policy-link.cancel:hover {
+    background: #e4e9f1;
 }
 
-body.comment-dialog-open{
-    overflow:hidden;
+body.comment-dialog-open {
+    overflow: hidden;
 }
 
-@media (max-width: 640px){
-    .comment-send-btn{
-        font-size:15px;
+.delete-request-form {
+    width: min(420px, 100%);
+}
+
+.delete-request-reason {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 12px;
+    margin-bottom: 0;
+    padding: 10px 12px;
+    border: 1px solid #cfd9e8;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: none;
+    min-height: 44px;
+    max-height: 180px;
+    overflow: hidden;
+}
+
+.delete-request-reason:focus {
+    outline: none;
+    border-color: #89a8ee;
+    box-shadow: 0 0 0 2px rgba(102, 143, 230, 0.14);
+}
+
+.delete-request-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    appearance: none;
+    color: #b6bcc8;
+    opacity: 0.55;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    transition: color 0.2s ease, opacity 0.2s ease, font-weight 0.2s ease;
+    text-decoration: none;
+}
+
+.delete-request-btn:hover {
+    color: #dc2626;
+    opacity: 1;
+    font-weight: 700;
+    background: none;
+    text-decoration: none;
+}
+
+.delete-request-btn:focus,
+.delete-request-btn:focus-visible {
+    outline: none;
+    color: #dc2626;
+    opacity: 1;
+    font-weight: 700;
+    background: none;
+    text-decoration: none;
+}
+
+.delete-request-btn.is-disabled {
+    color: #c4c9d3;
+    opacity: 0.45;
+    font-weight: 500;
+}
+
+.delete-request-btn.is-disabled:hover,
+.delete-request-btn.is-disabled:focus,
+.delete-request-btn.is-disabled:focus-visible {
+    color: #c4c9d3;
+    opacity: 0.45;
+    font-weight: 500;
+    background: none;
+}
+
+.inline-notice {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1500;
+    max-width: min(420px, calc(100vw - 36px));
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+}
+
+.inline-notice.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.inline-notice.success {
+    background: #e9f8ef;
+    color: #16613b;
+    border-color: #b7e4c7;
+}
+
+.inline-notice.error {
+    background: #fef0f0;
+    color: #8d2222;
+    border-color: #f3c1c1;
+}
+
+/* ========================================
+   10) Responsive
+======================================== */
+
+@media (max-width: 640px) {
+    .attachment-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .attachment-action {
+        width: 100%;
+        text-align: center;
+    }
+
+    .comment-send-btn {
+        font-size: 15px;
     }
 }

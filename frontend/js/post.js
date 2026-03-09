@@ -37,6 +37,40 @@ function autoResizeCommentTextarea(textarea){
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
 }
 
+function autoResizeDeleteReasonTextarea(textarea){
+    if (!textarea) {
+        return;
+    }
+
+    textarea.style.height = "auto";
+    const maxHeight = 180;
+    const nextHeight = Math.min(textarea.scrollHeight, maxHeight);
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+}
+
+function showInlineNotice(message, type = "success"){
+    const existing = document.getElementById("inlineNotice");
+    if (existing) {
+        existing.remove();
+    }
+
+    const notice = document.createElement("div");
+    notice.id = "inlineNotice";
+    notice.className = `inline-notice ${type}`;
+    notice.textContent = message;
+    document.body.appendChild(notice);
+
+    requestAnimationFrame(() => {
+        notice.classList.add("visible");
+    });
+
+    setTimeout(() => {
+        notice.classList.remove("visible");
+        setTimeout(() => notice.remove(), 220);
+    }, 2500);
+}
+
 function updateCommentSubmitState(textarea){
     const submitBtn = document.querySelector("#commentForm .comment-send-btn");
     if (!textarea || !submitBtn) {
@@ -53,6 +87,18 @@ function initCommentComposer(){
 }
 
 let commentPolicyAccepted = false;
+let deleteRequestCommentId = null;
+
+function updateDialogBodyLock(){
+    const commentDialog = document.getElementById("commentPolicyDialog");
+    const deleteDialog = document.getElementById("deleteRequestDialog");
+    const hasOpenDialog = Boolean(
+        (commentDialog && !commentDialog.hidden) ||
+        (deleteDialog && !deleteDialog.hidden)
+    );
+
+    document.body.classList.toggle("comment-dialog-open", hasOpenDialog);
+}
 
 function toggleCommentPolicyNotice(show){
     const dialog = document.getElementById("commentPolicyDialog");
@@ -61,7 +107,33 @@ function toggleCommentPolicyNotice(show){
     }
 
     dialog.hidden = !show;
-    document.body.classList.toggle("comment-dialog-open", show);
+    updateDialogBodyLock();
+}
+
+function toggleDeleteRequestDialog(show){
+    const dialog = document.getElementById("deleteRequestDialog");
+    const reasonField = document.getElementById("deleteRequestReason");
+
+    if (!dialog) {
+        return;
+    }
+
+    dialog.hidden = !show;
+
+    if (reasonField) {
+        reasonField.value = "";
+        autoResizeDeleteReasonTextarea(reasonField);
+    }
+
+    if (show && reasonField) {
+        setTimeout(() => reasonField.focus(), 0);
+    }
+
+    if (!show) {
+        deleteRequestCommentId = null;
+    }
+
+    updateDialogBodyLock();
 }
 
 
@@ -192,6 +264,18 @@ return `
         </div>
     </form>
 
+    <div id="deleteRequestDialog" class="comment-policy-dialog" hidden>
+        <form id="deleteRequestForm" class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="deleteRequestTitle">
+            <h4 id="deleteRequestTitle">Request Comment Deletion</h4>
+            <p>Please explain why this comment should be removed.</p>
+            <textarea id="deleteRequestReason" class="delete-request-reason" rows="1" placeholder="Write your reason..." required></textarea>
+            <div class="comment-policy-actions">
+                <button type="button" id="deleteRequestCancel" class="policy-link cancel">Cancel</button>
+                <button type="submit" class="policy-link accept">Submit request</button>
+            </div>
+        </form>
+    </div>
+
 </section>
 `;
 }
@@ -211,8 +295,14 @@ async function loadComments(postId){
     // Ταξινόμηση σχολίων από το πιο πρόσφατο προς το πιο παλιό
     comments.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     comments.forEach(comment => {
+        const hasRequestedDelete = Number(comment.has_requested_delete) === 1 || comment.has_requested_delete === true;
+
         container.innerHTML += `
         <div class="comment">
+
+            <button class="delete-request-btn${hasRequestedDelete ? " is-disabled" : ""}" data-id="${comment.comment_id}" data-delete-requested="${hasRequestedDelete ? "1" : "0"}" aria-disabled="${hasRequestedDelete ? "true" : "false"}" aria-label="Request comment deletion" title="${hasRequestedDelete ? "Deletion request already submitted" : "Request deletion"}">
+                x
+            </button>
 
             <div class="comment-text">
                 ${comment.comment_content}
@@ -238,6 +328,12 @@ document.addEventListener("click", function (event) {
         return;
     }
 
+    const deleteDialog = document.getElementById("deleteRequestDialog");
+    if (deleteDialog && event.target === deleteDialog) {
+        toggleDeleteRequestDialog(false);
+        return;
+    }
+
     const acceptBtn = event.target.closest("#commentPolicyAccept");
     if (acceptBtn) {
         commentPolicyAccepted = true;
@@ -258,6 +354,12 @@ document.addEventListener("click", function (event) {
     if (cancelBtn) {
         commentPolicyAccepted = false;
         toggleCommentPolicyNotice(false);
+        return;
+    }
+
+    const deleteCancelBtn = event.target.closest("#deleteRequestCancel");
+    if (deleteCancelBtn) {
+        toggleDeleteRequestDialog(false);
         return;
     }
 
@@ -328,6 +430,9 @@ document.addEventListener("submit", async function(e){
 
 document.addEventListener("input", function (event) {
     if (event.target.id !== "commentContent") {
+        if (event.target.id === "deleteRequestReason") {
+            autoResizeDeleteReasonTextarea(event.target);
+        }
         return;
     }
 
@@ -342,6 +447,12 @@ document.addEventListener("keydown", function (event) {
         return;
     }
 
+    const deleteDialog = document.getElementById("deleteRequestDialog");
+    if (deleteDialog && !deleteDialog.hidden) {
+        toggleDeleteRequestDialog(false);
+        return;
+    }
+
     const dialog = document.getElementById("commentPolicyDialog");
     if (!dialog || dialog.hidden) {
         return;
@@ -349,4 +460,88 @@ document.addEventListener("keydown", function (event) {
 
     commentPolicyAccepted = false;
     toggleCommentPolicyNotice(false);
+});
+// Comment deletion request
+document.addEventListener("click", function (event) {
+    // Εντοπισμός του κουμπιού διαγραφής που πατήθηκε
+    const button = event.target.closest(".delete-request-btn");
+    if (!button) {
+        return;
+    }
+
+    if (button.dataset.deleteRequested === "1") {
+        showInlineNotice("You have already submitted a delete request for this comment.", "error");
+        return;
+    }
+
+    deleteRequestCommentId = button.dataset.id || null;
+    if (!deleteRequestCommentId) {
+        return;
+    }
+
+    toggleDeleteRequestDialog(true);
+});
+
+document.addEventListener("submit", async function (event) {
+    if (event.target.id !== "deleteRequestForm") {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (!deleteRequestCommentId) {
+        toggleDeleteRequestDialog(false);
+        return;
+    }
+
+    const reasonField = document.getElementById("deleteRequestReason");
+    const reason = reasonField ? reasonField.value.trim() : "";
+    if (reason === "") {
+        if (reasonField) {
+            reasonField.focus();
+        }
+        return;
+    }
+
+    // Αποστολή του αιτήματος διαγραφής στο backend
+    try {
+
+        const response = await fetch(
+            "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=requestDelete",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    comment_id: deleteRequestCommentId,
+                    reason: reason
+                })
+            }
+        );
+        const result = await response.json();
+
+        // Έλεγχος της απόκρισης από το backend
+        if (!response.ok) {
+            throw new Error(result.message || "Request failed");
+        }
+
+        toggleDeleteRequestDialog(false);
+        // Ενημέρωση χωρίς blocking browser alert
+        showInlineNotice(result.message || "Your delete request was submitted for moderation.", "success");
+
+        const activeButton = document.querySelector(`.delete-request-btn[data-id="${deleteRequestCommentId}"]`);
+        if (activeButton) {
+            activeButton.dataset.deleteRequested = "1";
+            activeButton.classList.add("is-disabled");
+            activeButton.setAttribute("aria-disabled", "true");
+            activeButton.setAttribute("title", "Deletion request already submitted");
+        }
+    } catch (error) {
+
+        console.error("Delete request error:", error);
+        showInlineNotice(error.message || "Failed to submit delete request.", "error");
+
+    }
+
 });

@@ -42,7 +42,6 @@ $post_id = $_GET['id'];
 <script>
 loadPost(<?php echo $post_id; ?>);
 </script>
-
 </body>
 
 </html>
