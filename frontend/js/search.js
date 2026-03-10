@@ -6,14 +6,8 @@ $(document).ready(function() {
         let category = $('#category').val();
         let sort = $('#sort').val();
         let followedOnly = $('#followedOnly').is(':checked');
-        let followedByUserId = $('#followedByUserId').val();
         let from = $('#from').val();
         let to = $('#to').val();
-
-        if (followedOnly && !followedByUserId) {
-            $('#results').text('Enter a current user ID to use followed-user filtering.');
-            return;
-        }
 
         $.ajax({
             url: '../backend/controllers/search_controllers.php',
@@ -23,7 +17,7 @@ $(document).ready(function() {
                 keyword: keyword,
                 category: category,
                 sort: sort,
-                followed_by_user_id: followedOnly ? followedByUserId : '',
+                followed_only: followedOnly ? '1' : '',
                 from: from,
                 to: to
             },

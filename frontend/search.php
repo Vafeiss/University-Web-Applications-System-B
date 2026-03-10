@@ -49,16 +49,15 @@ try {
         <option value="title_desc">Title Z-A</option>
       </select>
 
-      <input type="number" id="followedByUserId" min="1" placeholder="Current User ID for follows">
-      <label>
-        <input type="checkbox" id="followedOnly">
-        Followed Users Only
-      </label>
-
       <input type="date" id="from">
       <input type="date" id="to">
 
       <button id="searchBtn">Search</button>
+
+      <label class="checkbox-filter">
+        <input type="checkbox" id="followedOnly">
+        Followed Users Only
+      </label>
     </div>
 
     <div id="results"></div>

@@ -22,8 +22,10 @@ h2{
 .filters{
   display:flex;
   gap:10px;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
+  align-items:center;
   margin-bottom: 18px;
+  overflow-x:auto;
 }
 
 .filters input, .filters select{
@@ -31,6 +33,24 @@ h2{
   border:1px solid #ccc;
   border-radius:8px;
   font-size:14px;
+}
+
+#keyword{
+  min-width: 220px;
+}
+
+#category,
+#sort,
+#from,
+#to{
+  min-width: 150px;
+}
+
+.checkbox-filter{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
 }
 
 .filters button{

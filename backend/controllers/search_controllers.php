@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config/db.php';
@@ -10,8 +12,8 @@ $category = (isset($_GET['category']) && $_GET['category'] !== '') ? (int)$_GET[
 $status   = (isset($_GET['status']) && $_GET['status'] !== '') ? (int)$_GET['status'] : null;
 $from     = (isset($_GET['from']) && $_GET['from'] !== '') ? $_GET['from'] : null;
 $to       = (isset($_GET['to']) && $_GET['to'] !== '') ? $_GET['to'] : null;
-$followedByUserId = (isset($_GET['followed_by_user_id']) && $_GET['followed_by_user_id'] !== '')
-    ? (int) $_GET['followed_by_user_id']
+$followedByUserId = isset($_GET['followed_only']) && $_GET['followed_only'] !== ''
+    ? (isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null)
     : null;
 $sort     = trim($_GET['sort'] ?? 'newest');
 
