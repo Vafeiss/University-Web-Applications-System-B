@@ -6,6 +6,8 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+/* Έλεγχος αν ο χρήστης είναι admin  για εμφανιση anonymous posts */
+$isAdmin = ($_SESSION['role'] ?? '') === 'admin';
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +31,11 @@ if (!isset($_SESSION['user_id'])) {
 <div id="postsList"></div>
 
 </div>
+<!-- Προσθήκη JavaScript για φόρτωση των posts σε admin -->
+<script>
+const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
+</script>
+
 <!-- Προσθήκη JavaScript για φόρτωση των posts -->
 <script src="js/posts.js"></script>
 

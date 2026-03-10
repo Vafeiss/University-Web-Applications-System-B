@@ -17,7 +17,7 @@
  * Access Level:
  * - Authenticated users only
  *
- * Author: Your Name
+ * Author: Pelagia Koniotaki
  */
 /**
  * Dashboard Page

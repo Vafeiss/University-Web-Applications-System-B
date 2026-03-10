@@ -28,9 +28,10 @@ class PostModel {
             ':is_anonymous' => $is_anonymous
         ]);
 
-    // επιστρέφει το ID του post ,με post_id ως primary key, για να χρησιμοποιηθεί για την αποθήκευση των attachments
-    return $this->conn->lastInsertId();
-}
+        // επιστρέφει το ID του post ,με post_id ως primary key, για να χρησιμοποιηθεί για την αποθήκευση των attachments
+        return $this->conn->lastInsertId();
+    }
+
     // Save attachment
     public function saveAttachment($post_id, $file_name, $file_path, $file_size, $file_type) {
 
@@ -52,26 +53,26 @@ class PostModel {
     // Show_Post()
     public function getApprovedPosts() {
 
-    $query = "SELECT p.*, u.username, c.name AS category
-              FROM posts p
-              JOIN users u ON p.user_id = u.user_id
-              LEFT JOIN categories c ON p.category_id = c.category_id
-              WHERE p.status = 1 AND p.deleted = 0
-              ORDER BY p.timestamp DESC";
+        $query = "SELECT p.*, u.username, c.name AS category
+                  FROM posts p
+                  JOIN users u ON p.user_id = u.user_id
+                  LEFT JOIN categories c ON p.category_id = c.category_id
+                  WHERE p.status = 1 AND p.deleted = 0
+                  ORDER BY p.timestamp DESC";
 
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute();
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getPostById($post_id) {
-        // φορτώνει ένα post μαζί με το username του δημιουργού και την κατηγορία 
+                // φορτώνει ένα post μαζί με το username του δημιουργού και την κατηγορία
         $query = "SELECT p.*, u.username, c.name AS category
-          FROM posts p
-          JOIN users u ON p.user_id = u.user_id
-          LEFT JOIN categories c ON p.category_id = c.category_id
-          WHERE p.post_id = :post_id";
+                                    FROM posts p
+                                    JOIN users u ON p.user_id = u.user_id
+                                    LEFT JOIN categories c ON p.category_id = c.category_id
+                                    WHERE p.post_id = :post_id";
 
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':post_id' => $post_id]);
@@ -93,72 +94,117 @@ class PostModel {
             ':post_id' => $post_id
         ]);
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-// Delete_Post()
-    public function postDeleteRequestExists($post_id,$user_id){
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-    $query = "SELECT request_id
-              FROM post_delete_requests
-              WHERE post_id = :post_id
-              AND requested_by = :user_id";
+    // Delete_Post()
+    public function postDeleteRequestExists($post_id, $user_id) {
 
-    $stmt = $this->conn->prepare($query);
+        $query = "SELECT request_id
+                  FROM post_delete_requests
+                  WHERE post_id = :post_id
+                  AND requested_by = :user_id";
 
-    $stmt->execute([
-        ":post_id"=>$post_id,
-        ":user_id"=>$user_id
-    ]);
+        $stmt = $this->conn->prepare($query);
 
-    return $stmt->fetch() ? true : false;
-}
-// Create post delete request
-public function createPostDeleteRequest($post_id,$user_id,$reason){
+        $stmt->execute([
+            ":post_id" => $post_id,
+            ":user_id" => $user_id
+        ]);
 
-    $query = "INSERT INTO post_delete_requests
-              (post_id, requested_by, reason)
-              VALUES (:post_id,:user_id,:reason)";
+        return $stmt->fetch() ? true : false;
+    }
 
-    $stmt = $this->conn->prepare($query);
+    // Create post delete request
+    public function createPostDeleteRequest($post_id, $user_id, $reason) {
 
-    return $stmt->execute([
-        ":post_id"=>$post_id,
-        ":user_id"=>$user_id,
-        ":reason"=>$reason
-    ]);
-}
+        $query = "INSERT INTO post_delete_requests
+                  (post_id, requested_by, reason)
+                  VALUES (:post_id, :user_id, :reason)";
 
-public function postReportExists($post_id, $user_id){
+        $stmt = $this->conn->prepare($query);
 
-    $query = "SELECT report_id
-              FROM content_reports
-              WHERE content_type = 'post'
-              AND content_id = :post_id
-              AND reported_by = :user_id
-              LIMIT 1";
+        return $stmt->execute([
+            ":post_id" => $post_id,
+            ":user_id" => $user_id,
+            ":reason" => $reason
+        ]);
+    }
 
-    $stmt = $this->conn->prepare($query);
+    public function postReportExists($post_id, $user_id) {
 
-    $stmt->execute([
-        ":post_id" => $post_id,
-        ":user_id" => $user_id
-    ]);
+        $query = "SELECT report_id
+                  FROM content_reports
+                  WHERE content_type = 'post'
+                  AND content_id = :post_id
+                  AND reported_by = :user_id
+                  LIMIT 1";
 
-    return $stmt->fetch() ? true : false;
-}
+        $stmt = $this->conn->prepare($query);
 
-public function createPostReport($post_id, $user_id, $reason){
+        $stmt->execute([
+            ":post_id" => $post_id,
+            ":user_id" => $user_id
+        ]);
 
-    $query = "INSERT INTO content_reports
-              (content_type, content_id, reported_by, reason)
-              VALUES ('post', :post_id, :user_id, :reason)";
+        return $stmt->fetch() ? true : false;
+    }
 
-    $stmt = $this->conn->prepare($query);
+    public function createPostReport($post_id, $user_id, $reason) {
 
-    return $stmt->execute([
-        ":post_id" => $post_id,
-        ":user_id" => $user_id,
-        ":reason" => $reason
-    ]);
-}
+        $query = "INSERT INTO content_reports
+                  (content_type, content_id, reported_by, reason)
+                  VALUES ('post', :post_id, :user_id, :reason)";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            ":post_id" => $post_id,
+            ":user_id" => $user_id,
+            ":reason" => $reason
+        ]);
+    }
+
+    // approve post by admin
+    public function approvePost($post_id) {
+        // Ενημέρωση της κατάστασης του post σε "approved" (status = 1)
+        $query = "UPDATE posts
+                  SET status = 1
+                  WHERE post_id = :post_id";
+        // Εκτέλεση του query
+        $stmt = $this->conn->prepare($query);
+        // Επιστροφή του αποτελέσματος του query
+        return $stmt->execute([
+            ":post_id" => $post_id
+        ]);
+    }
+
+    // reject post by admin
+    public function rejectPost($post_id) {
+
+        $query = "UPDATE posts
+                  SET status = 2
+                  WHERE post_id = :post_id";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            ":post_id" => $post_id
+        ]);
+    }
+
+    public function getPendingPosts() {
+
+        $query = "SELECT p.*, u.username, c.name AS category
+                  FROM posts p
+                  JOIN users u ON p.user_id = u.user_id
+                  LEFT JOIN categories c ON p.category_id = c.category_id
+                  WHERE p.status = 0
+                  ORDER BY p.timestamp DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

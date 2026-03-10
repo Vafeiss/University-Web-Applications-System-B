@@ -1,5 +1,19 @@
 // Φορτώνει τα posts όταν ανοίγει η σελίδα
 document.addEventListener("DOMContentLoaded", loadPosts);
+// Λειτουργία για να πάρουμε το όνομα του συγγραφέα, λαμβάνοντας υπόψη την ανωνυμία
+function getAuthorName(post) {
+
+    if (post.is_anonymous == 1 && !isAdmin) {
+        return "Anonymous";
+    }
+
+    if (post.is_anonymous == 1 && isAdmin) {
+        return `Anonymous (${post.username})`;
+    }
+
+    return post.username;
+}
+
 // Λειτουργία για φόρτωση των posts
 async function loadPosts(){
     // Κάνουμε αίτημα στον backend για να πάρουμε τα εγκεκριμένα posts
@@ -28,8 +42,8 @@ async function loadPosts(){
                         <span class="category-badge">
                             ${post.category ?? "General"}
                         </span>
-                            • ${post.username}  
-                        </div>
+                            • ${getAuthorName(post)}   
+                    </div>
                 </a>
                 `;
                 // Toggle εμφάνιση περιεχομένου όταν πατηθεί το post

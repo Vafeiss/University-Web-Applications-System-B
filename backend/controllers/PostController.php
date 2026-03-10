@@ -105,12 +105,7 @@ class PostController extends BaseController {
 
     // Show_Post()
     public function list() {
-
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-
-        $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+        $isAdmin = $this->isAdmin();
 
         $posts = $this->postModel->getApprovedPosts();
 
@@ -139,12 +134,9 @@ class PostController extends BaseController {
             "message" => "Post deleted"
         ]);
     }
+
     // Get_Post()
     public function get() {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-
         // Επιστρέφει ένα post με βάση το ID, μαζί με τα attachments του
         if (!isset($_GET['id'])) {
             $this->jsonResponse(["message" => "Post not found"], 404);
@@ -174,8 +166,8 @@ class PostController extends BaseController {
         }
         unset($attachment);
 
-        $currentUserId = $_SESSION['user_id'] ?? null;
-        $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+        $currentUserId = $this->getCurrentUserId();
+        $isAdmin = $this->isAdmin();
 
         if (!$isAdmin && !empty($post['is_anonymous'])) {
             $post['username'] = 'Anonymous';
@@ -259,6 +251,53 @@ class PostController extends BaseController {
 
         $this->jsonResponse(["message" => "Post report submitted"]);
     }
+    public function pending() {
+
+        $this->requireLogin();
+
+        if ($_SESSION['role'] !== 'admin') {
+            $this->jsonResponse(["message" => "Admin access required"], 403);
+        }
+
+        $posts = $this->postModel->getPendingPosts();
+
+        $this->jsonResponse($posts);
+    }
+    // approve post by admin
+    public function approve() {
+        // Έλεγχος αν ο χρήστης είναι admin
+        $this->requireAdmin();
+
+        if (!isset($_GET['id'])) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $post_id = $_GET['id'];
+
+        $this->postModel->approvePost($post_id);
+
+        $this->jsonResponse([
+            "message" => "Post approved"
+        ]);
+    }
+
+    // reject post by admin
+    public function reject() {
+
+        $this->requireAdmin();
+
+        if (!isset($_GET['id'])) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $post_id = $_GET['id'];
+
+        $this->postModel->rejectPost($post_id);
+
+        $this->jsonResponse([
+            "message" => "Post rejected"
+        ]);
+    }
 }
 
 // Βασικός router για το PostController
@@ -287,6 +326,15 @@ if (isset($_GET['action'])) {
             break;
         case 'requestReport':
             $controller->requestReport();
+            break;
+        case 'pending':
+        $controller->pending();
+        break;
+        case 'approve':
+            $controller->approve();
+            break;
+        case 'reject':
+            $controller->reject();
             break;
     }
 }

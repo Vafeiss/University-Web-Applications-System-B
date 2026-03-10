@@ -11,7 +11,7 @@
  * - Does not reveal whether email exists
  * - Token expires after 1 hour
  *
- * Author: Your Name
+ * Author: Pelagia Koniotaki
  */
 session_start();
 

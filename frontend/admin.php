@@ -20,7 +20,7 @@
  * - Role validation handled in middleware
  * - Output escaping with htmlspecialchars()
  *
- * Author: Your Name
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

@@ -22,7 +22,7 @@
  *
  * Public Access: YES
  *
- * Author: Your Name
+ * Author: Pelagia Koniotaki
  */
 session_start();
 

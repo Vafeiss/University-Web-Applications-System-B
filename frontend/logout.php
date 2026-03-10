@@ -10,7 +10,7 @@
  * - session_unset()
  * - session_destroy()
  *
- * Author: Your Name
+ * Author: Pelagia Koniotaki
  */
 session_start();
 
