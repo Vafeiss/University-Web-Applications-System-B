@@ -16,6 +16,19 @@ if (!isset($_GET['id'])) {
 $post_id = $_GET['id'];
 $css_version = filemtime(__DIR__ . '/css/post.css');
 $js_version = filemtime(__DIR__ . '/js/post.js');
+$is_admin_preview = isset($_GET['admin_preview']) && $_GET['admin_preview'] === '1';
+$admin_source = $_GET['admin_source'] ?? '';
+
+if ($is_admin_preview && $admin_source === 'reports') {
+    $back_href = 'admin_reports.php';
+    $back_label = 'Back to reported posts';
+} elseif ($is_admin_preview) {
+    $back_href = 'admin_pending_posts.php';
+    $back_label = 'Back to pending posts';
+} else {
+    $back_href = 'posts.php';
+    $back_label = 'Back to posts';
+}
 ?>
 
 <!DOCTYPE html>
@@ -31,7 +44,7 @@ $js_version = filemtime(__DIR__ . '/js/post.js');
 <body>
 
 <div class="post-container">
-<a href="posts.php" class="back-link">← Back to posts</a>
+<a href="<?php echo $back_href; ?>" class="back-link">← <?php echo $back_label; ?></a>
 
 <!-- εδώ θα εμφανιστεί το post -->
 <div id="post"></div>

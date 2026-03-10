@@ -1,0 +1,145 @@
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #f4f7fc 0%, #eef3fb 100%);
+    color: #1e293b;
+}
+
+.pending-page {
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 16px 28px;
+}
+
+.pending-page-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #142b53;
+}
+
+.pending-page-header p {
+    margin: 8px 0 0;
+    color: #5f6f89;
+    font-size: 15px;
+}
+
+.pending-feedback {
+    margin-top: 16px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.pending-feedback.success {
+    background: #eaf8ef;
+    border-color: #b9e3c8;
+    color: #1f6a3a;
+}
+
+.pending-feedback.error {
+    background: #fdeff0;
+    border-color: #efc3c6;
+    color: #8b2330;
+}
+
+.pending-grid {
+    margin-top: 20px;
+    display: grid;
+    gap: 14px;
+}
+
+.pending-card {
+    background: #ffffff;
+    border: 1px solid #dbe4f2;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+}
+
+.pending-card h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #10264b;
+}
+
+.pending-title-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.pending-title-link:hover {
+    text-decoration: underline;
+    color: #1d4f9b;
+}
+
+.pending-meta {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: #5d6c86;
+}
+
+.pending-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #edf3ff;
+    color: #2e4f8f;
+    font-weight: 600;
+}
+
+.pending-content {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+.pending-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+
+.pending-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pending-btn.approve {
+    background: #2f9e44;
+    color: #fff;
+}
+
+.pending-btn.approve:hover {
+    background: #257f37;
+}
+
+.pending-btn.reject {
+    background: #fdecef;
+    color: #9c3d48;
+}
+
+.pending-btn.reject:hover {
+    background: #f9d9de;
+}
+
+.pending-state {
+    border: 1px dashed #c9d6ea;
+    border-radius: 12px;
+    background: #f8fbff;
+    color: #5d6c86;
+    padding: 22px;
+    text-align: center;
+    font-weight: 600;
+}

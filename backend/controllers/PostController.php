@@ -252,12 +252,8 @@ class PostController extends BaseController {
         $this->jsonResponse(["message" => "Post report submitted"]);
     }
     public function pending() {
-
-        $this->requireLogin();
-
-        if ($_SESSION['role'] !== 'admin') {
-            $this->jsonResponse(["message" => "Admin access required"], 403);
-        }
+        // χρηση base controller για να ελέγξει αν ο χρήστης είναι admin
+        $this->requireAdmin();
 
         $posts = $this->postModel->getPendingPosts();
 
@@ -267,12 +263,16 @@ class PostController extends BaseController {
     public function approve() {
         // Έλεγχος αν ο χρήστης είναι admin
         $this->requireAdmin();
-
+        // Έλεγχος αν υπάρχει id
         if (!isset($_GET['id'])) {
             $this->jsonResponse(["message" => "Post ID required"], 400);
         }
-
-        $post_id = $_GET['id'];
+        // Έλεγχος αν υπάρχει το post
+        $post_id = $_GET['id'] ?? null;
+        
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+    }
 
         $this->postModel->approvePost($post_id);
 
@@ -290,7 +290,11 @@ class PostController extends BaseController {
             $this->jsonResponse(["message" => "Post ID required"], 400);
         }
 
-        $post_id = $_GET['id'];
+        $post_id = $_GET['id'] ?? null;
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
 
         $this->postModel->rejectPost($post_id);
 
@@ -298,6 +302,93 @@ class PostController extends BaseController {
             "message" => "Post rejected"
         ]);
     }
+    // get delete requests for admin
+    public function deleteRequests() {
+
+        $this->requireAdmin();
+
+        $requests = $this->postModel->getDeleteRequests();
+
+        $this->jsonResponse($requests);
+    }   // επιστρεφει json με ολα τα pending delete requests για τα posts
+    
+    // approve delete request,  καλείται οταν admin πατησει approve σε ένα delete request, και διαγράφει το post
+    public function approveDelete() {
+
+        $this->requireAdmin();
+        // Έλεγχος αν υπάρχει id
+        $request_id = $_GET['id'] ?? null;
+
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+        // Έλεγχος αν υπάρχει το request
+        $this->postModel->approveDeleteRequest($request_id);
+
+        $this->jsonResponse([
+            "message" => "Delete request approved"
+        ]);
+    }
+    public function rejectDelete() {
+
+        $this->requireAdmin();
+
+        $request_id = $_GET['id'] ?? null;
+
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+
+        $this->postModel->rejectDeleteRequest($request_id);
+
+        $this->jsonResponse([
+            "message" => "Delete request rejected"
+        ]);
+    }
+    // επιστρέφει όλα τα reports που έχουν γίνει για posts, μαζί με τα στοιχεία του post και του χρήστη που έκανε το report
+    public function reports(){
+
+        $this->requireAdmin();
+
+        $reports = $this->postModel->getReportedContent();
+
+        $this->jsonResponse($reports);
+    }
+    // approve report, καλείται όταν admin πατήσει approve σε ένα report, και διαγράφει το post
+    public function approveReport(){
+
+        $this->requireAdmin();
+
+        $report_id = $_GET['id'] ?? null;
+
+        if(!$report_id){
+        $this->jsonResponse(["message"=>"Report ID required"],400);
+        }
+
+        $this->postModel->approveReport($report_id);
+
+        $this->jsonResponse([
+            "message"=>"Post removed"
+        ]);
+    }
+        public function rejectReport(){
+
+        $this->requireAdmin();
+
+        $report_id = $_GET['id'] ?? null;
+
+        if(!$report_id){
+            $this->jsonResponse(["message"=>"Report ID required"],400);
+        }
+
+        $this->postModel->rejectReport($report_id);
+
+        $this->jsonResponse([
+            "message"=>"Report rejected"
+        ]);
+    
+}
+
 }
 
 // Βασικός router για το PostController
@@ -315,8 +406,8 @@ if (isset($_GET['action'])) {
             $controller->list();
             break;
 
-        case 'delete':  // Delete_Post()
-            $controller->delete($_GET['id']);
+        case 'delete':
+            $controller->delete($_GET['id'] ?? null);
             break;
         case 'get':  // Get_Post()
             $controller->get();
@@ -336,5 +427,27 @@ if (isset($_GET['action'])) {
         case 'reject':
             $controller->reject();
             break;
-    }
+        case 'deleteRequests':  // Get delete requests for admin
+            $controller->deleteRequests();
+            break;
+
+        case 'approveDelete':   // Approve delete request
+            $controller->approveDelete();
+            break;
+
+        case 'rejectDelete': // Reject delete request
+            $controller->rejectDelete();
+            break;
+        case 'reports':
+            $controller->reports();
+            break;
+
+        case 'approveReport':
+            $controller->approveReport();
+            break;
+
+        case 'rejectReport':
+            $controller->rejectReport();
+            break;
+        }
 }

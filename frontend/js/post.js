@@ -49,6 +49,11 @@ function autoResizeDeleteReasonTextarea(textarea){
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
 }
 
+function isAdminPreviewMode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("admin_preview") === "1";
+}
+
 function showInlineNotice(message, type = "success"){
     const existing = document.getElementById("inlineNotice");
     if (existing) {
@@ -204,6 +209,7 @@ async function loadPost(postId){
     );
 
     const post = await response.json();
+    const adminPreviewMode = isAdminPreviewMode();
 
     const container = document.getElementById("post");
 
@@ -235,15 +241,18 @@ async function loadPost(postId){
         <div class="single-content">
             ${post.content}
         </div>
-        ${renderPostDeleteButton(post)} 
-        ${renderPostReportButton(post)}
+        ${adminPreviewMode ? "" : renderPostDeleteButton(post)} 
+        ${adminPreviewMode ? "" : renderPostReportButton(post)}
         ${renderAttachments(post.attachments)} 
-        ${renderCommentsSection(postId)} 
-        ${renderPostDeleteDialog()}
-        ${renderPostReportDialog()}
+        ${adminPreviewMode ? "" : renderCommentsSection(postId)} 
+        ${adminPreviewMode ? "" : renderPostDeleteDialog()}
+        ${adminPreviewMode ? "" : renderPostReportDialog()}
     </div>
     `;
-    loadComments(postId); // Φόρτωση των σχολίων μετά την απόδοση του post
+
+    if (!adminPreviewMode) {
+        loadComments(postId); // Φόρτωση των σχολίων μετά την απόδοση του post
+    }
 }
 // Εμφάνιση των συνημμένων αρχείων
 function renderAttachments(attachments){
