@@ -6,7 +6,7 @@ body{
 }
 
 .container{
-  max-width: 950px;
+  max-width: 1250px;
   margin: 40px auto;
   background: white;
   padding: 25px;
@@ -22,10 +22,17 @@ h2{
 .filters{
   display:flex;
   gap:10px;
-  flex-wrap:nowrap;
+  flex-wrap:wrap;
   align-items:center;
   margin-bottom: 18px;
-  overflow-x:auto;
+}
+
+.filters-wrap{
+  margin-bottom: 18px;
+}
+
+.filters-follow{
+  margin-top: 6px;
 }
 
 .filters input, .filters select{
@@ -36,14 +43,14 @@ h2{
 }
 
 #keyword{
-  min-width: 220px;
+  min-width: 200px;
 }
 
 #category,
 #sort,
 #from,
 #to{
-  min-width: 150px;
+  min-width: 135px;
 }
 
 .checkbox-filter{
@@ -54,13 +61,14 @@ h2{
 }
 
 .filters button{
-  padding:10px 18px;
+  padding:8px 14px;
   border:none;
   border-radius:8px;
   background:#2563eb;
   color:white;
   font-weight:bold;
   cursor:pointer;
+  font-size:13px;
 }
 
 .filters button:hover{

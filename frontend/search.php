@@ -30,34 +30,38 @@ try {
       <p><?= htmlspecialchars($loadError, ENT_QUOTES, 'UTF-8') ?></p>
     <?php endif; ?>
 
-    <div class="filters">
-      <input type="text" id="keyword" placeholder="Search by keyword">
+    <div class="filters-wrap">
+      <div class="filters">
+        <input type="text" id="keyword" placeholder="Search by keyword">
 
-      <select id="category">
-        <option value="">All Categories</option>
-        <?php foreach ($categories as $category): ?>
-          <option value="<?= (int) $category['category_id'] ?>">
-            <?= htmlspecialchars((string) $category['name'], ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
+        <select id="category">
+          <option value="">All Categories</option>
+          <?php foreach ($categories as $category): ?>
+            <option value="<?= (int) $category['category_id'] ?>">
+              <?= htmlspecialchars((string) $category['name'], ENT_QUOTES, 'UTF-8') ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
 
-      <select id="sort">
-        <option value="newest">Newest First</option>
-        <option value="oldest">Oldest First</option>
-        <option value="title_asc">Title A-Z</option>
-        <option value="title_desc">Title Z-A</option>
-      </select>
+        <select id="sort">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="title_asc">Title A-Z</option>
+          <option value="title_desc">Title Z-A</option>
+        </select>
 
-      <input type="date" id="from">
-      <input type="date" id="to">
+        <input type="date" id="from">
+        <input type="date" id="to">
 
-      <button id="searchBtn">Search</button>
+        <button id="searchBtn">Search</button>
+      </div>
 
-      <label class="checkbox-filter">
-        <input type="checkbox" id="followedOnly">
-        Followed Users Only
-      </label>
+      <div class="filters-follow">
+        <label class="checkbox-filter">
+          <input type="checkbox" id="followedOnly">
+          Followed Users Only
+        </label>
+      </div>
     </div>
 
     <div id="results"></div>
