@@ -41,7 +41,7 @@ $(document).ready(function() {
                     const meta = $('<p>').text(
                         'Category: ' + (post.category_name || 'Uncategorized') +
                         ' | Author: ' + post.username +
-                        ' | Date: ' + post.timestamp
+                        ' | Date: ' + post.created_at
                     );
                     const content = $('<p>').text(post.content);
 

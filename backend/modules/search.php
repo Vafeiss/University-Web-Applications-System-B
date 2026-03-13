@@ -21,8 +21,8 @@ final class Search
         string $sort = 'newest'
     ): array {
         $sortMap = [
-            'newest' => 'p.timestamp DESC',
-            'oldest' => 'p.timestamp ASC',
+            'newest' => 'p.created_at DESC',
+            'oldest' => 'p.created_at ASC',
             'title_asc' => 'p.title ASC',
             'title_desc' => 'p.title DESC',
         ];
@@ -31,11 +31,11 @@ final class Search
 
         $sql = '
             SELECT
-                p.post_id,
+                p.id,
                 p.user_id,
                 p.title,
                 p.content,
-                p.timestamp,
+                p.created_at,
                 p.status,
                 p.category_id,
                 c.name AS category_name,
@@ -59,11 +59,11 @@ final class Search
         }
 
         if ($from !== null && $from !== '') {
-            $sql .= ' AND p.timestamp >= :from';
+            $sql .= ' AND p.created_at >= :from';
         }
 
         if ($to !== null && $to !== '') {
-            $sql .= ' AND p.timestamp <= :to';
+            $sql .= ' AND p.created_at <= :to';
         }
 
         if ($followedByUserId !== null) {
