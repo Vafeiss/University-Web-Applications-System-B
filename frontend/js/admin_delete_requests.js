@@ -19,10 +19,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const response = await fetch(
+            const { response, data: result } = await fetchJsonNoStore(
                 `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=${action}&id=${requestId}`
             );
-            const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(result.message || "Request failed");
@@ -37,7 +36,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+        loadDeleteRequests();
+    }
+});
+
 let deleteRequestsFeedbackTimer;
+
+async function fetchJsonNoStore(url, options = {}) {
+    const response = await fetch(url, {
+        cache: "no-store",
+        ...options
+    });
+    const data = await response.json();
+
+    return { response, data };
+}
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -74,11 +89,10 @@ async function loadDeleteRequests() {
     container.innerHTML = '<div class="pending-state">Loading delete requests...</div>';
 
     try {
-        const response = await fetch(
+        const { response, data: requests } = await fetchJsonNoStore(
             "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=deleteRequests"
         );
 
-        const requests = await response.json();
         if (!response.ok) {
             throw new Error(requests.message || "Failed to load delete requests");
         }

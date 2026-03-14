@@ -20,10 +20,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         try {
-            const response = await fetch(
+            const { response, data: result } = await fetchJsonNoStore(
                 `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=${action}&id=${postId}`
             );
-            const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(result.message || "Request failed");
@@ -39,7 +38,23 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+        loadPendingPosts();
+    }
+});
+
 let pendingFeedbackTimer;
+
+async function fetchJsonNoStore(url, options = {}) {
+    const response = await fetch(url, {
+        cache: "no-store",
+        ...options
+    });
+    const data = await response.json();
+
+    return { response, data };
+}
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -76,10 +91,9 @@ async function loadPendingPosts() {
     container.innerHTML = '<div class="pending-state">Loading pending posts...</div>';
 
     try {
-        const response = await fetch(
+        const { response, data: posts } = await fetchJsonNoStore(
             "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=pending"
         );
-        const posts = await response.json();
 
         if (!response.ok) {
             throw new Error(posts.message || "Could not load pending posts");

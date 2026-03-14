@@ -54,6 +54,20 @@ function isAdminPreviewMode() {
     return params.get("admin_preview") === "1";
 }
 
+function getAdminSource() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("admin_source") || "";
+}
+
+function isCommentDeleteAdminSource() {
+    const source = getAdminSource();
+    return source === "comment_delete_requests" || source === "dashboard_comment_delete_requests";
+}
+
+function isDashboardPostsSource() {
+    return window.isAdminSession === true && getAdminSource() === "dashboard_posts";
+}
+
 function showInlineNotice(message, type = "success"){
     const existing = document.getElementById("inlineNotice");
     if (existing) {
@@ -95,17 +109,23 @@ let commentPolicyAccepted = false;
 let deleteRequestCommentId = null;
 let deleteRequestPostId = null;
 let reportPostId = null;
+let adminDeletePostId = null;
+let adminDeleteCommentId = null;
 
 function updateDialogBodyLock(){
     const commentDialog = document.getElementById("commentPolicyDialog");
     const deleteDialog = document.getElementById("deleteRequestDialog");
     const postDeleteDialog = document.getElementById("postDeleteRequestDialog");
     const postReportDialog = document.getElementById("postReportDialog");
+    const adminPostDeleteDialog = document.getElementById("adminPostDeleteDialog");
+    const adminCommentDeleteDialog = document.getElementById("adminCommentDeleteDialog");
     const hasOpenDialog = Boolean(
         (commentDialog && !commentDialog.hidden) ||
         (deleteDialog && !deleteDialog.hidden) ||
         (postDeleteDialog && !postDeleteDialog.hidden) ||
-        (postReportDialog && !postReportDialog.hidden)
+        (postReportDialog && !postReportDialog.hidden) ||
+        (adminPostDeleteDialog && !adminPostDeleteDialog.hidden) ||
+        (adminCommentDeleteDialog && !adminCommentDeleteDialog.hidden)
     );
 
     document.body.classList.toggle("comment-dialog-open", hasOpenDialog);
@@ -199,6 +219,58 @@ function togglePostReportDialog(show){
     updateDialogBodyLock();
 }
 
+function toggleAdminPostDeleteDialog(show){
+    const dialog = document.getElementById("adminPostDeleteDialog");
+
+    if (!dialog) {
+        return;
+    }
+
+    dialog.hidden = !show;
+
+    if (!show) {
+        adminDeletePostId = null;
+        const confirmButton = document.getElementById("adminPostDeleteConfirm");
+        if (confirmButton) {
+            confirmButton.disabled = false;
+        }
+    }
+
+    updateDialogBodyLock();
+}
+
+function toggleAdminCommentDeleteDialog(show){
+    const dialog = document.getElementById("adminCommentDeleteDialog");
+
+    if (!dialog) {
+        return;
+    }
+
+    dialog.hidden = !show;
+
+    if (!show) {
+        adminDeleteCommentId = null;
+        const confirmButton = document.getElementById("adminCommentDeleteConfirm");
+        if (confirmButton) {
+            confirmButton.disabled = false;
+        }
+    }
+
+    updateDialogBodyLock();
+}
+
+function renderPostActionControls(post, adminPreviewMode, dashboardPostsMode) {
+    if (adminPreviewMode) {
+        return "";
+    }
+
+    if (dashboardPostsMode) {
+        return `${renderAdminPostDeleteButton(post)}${renderAdminPostDeleteDialog()}`;
+    }
+
+    return `${renderPostDeleteButton(post)}${renderPostReportButton(post)}${renderPostDeleteDialog()}${renderPostReportDialog()}`;
+}
+
 
 /* Φόρτωση ενός post από το backend */
 
@@ -210,6 +282,8 @@ async function loadPost(postId){
 
     const post = await response.json();
     const adminPreviewMode = isAdminPreviewMode();
+    const dashboardPostsMode = !adminPreviewMode && isDashboardPostsSource();
+    const showComments = !adminPreviewMode || isCommentDeleteAdminSource();
 
     const container = document.getElementById("post");
 
@@ -241,17 +315,14 @@ async function loadPost(postId){
         <div class="single-content">
             ${post.content}
         </div>
-        ${adminPreviewMode ? "" : renderPostDeleteButton(post)} 
-        ${adminPreviewMode ? "" : renderPostReportButton(post)}
+        ${renderPostActionControls(post, adminPreviewMode, dashboardPostsMode)}
         ${renderAttachments(post.attachments)} 
-        ${adminPreviewMode ? "" : renderCommentsSection(postId)} 
-        ${adminPreviewMode ? "" : renderPostDeleteDialog()}
-        ${adminPreviewMode ? "" : renderPostReportDialog()}
+        ${showComments ? renderCommentsSection(postId, { readOnly: adminPreviewMode, adminDeleteMode: dashboardPostsMode }) : ""} 
     </div>
     `;
 
-    if (!adminPreviewMode) {
-        loadComments(postId); // Φόρτωση των σχολίων μετά την απόδοση του post
+    if (showComments) {
+        loadComments(postId, { readOnly: adminPreviewMode, adminDeleteMode: dashboardPostsMode }); // Φόρτωση σχολίων μετά την απόδοση του post
     }
 }
 // Εμφάνιση των συνημμένων αρχείων
@@ -299,7 +370,10 @@ function renderAttachments(attachments){
         return html;
 }
 // Εμφάνιση φόρμας σχολιασμού και λίστας σχολίων
-function renderCommentsSection(postId){
+function renderCommentsSection(postId, options = {}){
+
+const readOnly = options.readOnly === true;
+const adminDeleteMode = options.adminDeleteMode === true;
 
 return `
 <section class="comments-section">
@@ -308,6 +382,7 @@ return `
 
     <div id="commentsList"></div>
 
+    ${readOnly ? "" : `
     <form id="commentForm" class="comment-form">
         <div class="comment-input-wrap">
             <textarea 
@@ -345,12 +420,28 @@ return `
             </div>
         </form>
     </div>
+    ${adminDeleteMode ? `
+    <div id="adminCommentDeleteDialog" class="comment-policy-dialog" hidden>
+        <div class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="adminCommentDeleteTitle">
+            <h4 id="adminCommentDeleteTitle">Delete Comment</h4>
+            <p>This will remove the comment immediately. Are you sure you want to continue?</p>
+            <div class="comment-policy-actions">
+                <button type="button" id="adminCommentDeleteCancel" class="policy-link cancel">Cancel</button>
+                <button type="button" id="adminCommentDeleteConfirm" class="policy-link danger">Delete comment</button>
+            </div>
+        </div>
+    </div>
+    ` : ""}
+    `}
 
 </section>
 `;
 }
 // Φόρτωση των σχολίων για ένα post
-async function loadComments(postId){
+async function loadComments(postId, options = {}){
+
+    const readOnly = options.readOnly === true;
+    const adminDeleteMode = options.adminDeleteMode === true;
 
     const response = await fetch(
         "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=list&post_id=" + postId
@@ -366,13 +457,24 @@ async function loadComments(postId){
     comments.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     comments.forEach(comment => {
         const hasRequestedDelete = Number(comment.has_requested_delete) === 1 || comment.has_requested_delete === true;
+        const deleteButton = readOnly
+            ? ""
+            : adminDeleteMode
+            ? `
+            <button class="admin-comment-delete-btn" data-id="${comment.comment_id}" aria-label="Delete comment" title="Delete comment">
+                x
+            </button>
+            `
+            : `
+            <button class="delete-request-btn${hasRequestedDelete ? " is-disabled" : ""}" data-id="${comment.comment_id}" data-delete-requested="${hasRequestedDelete ? "1" : "0"}" aria-disabled="${hasRequestedDelete ? "true" : "false"}" aria-label="Request comment deletion" title="${hasRequestedDelete ? "Deletion request already submitted" : "Request deletion"}">
+                x
+            </button>
+            `;
 
         container.innerHTML += `
         <div class="comment">
 
-            <button class="delete-request-btn${hasRequestedDelete ? " is-disabled" : ""}" data-id="${comment.comment_id}" data-delete-requested="${hasRequestedDelete ? "1" : "0"}" aria-disabled="${hasRequestedDelete ? "true" : "false"}" aria-label="Request comment deletion" title="${hasRequestedDelete ? "Deletion request already submitted" : "Request deletion"}">
-                x
-            </button>
+            ${deleteButton}
 
             <div class="comment-text">
                 ${comment.comment_content}
@@ -409,6 +511,16 @@ function renderPostDeleteButton(post){
     `;
 }
 
+function renderAdminPostDeleteButton(post){
+    return `
+        <div class="post-delete-section">
+            <button class="admin-post-delete-btn" data-id="${post.post_id}" aria-label="Delete post" title="Delete post">
+                Delete post
+            </button>
+        </div>
+    `;
+}
+
 function renderPostReportButton(post){
     const currentUser = window.currentUserId;
     if(post.user_id == currentUser){
@@ -423,6 +535,21 @@ function renderPostReportButton(post){
                 Report post
             </button>
         </div>
+    `;
+}
+
+function renderAdminPostDeleteDialog(){
+    return `
+    <div id="adminPostDeleteDialog" class="comment-policy-dialog" hidden>
+        <div class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="adminPostDeleteTitle">
+            <h4 id="adminPostDeleteTitle">Delete Post</h4>
+            <p>This will remove the post immediately from the published posts list. Are you sure you want to continue?</p>
+            <div class="comment-policy-actions">
+                <button type="button" id="adminPostDeleteCancel" class="policy-link cancel">Cancel</button>
+                <button type="button" id="adminPostDeleteConfirm" class="policy-link danger">Delete post</button>
+            </div>
+        </div>
+    </div>
     `;
 }
 
@@ -486,6 +613,18 @@ document.addEventListener("click", function (event) {
         return;
     }
 
+    const adminPostDeleteDialog = document.getElementById("adminPostDeleteDialog");
+    if (adminPostDeleteDialog && event.target === adminPostDeleteDialog) {
+        toggleAdminPostDeleteDialog(false);
+        return;
+    }
+
+    const adminCommentDeleteDialog = document.getElementById("adminCommentDeleteDialog");
+    if (adminCommentDeleteDialog && event.target === adminCommentDeleteDialog) {
+        toggleAdminCommentDeleteDialog(false);
+        return;
+    }
+
     const acceptBtn = event.target.closest("#commentPolicyAccept");
     if (acceptBtn) {
         commentPolicyAccepted = true;
@@ -524,6 +663,18 @@ document.addEventListener("click", function (event) {
     const postReportCancelBtn = event.target.closest("#postReportCancel");
     if (postReportCancelBtn) {
         togglePostReportDialog(false);
+        return;
+    }
+
+    const adminPostDeleteCancelBtn = event.target.closest("#adminPostDeleteCancel");
+    if (adminPostDeleteCancelBtn) {
+        toggleAdminPostDeleteDialog(false);
+        return;
+    }
+
+    const adminCommentDeleteCancelBtn = event.target.closest("#adminCommentDeleteCancel");
+    if (adminCommentDeleteCancelBtn) {
+        toggleAdminCommentDeleteDialog(false);
         return;
     }
 
@@ -611,6 +762,18 @@ document.addEventListener("keydown", function (event) {
         return;
     }
 
+    const adminPostDeleteDialog = document.getElementById("adminPostDeleteDialog");
+    if (adminPostDeleteDialog && !adminPostDeleteDialog.hidden) {
+        toggleAdminPostDeleteDialog(false);
+        return;
+    }
+
+    const adminCommentDeleteDialog = document.getElementById("adminCommentDeleteDialog");
+    if (adminCommentDeleteDialog && !adminCommentDeleteDialog.hidden) {
+        toggleAdminCommentDeleteDialog(false);
+        return;
+    }
+
     const postReportDialog = document.getElementById("postReportDialog");
     if (postReportDialog && !postReportDialog.hidden) {
         togglePostReportDialog(false);
@@ -639,6 +802,17 @@ document.addEventListener("keydown", function (event) {
 });
 // Comment deletion request
 document.addEventListener("click", function (event) {
+    const adminDeleteButton = event.target.closest(".admin-comment-delete-btn");
+    if (adminDeleteButton) {
+        adminDeleteCommentId = adminDeleteButton.dataset.id || null;
+        if (!adminDeleteCommentId) {
+            return;
+        }
+
+        toggleAdminCommentDeleteDialog(true);
+        return;
+    }
+
     // Εντοπισμός του κουμπιού διαγραφής που πατήθηκε
     const button = event.target.closest(".delete-request-btn");
     if (!button) {
@@ -723,7 +897,112 @@ document.addEventListener("submit", async function (event) {
     }
 
 });
+
+document.addEventListener("click", async function (event) {
+    const button = event.target.closest("#adminCommentDeleteConfirm");
+    if (!button) {
+        return;
+    }
+
+    if (!adminDeleteCommentId) {
+        toggleAdminCommentDeleteDialog(false);
+        return;
+    }
+
+    button.disabled = true;
+
+    try {
+        const response = await fetch(
+            "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=adminDelete",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                cache: "no-store",
+                body: JSON.stringify({
+                    comment_id: adminDeleteCommentId
+                })
+            }
+        );
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to delete comment.");
+        }
+
+        toggleAdminCommentDeleteDialog(false);
+        showInlineNotice(result.message || "Comment deleted", "success");
+
+        const postId = new URLSearchParams(window.location.search).get("id");
+        if (postId) {
+            loadComments(postId, { readOnly: false, adminDeleteMode: isDashboardPostsSource() });
+        }
+    } catch (error) {
+        button.disabled = false;
+        showInlineNotice(error.message || "Failed to delete comment.", "error");
+    }
+});
 // Post deletion request
+document.addEventListener("click", function(event){
+    const button = event.target.closest(".admin-post-delete-btn");
+    if (!button) {
+        return;
+    }
+
+    adminDeletePostId = button.dataset.id || null;
+    if (!adminDeletePostId) {
+        return;
+    }
+
+    toggleAdminPostDeleteDialog(true);
+});
+
+document.addEventListener("click", async function(event){
+    const button = event.target.closest("#adminPostDeleteConfirm");
+    if (!button) {
+        return;
+    }
+
+    if (!adminDeletePostId) {
+        toggleAdminPostDeleteDialog(false);
+        return;
+    }
+
+    button.disabled = true;
+
+    try {
+        const response = await fetch(
+            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=adminDelete",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                cache: "no-store",
+                body: JSON.stringify({
+                    post_id: adminDeletePostId
+                })
+            }
+        );
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to delete post.");
+        }
+
+        toggleAdminPostDeleteDialog(false);
+        showInlineNotice(result.message || "Post deleted", "success");
+
+        setTimeout(() => {
+            window.location.href = "admin_dashboard.php?section=posts";
+        }, 650);
+    } catch (error) {
+        button.disabled = false;
+        showInlineNotice(error.message || "Failed to delete post.", "error");
+    }
+});
+
 document.addEventListener("click", function(event){
     // Εντοπισμός του κουμπιού διαγραφής που πατήθηκε
     const button = event.target.closest(".post-delete-request-btn");

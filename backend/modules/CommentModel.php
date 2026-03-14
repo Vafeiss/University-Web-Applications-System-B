@@ -92,6 +92,53 @@ class CommentModel {
         ]);
     }
 
+    public function adminDeleteComment($comment_id){
+
+        $this->conn->beginTransaction();
+
+        try {
+            $query = "DELETE FROM comments
+                      WHERE comment_id = :comment_id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ':comment_id' => $comment_id
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $query = "UPDATE comment_delete_requests
+                      SET status = 1
+                      WHERE comment_id = :comment_id AND status = 0";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ':comment_id' => $comment_id
+            ]);
+
+            $query = "UPDATE content_reports
+                      SET status = 1
+                      WHERE content_type = 'comment' AND content_id = :comment_id AND status = 0";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ':comment_id' => $comment_id
+            ]);
+
+            $this->conn->commit();
+            return true;
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
     
 
 }

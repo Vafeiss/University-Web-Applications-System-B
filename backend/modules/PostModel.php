@@ -66,6 +66,21 @@ class PostModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getAdminPosts() {
+
+        $query = "SELECT p.*, u.username, c.name AS category
+                  FROM posts p
+                  JOIN users u ON p.user_id = u.user_id
+                  LEFT JOIN categories c ON p.category_id = c.category_id
+                  WHERE p.status = 1 AND p.deleted = 0
+                  ORDER BY p.timestamp DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getPostById($post_id) {
                 // φορτώνει ένα post μαζί με το username του δημιουργού και την κατηγορία
         $query = "SELECT p.*, u.username, c.name AS category
@@ -163,6 +178,54 @@ class PostModel {
             ":user_id" => $user_id,
             ":reason" => $reason
         ]);
+    }
+
+    public function adminDeletePost($post_id) {
+
+        $this->conn->beginTransaction();
+
+        try {
+            $query = "UPDATE posts
+                      SET deleted = 1
+                      WHERE post_id = :post_id AND deleted = 0";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $query = "UPDATE post_delete_requests
+                      SET status = 1
+                      WHERE post_id = :post_id AND status = 0";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id
+            ]);
+
+            $query = "UPDATE content_reports
+                      SET status = 1
+                      WHERE content_type = 'post' AND content_id = :post_id AND status = 0";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id
+            ]);
+
+            $this->conn->commit();
+            return true;
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
+        }
     }
 
     // approve post by admin
@@ -324,7 +387,7 @@ class PostModel {
                 ":id"=>$report['content_id']
             ]);
         }
-
+  
         $query = "UPDATE content_reports
                   SET status = 1
                   WHERE report_id = :report_id";
@@ -348,4 +411,76 @@ class PostModel {
             ":report_id"=>$report_id
         ]);
     }
+    // φερνει όλα τα pending delete requests για admin 
+public function getCommentDeleteRequests() {
+
+    $query = "SELECT r.request_id,
+                     r.reason,
+                     r.created,
+                     c.comment_id,
+                c.post_id,
+                     c.comment_content,
+                     u.username
+              FROM comment_delete_requests r
+              JOIN comments c ON r.comment_id = c.comment_id
+              JOIN users u ON r.requested_by = u.user_id
+              WHERE r.status = 0
+              ORDER BY r.created DESC";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+// updates database για ενα approved comment delete request
+public function approveCommentDelete($request_id) {
+
+    $query = "SELECT comment_id
+              FROM comment_delete_requests
+              WHERE request_id = :request_id";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":request_id"=>$request_id
+    ]);
+
+    $request = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if(!$request){
+        return false;
+    }
+
+    // delete comment
+    $query = "DELETE FROM comments
+              WHERE comment_id = :comment_id";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":comment_id"=>$request['comment_id']
+    ]);
+
+    // mark request approved
+    $query = "UPDATE comment_delete_requests
+              SET status = 1
+              WHERE request_id = :request_id";
+
+    $stmt = $this->conn->prepare($query);
+
+    return $stmt->execute([
+        ":request_id"=>$request_id
+    ]);
+}
+// updates database για ενα rejected comment delete request
+public function rejectCommentDelete($request_id){
+
+    $query = "UPDATE comment_delete_requests
+              SET status = 2
+              WHERE request_id = :request_id";
+
+    $stmt = $this->conn->prepare($query);
+
+    return $stmt->execute([
+        ":request_id"=>$request_id
+    ]);
+}
 }

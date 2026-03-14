@@ -85,6 +85,25 @@ class CommentController extends BaseController {
 
         $this->jsonResponse(["message" => "Request submitted"]);
     }
+
+    public function adminDelete(){
+        $this->requireAdmin();
+
+        $data = $this->getJSONInput();
+        $comment_id = $data['comment_id'] ?? ($_GET['id'] ?? null);
+
+        if (!$comment_id) {
+            $this->jsonResponse(["message" => "Comment ID required"], 400);
+        }
+
+        $deleted = $this->commentModel->adminDeleteComment($comment_id);
+
+        if (!$deleted) {
+            $this->jsonResponse(["message" => "Comment not found"], 404);
+        }
+
+        $this->jsonResponse(["message" => "Comment deleted"]);
+    }
 }
 
 // Βασικός router για το CommentController
@@ -103,6 +122,9 @@ if(isset($_GET['action'])){
             break;
         case 'requestDelete':   // Request comment deletion
             $controller->requestDelete();
+            break;
+        case 'adminDelete':
+            $controller->adminDelete();
             break;
 
     }

@@ -429,11 +429,39 @@ button:hover {
     transition: color 0.2s ease;
 }
 
+.admin-post-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: #b42318;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
 .post-delete-request-btn:hover,
 .post-delete-request-btn:focus,
 .post-delete-request-btn:focus-visible {
     outline: none;
     color: #c12727;
+    background: transparent;
+    text-decoration: none;
+}
+
+.admin-post-delete-btn:hover,
+.admin-post-delete-btn:focus,
+.admin-post-delete-btn:focus-visible {
+    outline: none;
+    color: #912018;
     background: transparent;
     text-decoration: none;
 }
@@ -828,11 +856,28 @@ button:hover {
     background: #257c35;
 }
 
+.policy-link.danger {
+    background: #c12727;
+    color: #fff;
+}
+
+.policy-link.danger:hover {
+    background: #a61f1f;
+}
+
 #postDeleteRequestTitle {
     color: #c12727;
 }
 
 #postReportTitle {
+    color: #c12727;
+}
+
+#adminPostDeleteTitle {
+    color: #c12727;
+}
+
+#adminCommentDeleteTitle {
     color: #c12727;
 }
 
@@ -892,7 +937,37 @@ body.comment-dialog-open {
     text-decoration: none;
 }
 
+.admin-comment-delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    appearance: none;
+    color: #b6bcc8;
+    opacity: 0.55;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    transition: color 0.2s ease, opacity 0.2s ease, font-weight 0.2s ease;
+    text-decoration: none;
+}
+
 .delete-request-btn:hover {
+    color: #dc2626;
+    opacity: 1;
+    font-weight: 700;
+    background: none;
+    text-decoration: none;
+}
+
+.admin-comment-delete-btn:hover {
     color: #dc2626;
     opacity: 1;
     font-weight: 700;
@@ -902,6 +977,16 @@ body.comment-dialog-open {
 
 .delete-request-btn:focus,
 .delete-request-btn:focus-visible {
+    outline: none;
+    color: #dc2626;
+    opacity: 1;
+    font-weight: 700;
+    background: none;
+    text-decoration: none;
+}
+
+.admin-comment-delete-btn:focus,
+.admin-comment-delete-btn:focus-visible {
     outline: none;
     color: #dc2626;
     opacity: 1;

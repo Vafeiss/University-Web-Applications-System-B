@@ -121,6 +121,14 @@ class PostController extends BaseController {
         $this->jsonResponse($posts);
     }
 
+    public function adminList() {
+        $this->requireAdmin();
+
+        $posts = $this->postModel->getAdminPosts();
+
+        $this->jsonResponse($posts);
+    }
+
     // Delete_Post()
     public function delete($post_id) {
         $user_id = $this->requireLogin();
@@ -129,6 +137,27 @@ class PostController extends BaseController {
             $post_id,
             $user_id
         );
+
+        $this->jsonResponse([
+            "message" => "Post deleted"
+        ]);
+    }
+
+    public function adminDelete() {
+        $this->requireAdmin();
+
+        $input = $this->getJSONInput();
+        $post_id = $input['post_id'] ?? ($_GET['id'] ?? null);
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $deleted = $this->postModel->adminDeletePost($post_id);
+
+        if (!$deleted) {
+            $this->jsonResponse(["message" => "Post not found or already deleted"], 404);
+        }
 
         $this->jsonResponse([
             "message" => "Post deleted"
@@ -386,9 +415,50 @@ class PostController extends BaseController {
         $this->jsonResponse([
             "message"=>"Report rejected"
         ]);
-    
-}
+    }
+    // επιστρέφει όλα τα comment delete requests που έχουν γίνει, μαζί με τα στοιχεία του comment και του χρήστη που έκανε το request
+    public function commentDeleteRequests(){
 
+    $this->requireAdmin();
+
+    $requests = $this->postModel->getCommentDeleteRequests();
+
+    $this->jsonResponse($requests);
+    }
+    // approve comment delete, καλείται όταν admin πατήσει approve σε ένα comment delete request, και διαγράφει το comment
+    public function approveCommentDelete(){
+
+    $this->requireAdmin();
+
+    $request_id = $_GET['id'] ?? null;
+
+    if(!$request_id){
+        $this->jsonResponse(["message"=>"Request ID required"],400);
+    }
+
+    $this->postModel->approveCommentDelete($request_id);
+
+    $this->jsonResponse([
+        "message"=>"Comment deleted"
+    ]);
+}
+// reject comment delete, καλείται όταν admin πατήσει reject σε ένα comment delete request, και απορρίπτει το request χωρίς να διαγράψει το comment
+public function rejectCommentDelete(){
+
+    $this->requireAdmin();
+
+    $request_id = $_GET['id'] ?? null;
+
+    if(!$request_id){
+        $this->jsonResponse(["message"=>"Request ID required"],400);
+    }
+
+    $this->postModel->rejectCommentDelete($request_id);
+
+    $this->jsonResponse([
+        "message"=>"Delete request rejected"
+    ]);
+}
 }
 
 // Βασικός router για το PostController
@@ -406,8 +476,15 @@ if (isset($_GET['action'])) {
             $controller->list();
             break;
 
+        case 'adminList':
+            $controller->adminList();
+            break;
+
         case 'delete':
             $controller->delete($_GET['id'] ?? null);
+            break;
+        case 'adminDelete':
+            $controller->adminDelete();
             break;
         case 'get':  // Get_Post()
             $controller->get();
@@ -449,5 +526,17 @@ if (isset($_GET['action'])) {
         case 'rejectReport':
             $controller->rejectReport();
             break;
-        }
+        
+        case 'commentDeleteRequests':
+            $controller->commentDeleteRequests();
+            break;
+
+        case 'approveCommentDelete':
+            $controller->approveCommentDelete();
+            break;
+
+        case 'rejectCommentDelete':
+            $controller->rejectCommentDelete();
+            break;
+    }
 }
