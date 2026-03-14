@@ -137,6 +137,7 @@ body {
 			<button type="button" class="dashboard-tab" data-section="pending">Pending Posts</button>
 			<button type="button" class="dashboard-tab" data-section="deleteRequests">Post Delete Requests</button>
 			<button type="button" class="dashboard-tab" data-section="commentDeleteRequests">Comment Delete Requests</button>
+			<button type="button" class="dashboard-tab" data-section="categoryRequests">Category Requests</button>
 			<button type="button" class="dashboard-tab" data-section="reports">Reports</button>
 		</nav>
 	</header>
@@ -174,6 +175,15 @@ body {
 		</header>
 		<div id="commentDeleteFeedback" class="pending-feedback" hidden></div>
 		<div id="commentDeleteRequests" class="pending-grid" aria-live="polite"></div>
+	</section>
+
+	<section id="dashboardSection-categoryRequests" class="dashboard-panel" data-section-panel="categoryRequests">
+		<header class="dashboard-panel-header">
+			<h2>Category Requests</h2>
+			<p>Review user suggestions for new categories and choose whether to create them.</p>
+		</header>
+		<div id="categoryRequestsFeedback" class="pending-feedback" hidden></div>
+		<div id="categoryRequests" class="pending-grid" aria-live="polite"></div>
 	</section>
 
 	<section id="dashboardSection-reports" class="dashboard-panel" data-section-panel="reports">

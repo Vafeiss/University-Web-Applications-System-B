@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Εξυπηρετητής: 127.0.0.1
--- Χρόνος δημιουργίας: 09 Μαρ 2026 στις 10:20:13
+-- Χρόνος δημιουργίας: 14 Μαρ 2026 στις 19:54:26
 -- Έκδοση διακομιστή: 10.4.32-MariaDB
 -- Έκδοση PHP: 8.2.12
 
@@ -59,6 +59,20 @@ CREATE TABLE `categories` (
   `category_id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Δομή πίνακα για τον πίνακα `category_requests`
+--
+
+CREATE TABLE `category_requests` (
+  `request_id` int(11) NOT NULL,
+  `requested_by` int(11) NOT NULL,
+  `suggested_name` varchar(100) NOT NULL,
+  `status` tinyint(4) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -221,6 +235,14 @@ ALTER TABLE `categories`
   ADD PRIMARY KEY (`category_id`);
 
 --
+-- Ευρετήρια για πίνακα `category_requests`
+--
+ALTER TABLE `category_requests`
+  ADD PRIMARY KEY (`request_id`),
+  ADD UNIQUE KEY `requested_by_2` (`requested_by`,`suggested_name`),
+  ADD KEY `requested_by` (`requested_by`);
+
+--
 -- Ευρετήρια για πίνακα `comments`
 --
 ALTER TABLE `comments`
@@ -311,6 +333,12 @@ ALTER TABLE `categories`
   MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT για πίνακα `category_requests`
+--
+ALTER TABLE `category_requests`
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT για πίνακα `comments`
 --
 ALTER TABLE `comments`
@@ -361,6 +389,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `attachments`
   ADD CONSTRAINT `fk_attachments_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE;
+
+--
+-- Περιορισμοί για πίνακα `category_requests`
+--
+ALTER TABLE `category_requests`
+  ADD CONSTRAINT `fk_category_requests_user` FOREIGN KEY (`requested_by`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Περιορισμοί για πίνακα `comments`

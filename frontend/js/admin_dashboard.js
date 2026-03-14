@@ -1,5 +1,6 @@
 (function () {
     const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
+    const CATEGORY_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
     const SECTION_CONFIG = {
         posts: {
             load: loadPostsView
@@ -12,6 +13,9 @@
         },
         commentDeleteRequests: {
             load: loadCommentDeleteRequests
+        },
+        categoryRequests: {
+            load: loadCategoryRequests
         },
         reports: {
             load: loadReports
@@ -413,6 +417,109 @@
             console.error("Reports error:", error);
             container.innerHTML = '<div class="pending-state">Failed to load reports.</div>';
             showFeedback("reportsFeedback", error.message || "Could not fetch reports.", "error");
+        }
+    }
+
+    async function loadCategoryRequests() {
+        const container = setLoading("categoryRequests", "Loading category requests...");
+        if (!container) {
+            return;
+        }
+
+        try {
+            const { response, data: requests } = await fetchJSON(`${CATEGORY_URL}?action=list`);
+
+            if (!response.ok) {
+                throw new Error(requests.message || "Failed to load category requests");
+            }
+
+            container.innerHTML = "";
+
+            if (!Array.isArray(requests) || requests.length === 0) {
+                container.innerHTML = '<div class="pending-state">No pending category requests.</div>';
+                return;
+            }
+
+            requests.forEach((request) => {
+                const card = document.createElement("article");
+                const createdAt = request.created_at ? new Date(request.created_at).toLocaleString() : "Unknown date";
+
+                card.className = "pending-card";
+                card.innerHTML = `
+                    <h3>${escapeHtml(request.suggested_name || "Unnamed category")}</h3>
+                    <div class="pending-meta">
+                        <span class="pending-chip">Category request</span>
+                        <span>Requested by: ${escapeHtml(request.username || "Unknown")}</span>
+                        <span>Submitted: ${escapeHtml(createdAt)}</span>
+                    </div>
+                    <div class="pending-actions">
+                        <button type="button" class="pending-btn approve">Create Category</button>
+                        <button type="button" class="pending-btn reject">Reject</button>
+                    </div>
+                `;
+
+                const approveButton = card.querySelector(".pending-btn.approve");
+                const rejectButton = card.querySelector(".pending-btn.reject");
+
+                if (approveButton) {
+                    approveButton.addEventListener("click", async () => {
+                        await handleCategoryDecision("approve", request, approveButton, rejectButton);
+                    });
+                }
+
+                if (rejectButton) {
+                    rejectButton.addEventListener("click", async () => {
+                        await handleCategoryDecision("reject", request, approveButton, rejectButton);
+                    });
+                }
+
+                container.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Category requests error:", error);
+            container.innerHTML = '<div class="pending-state">Failed to load category requests.</div>';
+            showFeedback("categoryRequestsFeedback", error.message || "Could not fetch category requests.", "error");
+        }
+    }
+
+    async function handleCategoryDecision(action, request, approveButton, rejectButton) {
+        const requestId = Number(request?.request_id || 0);
+        if (!requestId) {
+            showFeedback("categoryRequestsFeedback", "Invalid request id.", "error");
+            return;
+        }
+
+        const buttons = [approveButton, rejectButton].filter(Boolean);
+        buttons.forEach((button) => {
+            button.disabled = true;
+        });
+
+        try {
+            const payload = { request_id: requestId };
+            if (action === "approve") {
+                payload.name = String(request?.suggested_name || "").trim();
+            }
+
+            const { response, data: result } = await fetchJSON(`${CATEGORY_URL}?action=${encodeURIComponent(action)}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(result.message || "Action failed");
+            }
+
+            showFeedback("categoryRequestsFeedback", result.message || "Action completed.", "success");
+            await loadCategoryRequests();
+        } catch (error) {
+            console.error("Category request decision error:", error);
+            showFeedback("categoryRequestsFeedback", error.message || "Action failed.", "error");
+            buttons.forEach((button) => {
+                button.disabled = false;
+            });
         }
     }
 })();
