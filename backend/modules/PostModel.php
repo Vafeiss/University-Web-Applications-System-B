@@ -483,4 +483,49 @@ public function rejectCommentDelete($request_id){
         ":request_id"=>$request_id
     ]);
 }
+// ===========================================
+// Get posts based on user interests
+// ===========================================
+public function getPostsForUser($user_id) {
+
+    // Βήμα 1: βρίσκουμε ποιες categories έχει επιλέξει ο user
+    $query = "SELECT category_id
+              FROM user_interest
+              WHERE user_id = :user_id";
+
+    $stmt = $this->conn->prepare($query);
+
+    $stmt->execute([
+        ":user_id" => $user_id
+    ]);
+
+    $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+
+    // Βήμα 2: αν δεν έχει επιλέξει categories → δείχνουμε όλα τα posts
+    if (empty($categories)) {
+        return $this->getApprovedPosts();
+    }
+
+
+    // Βήμα 3: δημιουργούμε placeholders (?, ?, ?)
+    $placeholders = implode(',', array_fill(0, count($categories), '?'));
+
+
+    // Βήμα 4: φέρνουμε posts μόνο από αυτές τις categories
+    $query = "SELECT p.*, u.username, c.name AS category
+              FROM posts p
+              JOIN users u ON p.user_id = u.user_id
+              LEFT JOIN categories c ON p.category_id = c.category_id
+              WHERE p.status = 1
+              AND p.deleted = 0
+              AND p.category_id IN ($placeholders)
+              ORDER BY p.timestamp DESC";
+
+    $stmt = $this->conn->prepare($query);
+
+    $stmt->execute($categories);
+    // αν δεν εχει επιλέξει καμία κατηγορία, θα επιστρέψει όλα τα posts, αλλιώς μόνο αυτά που ανήκουν στις επιλεγμένες κατηγορίες
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }

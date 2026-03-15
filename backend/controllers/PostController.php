@@ -102,24 +102,40 @@ class PostController extends BaseController {
             ], 500);
         }
     }
-
     // Show_Post()
     public function list() {
-        $isAdmin = $this->isAdmin();
 
+    $isAdmin = $this->isAdmin();
+
+    // παίρνουμε τον τρέχοντα user
+    $currentUserId = $this->getCurrentUserId();
+
+    // αν υπάρχει user → personalized feed
+    if ($currentUserId) {
+
+        $posts = $this->postModel->getPostsForUser($currentUserId);
+
+    } else {
+
+        // αν δεν είναι logged in → όλα τα posts
         $posts = $this->postModel->getApprovedPosts();
-
-        if (!$isAdmin) {
-            foreach ($posts as &$post) {
-                if (!empty($post['is_anonymous'])) {
-                    $post['username'] = 'Anonymous';
-                }
-            }
-            unset($post);
-        }
-
-        $this->jsonResponse($posts);
     }
+
+
+    // διαχείριση anonymous posts
+    if (!$isAdmin) {
+        foreach ($posts as &$post) {
+
+            if (!empty($post['is_anonymous'])) {
+                $post['username'] = 'Anonymous';
+            }
+
+        }
+        unset($post);
+    }
+
+    $this->jsonResponse($posts);
+}
 
     public function adminList() {
         $this->requireAdmin();
