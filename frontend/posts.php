@@ -1,6 +1,5 @@
 <?php
 session_start();    
-
 /* Έλεγχος αν ο χρήστης είναι συνδεδεμένος */
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -31,7 +30,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 
     <header class="feed-header">
         <div class="feed-header-row">
-            <h1>Posts Feed</h1>
+            <h1 id="feedTitle">Posts Feed</h1>
 
             <details class="feed-menu" id="feedMenu">
                 <summary class="feed-menu-trigger" aria-label="Open feed menu" title="Menu">&#8942;</summary>
@@ -49,7 +48,12 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
         </div>
 
         <nav class="feed-tabs" aria-label="Feed navigation">
-            <a href="create_post.php" class="feed-tab primary">&#43; Create Post</a>
+            <a href="create_post.php" class="feed-tab">&#43; Create Post</a>
+            <button type="button" id="postsFeedBtn" class="feed-tab is-active">Posts</button>
+            <button type="button" id="followersFeedBtn" class="feed-tab">Followers</button>
+            <button type="button" id="pendingPostsBtn" class="feed-tab">Pending Posts</button>
+            <button type="button" id="pendingDeleteRequestsBtn" class="feed-tab">Pending Delete Requests</button>
+            <button type="button" id="reportsBtn" class="feed-tab">Reports</button>
             <?php if ($isAdmin): ?>
             <a href="admin_dashboard.php" class="feed-tab">&#9881; Admin Panel</a>
             <?php endif; ?>
@@ -64,6 +68,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 
 <script>
 const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
+const currentUserId = <?= (int)$_SESSION['user_id'] ?>;
 </script>
 <script src="js/posts.js?v=<?php echo $postsJsVersion; ?>"></script>
 

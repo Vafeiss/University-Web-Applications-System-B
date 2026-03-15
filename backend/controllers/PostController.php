@@ -145,6 +145,42 @@ class PostController extends BaseController {
         $this->jsonResponse($posts);
     }
 
+    public function followingFeed() {
+        $userId = $this->requireLogin();
+        $isAdmin = $this->isAdmin();
+
+        $posts = $this->postModel->getPostsFromFollowing($userId);
+
+        if (!$isAdmin) {
+            foreach ($posts as &$post) {
+                if (!empty($post['is_anonymous'])) {
+                    $post['username'] = 'Anonymous';
+                }
+            }
+            unset($post);
+        }
+
+        $this->jsonResponse($posts);
+    }
+
+    public function myPosts() {
+        $userId = $this->requireLogin();
+        $posts = $this->postModel->getPostsByUserWithStatus($userId);
+        $this->jsonResponse($posts);
+    }
+
+    public function myDeleteRequests() {
+        $userId = $this->requireLogin();
+        $requests = $this->postModel->getDeleteRequestsByUser($userId);
+        $this->jsonResponse($requests);
+    }
+
+    public function myReports() {
+        $userId = $this->requireLogin();
+        $reports = $this->postModel->getReportsByUser($userId);
+        $this->jsonResponse($reports);
+    }
+
     // Delete_Post()
     public function delete($post_id) {
         $user_id = $this->requireLogin();
@@ -494,6 +530,22 @@ if (isset($_GET['action'])) {
 
         case 'adminList':
             $controller->adminList();
+            break;
+
+        case 'followingFeed':
+            $controller->followingFeed();
+            break;
+
+        case 'myPosts':
+            $controller->myPosts();
+            break;
+
+        case 'myDeleteRequests':
+            $controller->myDeleteRequests();
+            break;
+
+        case 'myReports':
+            $controller->myReports();
             break;
 
         case 'delete':

@@ -1,151 +1,104 @@
 <?php
 
+require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . "/../modules/CategoryModel.php";
-
-session_start();
 
 header("Content-Type: application/json");
 
-function jsonResponse(array $data, int $statusCode = 200): void {
-    http_response_code($statusCode);
-    echo json_encode($data);
-    exit;
-}
+class CategoryController extends BaseController {
 
-function requireLogin(): int {
-    if (!isset($_SESSION["user_id"])) {
-        jsonResponse(["message" => "User not logged in"], 401);
+    private CategoryModel $model;
+
+    public function __construct() {
+        $this->model = new CategoryModel();
     }
 
-    return (int)$_SESSION["user_id"];
-}
-
-function requireAdmin(): void {
-    requireLogin();
-
-    if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
-        jsonResponse(["message" => "Admin access required"], 403);
-    }
-}
-
-$model = new CategoryModel();
-
-$action = $_GET["action"] ?? "";
-
-switch($action){
-
-    // =================================
-    // USER REQUEST CATEGORY
-    // =================================
-    case "request":
-
-        $userId = requireLogin();
-
-        $data = json_decode(file_get_contents("php://input"), true);
-
+    public function request(): void {
+        $userId = $this->requireLogin();
+        $data = $this->getJSONInput();
         $name = trim($data["name"] ?? "");
 
-        if($name === ""){
-            jsonResponse([
-                "message" => "Category name required"
-            ], 400);
+        if ($name === "") {
+            $this->jsonResponse(["message" => "Category name required"], 400);
         }
 
-        $model->requestCategory($userId, $name);
+        $this->model->requestCategory($userId, $name);
+        $this->jsonResponse(["message" => "Category request submitted"]);
+    }
 
-        jsonResponse([
-            "message" => "Category request submitted"
-        ]);
+    public function list(): void {
+        $this->requireAdmin();
+        $requests = $this->model->getPendingRequests();
+        $this->jsonResponse($requests);
+    }
 
-        break;
-
-
-    // =================================
-    // ADMIN GET PENDING REQUESTS
-    // =================================
-    case "list":
-
-        requireAdmin();
-
-        $requests = $model->getPendingRequests();
-
-        jsonResponse($requests);
-
-        break;
-
-
-    // =================================
-    // ADMIN CREATE CATEGORY
-    // =================================
-    case "approve":
-
-        requireAdmin();
-
-        $data = json_decode(file_get_contents("php://input"), true);
+    public function approve(): void {
+        $this->requireAdmin();
+        $data = $this->getJSONInput();
 
         if (!is_array($data)) {
-            jsonResponse(["message" => "Invalid request body"], 400);
+            $this->jsonResponse(["message" => "Invalid request body"], 400);
         }
 
         $requestId = (int)($data["request_id"] ?? 0);
         $name = trim($data["name"] ?? "");
 
         if ($requestId <= 0 || $name === "") {
-            jsonResponse(["message" => "request_id and name are required"], 400);
+            $this->jsonResponse(["message" => "request_id and name are required"], 400);
         }
 
-        $model->createCategory($name);
+        $this->model->createCategory($name);
+        $this->model->updateRequestStatus($requestId, 1);
+        $this->jsonResponse(["message" => "Category created"]);
+    }
 
-        $model->updateRequestStatus($requestId, 1);
-
-        jsonResponse([
-            "message" => "Category created"
-        ]);
-
-        break;
-
-
-    // =================================
-    // ADMIN REJECT REQUEST
-    // =================================
-    case "reject":
-
-        requireAdmin();
-
-        $data = json_decode(file_get_contents("php://input"), true);
+    public function reject(): void {
+        $this->requireAdmin();
+        $data = $this->getJSONInput();
 
         if (!is_array($data)) {
-            jsonResponse(["message" => "Invalid request body"], 400);
+            $this->jsonResponse(["message" => "Invalid request body"], 400);
         }
 
         $requestId = (int)($data["request_id"] ?? 0);
-
         if ($requestId <= 0) {
-            jsonResponse(["message" => "Valid request_id is required"], 400);
+            $this->jsonResponse(["message" => "Valid request_id is required"], 400);
         }
 
-        $model->updateRequestStatus($requestId, 2);
+        $this->model->updateRequestStatus($requestId, 2);
+        $this->jsonResponse(["message" => "Request rejected"]);
+    }
 
-        jsonResponse([
-            "message" => "Request rejected"
-        ]);
+    public function userInterests(): void {
+        $userId = $this->requireLogin();
+        $interests = $this->model->getUserInterests($userId);
+        $this->jsonResponse($interests);
+    }
 
-        break;
+    public function route(string $action): void {
+        switch ($action) {
+            case "request":
+                $this->request();
+                break;
+            case "list":
+                $this->list();
+                break;
+            case "approve":
+                $this->approve();
+                break;
+            case "reject":
+                $this->reject();
+                break;
+            case "userInterests":
+                $this->userInterests();
+                break;
+            default:
+                $this->jsonResponse(["message" => "Invalid action"], 400);
+        }
+    }
+}
 
-    // =================================
-    // USER: get own interests
-    // =================================
-    case "userInterests":
-// This endpoint can be used by the frontend to get the user's interests and show them in the feed filter
-        $userId = requireLogin();
-// επιστρέφει πίνακα με τα ενδιαφέροντα του χρήστη (π.χ. ["Computer Science", "Business Administration"])
-        $interests = $model->getUserInterests($userId);
-// επιστρέφει json response με τα ενδιαφέροντα
-        jsonResponse($interests);
-
-        break;
-// εάν δεν ταιριάζει καμία από τις παραπάνω ενέργειες, επιστρέφει σφάλμα
-    default:
-        jsonResponse(["message" => "Invalid action"], 400);
-
+if (isset($_GET["action"])) {
+    $controller = new CategoryController();
+    $controller->route($_GET["action"]);
 }

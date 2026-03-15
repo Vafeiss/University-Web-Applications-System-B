@@ -465,6 +465,17 @@ body {
     border-radius: 14px;
 }
 
+.followers-banners-grid {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.followers-banners-grid .interests-banner {
+    margin-top: 0;
+}
+
 .interests-label {
     font-size: 13px;
     font-weight: 700;
@@ -515,6 +526,126 @@ body {
     white-space: pre-wrap;
 }
 
+.owner-meta-block {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.post-owner-trigger {
+    border: 1px solid #d7e1f0;
+    border-radius: 999px;
+    background: #f8fbff;
+    padding: 2px 8px;
+    margin: 0;
+    color: #28405f;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.2;
+}
+
+.post-owner-trigger:hover {
+    background: #eef4ff;
+    border-color: #bfd0ec;
+}
+
+.owner-name {
+    color: #2f4772;
+}
+
+.owner-follow-hint {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1d4f9b;
+    letter-spacing: 0.01em;
+}
+
+.follower-unfollow-trigger {
+    border: 1px solid #d7e1f0;
+    border-radius: 999px;
+    background: #f8fbff;
+    padding: 4px 10px;
+    margin: 0;
+    color: #28405f;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.2;
+}
+
+.follower-unfollow-trigger:hover {
+    background: #fff2f2;
+    border-color: #e8c1c1;
+}
+
+.follower-name {
+    color: #2f4772;
+    font-weight: 700;
+}
+
+.follower-unfollow-hint {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9c2f3e;
+    letter-spacing: 0.01em;
+}
+
+.follower-passive-chip {
+    border: 1px solid #d7e1f0;
+    border-radius: 999px;
+    background: #f8fbff;
+    padding: 4px 10px;
+    margin: 0;
+    color: #28405f;
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.2;
+}
+
+.owner-follow-wrap {
+    display: inline-flex;
+    align-items: center;
+}
+
+.owner-follow-wrap[hidden] {
+    display: none !important;
+}
+
+.post-card-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.feed-follow-btn {
+    border: 1px solid #c7d6ec;
+    border-radius: 999px;
+    padding: 5px 12px;
+    background: #ffffff;
+    color: #28405f;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.feed-follow-btn:hover {
+    background: #f5f8fd;
+    border-color: #b9cbe6;
+}
+
+.feed-follow-btn.is-following {
+    background: #eaf3ff;
+    border-color: #b8d0f2;
+    color: #2e4f8f;
+}
+
 .feed-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -554,10 +685,43 @@ body {
     border-color: #1a4d97;
 }
 
+.feed-tab.is-active {
+    background: #163d76;
+    border-color: #163d76;
+    color: #ffffff;
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.status-chip.approved {
+    background: #e9f8ef;
+    color: #1f6a3a;
+}
+
+.status-chip.pending {
+    background: #fff5dd;
+    color: #8a6200;
+}
+
+.status-chip.rejected {
+    background: #fdeff0;
+    color: #8b2330;
+}
+
 @media (max-width: 640px) {
     .feed-menu-dropdown {
         min-width: 190px;
         right: 0;
+    }
+
+    .followers-banners-grid {
+        grid-template-columns: 1fr;
     }
 }
 

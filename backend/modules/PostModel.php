@@ -528,4 +528,95 @@ public function getPostsForUser($user_id) {
     // αν δεν εχει επιλέξει καμία κατηγορία, θα επιστρέψει όλα τα posts, αλλιώς μόνο αυτά που ανήκουν στις επιλεγμένες κατηγορίες
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+public function getPostsFromFollowing($user_id) {
+
+    $query = "SELECT p.*, u.username, c.name AS category
+              FROM posts p
+              JOIN followers f ON f.followed_id = p.user_id
+              JOIN users u ON p.user_id = u.user_id
+              LEFT JOIN categories c ON p.category_id = c.category_id
+              WHERE f.follower_id = :user_id
+              AND f.status = 1
+              AND p.status = 1
+              AND p.deleted = 0
+              AND p.is_anonymous = 0
+              ORDER BY p.timestamp DESC";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":user_id" => $user_id
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function getPostsByUserWithStatus($user_id) {
+
+    $query = "SELECT p.post_id,
+                     p.title,
+                     p.status,
+                     p.deleted,
+                     p.timestamp,
+                     c.name AS category
+              FROM posts p
+              LEFT JOIN categories c ON p.category_id = c.category_id
+              WHERE p.user_id = :user_id
+              ORDER BY p.timestamp DESC";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":user_id" => $user_id
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function getDeleteRequestsByUser($user_id) {
+
+    $query = "SELECT r.request_id,
+                     r.reason,
+                     r.status,
+                     r.created_at AS timestamp,
+                     p.post_id,
+                     p.title,
+                     p.status AS post_status,
+                     p.deleted
+              FROM post_delete_requests r
+              JOIN posts p ON r.post_id = p.post_id
+              WHERE r.requested_by = :user_id
+              ORDER BY r.created_at DESC";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":user_id" => $user_id
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function getReportsByUser($user_id) {
+
+    $query = "SELECT r.report_id,
+                     r.content_type,
+                     r.content_id,
+                     r.reason,
+                     r.status,
+                     r.created,
+                     p.post_id,
+                     p.title AS post_title,
+                     p.deleted
+              FROM content_reports r
+              LEFT JOIN posts p ON r.content_type = 'post' AND r.content_id = p.post_id
+              WHERE r.reported_by = :user_id
+              AND r.content_type = 'post'
+              ORDER BY r.created DESC";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":user_id" => $user_id
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }

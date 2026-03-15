@@ -35,16 +35,11 @@ class CommentController extends BaseController {
 
     // List comments
     public function list(){
-
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-
         if(!isset($_GET['post_id'])){
             $this->jsonResponse([]);
         }
 
-        $userId = $_SESSION['user_id'] ?? null;
+        $userId = $this->getCurrentUserId();
 
         $comments = $this->commentModel->getCommentsByPost($_GET['post_id'], $userId);
 
