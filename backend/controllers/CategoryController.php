@@ -132,6 +132,19 @@ switch($action){
 
         break;
 
+    // =================================
+    // USER: get own interests
+    // =================================
+    case "userInterests":
+// This endpoint can be used by the frontend to get the user's interests and show them in the feed filter
+        $userId = requireLogin();
+// επιστρέφει πίνακα με τα ενδιαφέροντα του χρήστη (π.χ. ["Computer Science", "Business Administration"])
+        $interests = $model->getUserInterests($userId);
+// επιστρέφει json response με τα ενδιαφέροντα
+        jsonResponse($interests);
+
+        break;
+// εάν δεν ταιριάζει καμία από τις παραπάνω ενέργειες, επιστρέφει σφάλμα
     default:
         jsonResponse(["message" => "Invalid action"], 400);
 

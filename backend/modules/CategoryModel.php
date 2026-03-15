@@ -73,4 +73,22 @@ class CategoryModel {
         return $stmt->execute([$status, $requestId]);
     }
 
+    // ===============================
+    // USER: get own interests
+    // ===============================
+    public function getUserInterests($userId) {
+    // Επιστρέφει τα ενδιαφέροντα του χρήστη με βάση τον πίνακα user_interest
+        $stmt = $this->db->prepare("
+            SELECT c.category_id, c.name
+            FROM user_interest ui
+            JOIN categories c ON ui.category_id = c.category_id
+            WHERE ui.user_id = ?
+            ORDER BY c.name ASC
+        ");
+    // Εκτελεί το ερώτημα με το userId ως παράμετρο για να πάρει τα ενδιαφέροντα του χρήστη
+        $stmt->execute([$userId]);
+    // Επιστρέφει έναν πίνακα με τα ενδιαφέροντα του χρήστη, όπου κάθε στοιχείο είναι ένας πίνακας με τα πεδία category_id και name
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

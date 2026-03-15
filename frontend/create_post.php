@@ -18,6 +18,8 @@ if (!isset($_SESSION['user_id'])) {
 
 <div class="post-container">
 
+    <a href="posts.php" class="back-link">&larr; Back to posts</a>
+
     <h2>Create New Post</h2>
 
         <!-- input για attachments -->
