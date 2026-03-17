@@ -1,6 +1,7 @@
 const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
 const CAT_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
 const FOLLOW_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/FollowController.php";
+const NOTIFICATION_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/NotificationController.php";
 let activeFeedMode = "default";
 const followedUserIds = new Set();
 
@@ -120,7 +121,147 @@ function renderPosts(posts) {
         container.appendChild(card);
     });
 }
+// Εμφανίζει τις ειδοποιήσεις στο dropdown menu, με ένδειξη για τις μη αναγνωσμένες 
+// και κατάλληλο μήνυμα όταν δεν υπάρχουν ειδοποιήσεις
+function renderNotifications(notifications) {
+    const list = document.getElementById("notificationsList");
+    const count = document.getElementById("notificationsCount");
 
+    if (!list || !count) {
+        return;
+    }
+
+    if (!Array.isArray(notifications) || notifications.length === 0) {
+        list.innerHTML = '<div class="notifications-empty">No notifications yet.</div>';
+        count.hidden = true;
+        return;
+    }
+
+    const unreadCount = notifications.filter((item) => Number(item.is_read) === 0).length;
+
+    count.textContent = unreadCount;
+    count.hidden = unreadCount === 0;
+
+    list.innerHTML = "";
+
+    notifications.forEach((notification) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = `notification-item${Number(notification.is_read) === 0 ? " unread" : ""}`;
+        item.setAttribute("data-notification-id", notification.notification_id);
+        item.setAttribute("data-reference-id", notification.reference_id || "");
+
+        const createdAt = notification.created_at
+            ? new Date(notification.created_at).toLocaleString()
+            : "";
+
+        item.innerHTML = `
+            <div class="notification-text">${escapeHtml(notification.message || "")}</div>
+            <div class="notification-time">${escapeHtml(createdAt)}</div>
+        `;
+
+        list.appendChild(item);
+    });
+}
+// Φορτώνει τις ειδοποιήσεις του χρήστη από τον server και τις εμφανίζει στο dropdown menu
+// με κατάλληλο χειρισμό σφαλμάτων σε περίπτωση αποτυχίας φόρτωσης
+async function loadNotifications() {
+    try {
+        const { ok, data } = await fetchJSON(`${NOTIFICATION_URL}?action=list`);
+
+        if (!ok) {
+            return;
+        }
+
+        renderNotifications(data);
+    } catch (error) {
+        console.error("Could not load notifications:", error);
+    }
+}
+// Σημειώνει μια συγκεκριμένη ειδοποίηση ως αναγνωσμένη στον server και ενημερώνει την εμφάνιση της στο dropdown menu
+async function markNotificationRead(notificationId) {
+    await fetchJSON(`${NOTIFICATION_URL}?action=markRead`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            notification_id: notificationId
+        })
+    });
+}
+// Σημειώνει όλες τις ειδοποιήσεις του χρήστη ως αναγνωσμένες στον server και ενημερώνει την εμφάνιση τους στο dropdown menu
+async function markAllNotificationsRead() {
+    const { ok } = await fetchJSON(`${NOTIFICATION_URL}?action=markAllRead`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (ok) {
+        await loadNotifications();
+    }
+}
+// ανοιγει/κλεινει dropdown 
+// πατάς notification ,κανει read,σε στελνει σχετικό post
+// αν πατήσεις mark all as read, καθαρίζει το unread count και τα μηνύματα γίνονται read
+function setupNotificationsUI() {
+    const btn = document.getElementById("notificationsBtn");
+    const dropdown = document.getElementById("notificationsDropdown");
+    const markAllBtn = document.getElementById("markAllNotificationsRead");
+    const list = document.getElementById("notificationsList");
+
+    if (!btn || !dropdown || !list) {
+        return;
+    }
+
+    btn.addEventListener("click", async () => {
+        const isHidden = dropdown.hidden;
+        dropdown.hidden = !isHidden;
+        btn.setAttribute("aria-expanded", isHidden ? "true" : "false");
+
+        if (isHidden) {
+            await loadNotifications();
+        }
+    });
+
+    document.addEventListener("click", async (event) => {
+        const item = event.target.closest(".notification-item");
+        if (!item) {
+            return;
+        }
+
+        const notificationId = Number(item.getAttribute("data-notification-id"));
+        const referenceId = Number(item.getAttribute("data-reference-id"));
+
+        if (notificationId > 0) {
+            await markNotificationRead(notificationId);
+        }
+
+        if (referenceId > 0) {
+            window.location.href = `post.php?id=${encodeURIComponent(referenceId)}`;
+            return;
+        }
+
+        await loadNotifications();
+    });
+
+    if (markAllBtn) {
+        markAllBtn.addEventListener("click", async () => {
+            await markAllNotificationsRead();
+        });
+    }
+
+    document.addEventListener("click", (event) => {
+        if (!dropdown.hidden && !event.target.closest(".notifications-wrap")) {
+            dropdown.hidden = true;
+            btn.setAttribute("aria-expanded", "false");
+        }
+    });
+}
+
+// Επιστρέφει το κείμενο και την CSS κλάση που αντιστοιχεί στην κατάσταση ενός post, λαμβάνοντας υπόψη αν έχει διαγραφεί ή όχι
 function getPostStatusInfo(status, deleted) {
     const numericStatus = Number(status);
     const isDeleted = Number(deleted) === 1;
@@ -205,7 +346,7 @@ function renderSimpleBanner(label, text, isWarning = false) {
         </div>`;
 }
 
-function renderPendingPosts(posts) {
+    function renderPendingPosts(posts) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
@@ -777,6 +918,8 @@ function setupFollowActions() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    setupNotificationsUI();
+    loadNotifications();
     setupFeedMenu();
     setupFeedModeToggle();
     setupFollowActions();

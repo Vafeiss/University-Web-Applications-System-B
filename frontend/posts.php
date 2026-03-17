@@ -31,20 +31,52 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
     <header class="feed-header">
         <div class="feed-header-row">
             <h1 id="feedTitle">Posts Feed</h1>
+            <div class="feed-header-actions">
+                <!-- προσθετει στο UI, κουδουνακι,unread counter,dropdown λιστα,κουμπί mark all as read-->
+                <div class="notifications-wrap">
+                    <button type="button" id="notificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">
+                        <svg class="notifications-icon" xmlns="http://www.w3.org/2000/svg" 
+                             fill="none" 
+                             viewBox="0 0 24 24" 
+                             stroke-width="1.8" 
+                             stroke="currentColor" 
+                             width="20" 
+                             height="20"
+                             aria-hidden="true"
+                             focusable="false">
+                            <path stroke-linecap="round" stroke-linejoin="round" 
+                                  d="M14.857 17.082A23.848 23.848 0 0112 17.25c-1.013 0-2.006-.063-2.857-.168M12 3a6 6 0 00-6 6v3.586l-.707.707A1 1 0 006 15h12a1 1 0 00.707-1.707L18 12.586V9a6 6 0 00-6-6zM15 19a3 3 0 11-6 0"/>
+                        </svg>
 
-            <details class="feed-menu" id="feedMenu">
-                <summary class="feed-menu-trigger" aria-label="Open feed menu" title="Menu">&#8942;</summary>
+    <span id="notificationsCount" class="notifications-count" hidden>0</span>
+</button>
 
-                <div class="feed-menu-dropdown" role="menu" aria-label="Feed quick actions">
-                    <?php if ($isAdmin): ?>
-                    <a href="admin_dashboard.php" class="feed-menu-item" role="menuitem">Admin panel</a>
-                    <?php endif; ?>
+                    <div id="notificationsDropdown" class="notifications-dropdown" hidden>
+                        <div class="notifications-header">
+                            <span>Notifications</span>
+                            <button type="button" id="markAllNotificationsRead" class="notifications-mark-all">Mark all as read</button>
+                        </div>
 
-                    <button type="button" class="feed-menu-item" role="menuitem" data-coming-soon="Edit profile setup">Edit profile setup</button>
-                    <button type="button" class="feed-menu-item" role="menuitem" data-coming-soon="Edit interests">Edit interests</button>
-                    <a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
-                </div>
-            </details>
+                        <div id="notificationsList" class="notifications-list">
+                            <div class="notifications-empty">No notifications yet.</div>
+                        </div>
+                    </div>
+                </div>   
+
+                <details class="feed-menu" id="feedMenu">
+                    <summary class="feed-menu-trigger" aria-label="Open feed menu" title="Menu">&#8942;</summary>
+
+                    <div class="feed-menu-dropdown" role="menu" aria-label="Feed quick actions">
+                        <?php if ($isAdmin): ?>
+                        <a href="admin_dashboard.php" class="feed-menu-item" role="menuitem">Admin panel</a>
+                        <?php endif; ?>
+
+                        <button type="button" class="feed-menu-item" role="menuitem" data-coming-soon="Edit profile setup">Edit profile setup</button>
+                        <button type="button" class="feed-menu-item" role="menuitem" data-coming-soon="Edit interests">Edit interests</button>
+                        <a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
+                    </div>
+                </details>
+            </div>
         </div>
 
         <nav class="feed-tabs" aria-label="Feed navigation">

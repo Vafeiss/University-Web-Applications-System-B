@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Εξυπηρετητής: 127.0.0.1
--- Χρόνος δημιουργίας: 14 Μαρ 2026 στις 19:54:26
+-- Χρόνος δημιουργίας: 16 Μαρ 2026 στις 15:44:05
 -- Έκδοση διακομιστή: 10.4.32-MariaDB
 -- Έκδοση PHP: 8.2.12
 
@@ -130,6 +130,22 @@ CREATE TABLE `followers` (
   `follower_id` int(11) NOT NULL,
   `followed_id` int(11) NOT NULL,
   `status` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Δομή πίνακα για τον πίνακα `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `notification_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(50) DEFAULT NULL,
+  `reference_id` int(11) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `is_read` tinyint(4) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -271,6 +287,12 @@ ALTER TABLE `followers`
   ADD KEY `fk_followers_followed` (`followed_id`);
 
 --
+-- Ευρετήρια για πίνακα `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`notification_id`);
+
+--
 -- Ευρετήρια για πίνακα `posts`
 --
 ALTER TABLE `posts`
@@ -355,6 +377,12 @@ ALTER TABLE `comment_delete_requests`
 --
 ALTER TABLE `content_reports`
   MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT για πίνακα `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT για πίνακα `posts`

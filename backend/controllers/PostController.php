@@ -5,7 +5,7 @@ header("Content-Type: application/json");
 
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../modules/PostModel.php';
-
+require_once __DIR__ . '/../modules/NotificationModel.php';
 /*
  Controller responsible for handling Post operations
  such as creating, listing and deleting posts
@@ -47,7 +47,6 @@ class PostController extends BaseController {
                 $categoryId,
                 $isAnonymous
             );
-
             // Upload attachments
             if (!empty($_FILES['attachments']['name'][0])) {
 
@@ -105,37 +104,36 @@ class PostController extends BaseController {
     // Show_Post()
     public function list() {
 
-    $isAdmin = $this->isAdmin();
+        $isAdmin = $this->isAdmin();
 
-    // παίρνουμε τον τρέχοντα user
-    $currentUserId = $this->getCurrentUserId();
+        // παίρνουμε τον τρέχοντα user
+        $currentUserId = $this->getCurrentUserId();
 
-    // αν υπάρχει user → personalized feed
-    if ($currentUserId) {
+        // αν υπάρχει user → personalized feed
+        if ($currentUserId) {
 
-        $posts = $this->postModel->getPostsForUser($currentUserId);
+            $posts = $this->postModel->getPostsForUser($currentUserId);
 
-    } else {
+        } else {
 
-        // αν δεν είναι logged in → όλα τα posts
-        $posts = $this->postModel->getApprovedPosts();
-    }
-
-
-    // διαχείριση anonymous posts
-    if (!$isAdmin) {
-        foreach ($posts as &$post) {
-
-            if (!empty($post['is_anonymous'])) {
-                $post['username'] = 'Anonymous';
-            }
-
+            // αν δεν είναι logged in → όλα τα posts
+            $posts = $this->postModel->getApprovedPosts();
         }
-        unset($post);
-    }
 
-    $this->jsonResponse($posts);
-}
+        // διαχείριση anonymous posts
+        if (!$isAdmin) {
+            foreach ($posts as &$post) {
+
+                if (!empty($post['is_anonymous'])) {
+                    $post['username'] = 'Anonymous';
+                }
+
+            }
+            unset($post);
+        }
+
+        $this->jsonResponse($posts);
+    }
 
     public function adminList() {
         $this->requireAdmin();
@@ -350,12 +348,39 @@ class PostController extends BaseController {
         }
         // Έλεγχος αν υπάρχει το post
         $post_id = $_GET['id'] ?? null;
-        
+
         if (!$post_id) {
             $this->jsonResponse(["message" => "Post ID required"], 400);
-    }
+        }
+
+        // Φέρνουμε post data πριν εγκριθεί για να στείλουμε notifications
+        $post = $this->postModel->getPostById($post_id);
 
         $this->postModel->approvePost($post_id);
+
+        // Στέλνουμε notifications μετά την έγκριση
+        if ($post) {
+            $notificationModel = new NotificationModel();
+            $isAnonymous = !empty($post['is_anonymous']);
+
+            // Follower notifications μόνο αν δεν είναι anonymous
+            if (!$isAnonymous) {
+                $notificationModel->notifyFollowersForPost(
+                    (int)$post['user_id'],
+                    (int)$post_id,
+                    $post['title']
+                );
+            }
+
+            // Interest notifications (ουδέτερο μήνυμα αν anonymous)
+            $notificationModel->notifyInterestedUsersForPost(
+                (int)$post['user_id'],
+                (int)$post_id,
+                $post['title'],
+                $post['category_id'] ?? null,
+                $isAnonymous
+            );
+        }
 
         $this->jsonResponse([
             "message" => "Post approved"
@@ -391,7 +416,7 @@ class PostController extends BaseController {
         $requests = $this->postModel->getDeleteRequests();
 
         $this->jsonResponse($requests);
-    }   // επιστρεφει json με ολα τα pending delete requests για τα posts
+    }
     
     // approve delete request,  καλείται οταν admin πατησει approve σε ένα delete request, και διαγράφει το post
     public function approveDelete() {
@@ -436,80 +461,83 @@ class PostController extends BaseController {
         $this->jsonResponse($reports);
     }
     // approve report, καλείται όταν admin πατήσει approve σε ένα report, και διαγράφει το post
-    public function approveReport(){
+    public function approveReport() {
 
         $this->requireAdmin();
 
         $report_id = $_GET['id'] ?? null;
 
-        if(!$report_id){
-        $this->jsonResponse(["message"=>"Report ID required"],400);
+        if (!$report_id) {
+            $this->jsonResponse(["message" => "Report ID required"], 400);
         }
 
         $this->postModel->approveReport($report_id);
 
         $this->jsonResponse([
-            "message"=>"Post removed"
+            "message" => "Post removed"
         ]);
     }
-        public function rejectReport(){
+
+    public function rejectReport() {
 
         $this->requireAdmin();
 
         $report_id = $_GET['id'] ?? null;
 
-        if(!$report_id){
-            $this->jsonResponse(["message"=>"Report ID required"],400);
+        if (!$report_id) {
+            $this->jsonResponse(["message" => "Report ID required"], 400);
         }
 
         $this->postModel->rejectReport($report_id);
 
         $this->jsonResponse([
-            "message"=>"Report rejected"
+            "message" => "Report rejected"
         ]);
     }
     // επιστρέφει όλα τα comment delete requests που έχουν γίνει, μαζί με τα στοιχεία του comment και του χρήστη που έκανε το request
-    public function commentDeleteRequests(){
+    public function commentDeleteRequests() {
 
-    $this->requireAdmin();
+        $this->requireAdmin();
 
-    $requests = $this->postModel->getCommentDeleteRequests();
+        $requests = $this->postModel->getCommentDeleteRequests();
 
-    $this->jsonResponse($requests);
+        $this->jsonResponse($requests);
     }
+
     // approve comment delete, καλείται όταν admin πατήσει approve σε ένα comment delete request, και διαγράφει το comment
-    public function approveCommentDelete(){
+    public function approveCommentDelete() {
 
-    $this->requireAdmin();
+        $this->requireAdmin();
 
-    $request_id = $_GET['id'] ?? null;
+        $request_id = $_GET['id'] ?? null;
 
-    if(!$request_id){
-        $this->jsonResponse(["message"=>"Request ID required"],400);
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+
+        $this->postModel->approveCommentDelete($request_id);
+
+        $this->jsonResponse([
+            "message" => "Comment deleted"
+        ]);
     }
 
-    $this->postModel->approveCommentDelete($request_id);
+    // reject comment delete, καλείται όταν admin πατήσει reject σε ένα comment delete request, και απορρίπτει το request χωρίς να διαγράψει το comment
+    public function rejectCommentDelete() {
 
-    $this->jsonResponse([
-        "message"=>"Comment deleted"
-    ]);
-}
-// reject comment delete, καλείται όταν admin πατήσει reject σε ένα comment delete request, και απορρίπτει το request χωρίς να διαγράψει το comment
-public function rejectCommentDelete(){
+        $this->requireAdmin();
 
-    $this->requireAdmin();
+        $request_id = $_GET['id'] ?? null;
 
-    $request_id = $_GET['id'] ?? null;
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
 
-    if(!$request_id){
-        $this->jsonResponse(["message"=>"Request ID required"],400);
-    }
+        $this->postModel->rejectCommentDelete($request_id);
 
-    $this->postModel->rejectCommentDelete($request_id);
-
-    $this->jsonResponse([
-        "message"=>"Delete request rejected"
-    ]);
+        $this->jsonResponse([
+            "message" => "Delete request rejected"
+        ]);
 }
 }
 
