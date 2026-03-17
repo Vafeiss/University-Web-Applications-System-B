@@ -29,8 +29,39 @@ class CommentController extends BaseController {
             $data['post_id'],
             $data['content']
         );
+        
+        // Notification: notify post owner
+        require_once __DIR__ . '/../modules/PostModel.php';
+        require_once __DIR__ . '/../modules/NotificationModel.php';
+
+        $postModel = new PostModel();
+        $notificationModel = new NotificationModel();
+
+        // βρες owner του post
+        $post = $postModel->getPostById($data['post_id']);
+        // να μην ειδοποιείται ο χρήστης αν σχολιάζει το δικό του post
+        if ($post && $post['user_id'] != $user_id) {
+            // φέρνουμε το username του commenter για να κάνουμε το message πιο ζωντανό
+            require_once __DIR__ . '/../config/database.php';
+            $db = (new Database())->connect();
+            $stmt = $db->prepare("SELECT username FROM users WHERE user_id = ?");
+            $stmt->execute([$user_id]);
+            $commenter_username = $stmt->fetchColumn();
+            
+            // δημιουργούμε δυναμικό μήνυμα με το όνομα του commenter
+            $message = $commenter_username . " commented on your post";
+            
+            // δημιουργεί εγγραφή ειδοποίησης στο database για τον ιδιοκτήτη του post
+            $notificationModel->createNotification(
+                $post['user_id'], // receiver (owner)
+                'comment',        // type
+                $data['post_id'], // post reference
+                $message
+            );
+        }
+        
         // Επιστροφή επιτυχούς απάντησης
-         $this->jsonResponse(["message" => "Comment added"]);
+        $this->jsonResponse(["message" => "Comment added"]);
     }
 
     // List comments
