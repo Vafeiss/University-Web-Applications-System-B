@@ -35,7 +35,7 @@ SYSTEM_B_DB_PASS
 
 The schema used by this feature is included in:
 
-database/university_web_main.sql
+database/schema.sql
 
 Import this file into phpMyAdmin if you want to replicate the exact database structure locally.
 
@@ -76,7 +76,7 @@ The search queries operate on the existing **posts** table and related tables de
 
 2. Import the database schema:
 
-database/university_web_main.sql
+database/schema.sql
 
 3. Ensure the database name is:
 
