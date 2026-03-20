@@ -38,6 +38,7 @@
 
 require_once "../backend/middleware/AuthGuard.php";
 require_once "../backend/middleware/ProfileGuard.php";
+require_once "../backend/config/database.php";
 
 /* =========================
    ACCESS CONTROL
@@ -45,6 +46,15 @@ require_once "../backend/middleware/ProfileGuard.php";
 
 requireLogin();
 requireCompleteProfile(); // Ensures profile is completed before accessing dashboard
+
+$db = new Database();
+$conn = $db->connect();
+
+$tokenBalanceStmt = $conn->prepare(
+    "SELECT token_balance FROM users WHERE user_id = :id LIMIT 1"
+);
+$tokenBalanceStmt->execute([":id" => $_SESSION["user_id"]]);
+$tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
 ?>
 <!doctype html>
@@ -66,6 +76,17 @@ requireCompleteProfile(); // Ensures profile is completed before accessing dashb
 </head>
 
 <body>
+
+<?php if ($_SESSION["role"] !== "admin"): ?>
+<div class="position-fixed top-0 end-0 m-4">
+<div class="card shadow-sm">
+<div class="card-body py-2 px-3">
+<span class="text-muted">Token Balance:</span>
+<strong><?= $tokenBalance ?></strong>
+</div>
+</div>
+</div>
+<?php endif; ?>
 
 <div class="container auth-container">
 

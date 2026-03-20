@@ -1,4 +1,5 @@
 <?php
+require_once "../backend/config/database.php";
 session_start();    
 /* Έλεγχος αν ο χρήστης είναι συνδεδεμένος */
 if (!isset($_SESSION['user_id'])) {
@@ -7,6 +8,15 @@ if (!isset($_SESSION['user_id'])) {
 }
 /* Έλεγχος αν ο χρήστης είναι admin  για εμφανιση anonymous posts */
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
+
+$db = new Database();
+$conn = $db->connect();
+
+$tokenBalanceStmt = $conn->prepare(
+    "SELECT token_balance FROM users WHERE user_id = :id LIMIT 1"
+);
+$tokenBalanceStmt->execute([":id" => $_SESSION['user_id']]);
+$tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
 $postCssVersion = filemtime(__DIR__ . '/css/post.css');
 $adminCssVersion = filemtime(__DIR__ . '/css/admin_pending_posts.css');
@@ -32,6 +42,12 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
         <div class="feed-header-row">
             <h1 id="feedTitle">Posts Feed</h1>
             <div class="feed-header-actions">
+                <?php if (!$isAdmin): ?>
+                <div class="token-balance-badge">
+                    <span class="token-balance-label">Tokens</span>
+                    <strong><?= $tokenBalance ?></strong>
+                </div>
+                <?php endif; ?>
                 <!-- προσθετει στο UI, κουδουνακι,unread counter,dropdown λιστα,κουμπί mark all as read-->
                 <div class="notifications-wrap">
                     <button type="button" id="notificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">

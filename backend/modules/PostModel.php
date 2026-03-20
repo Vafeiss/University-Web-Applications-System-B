@@ -50,6 +50,120 @@ class PostModel {
         ]);
     }
 
+    public function getAttachmentById($attachment_id) {
+
+        $query = "SELECT a.*, p.user_id AS post_owner_id, p.status, p.deleted
+                  FROM attachments a
+                  JOIN posts p ON a.post_id = p.post_id
+                  WHERE a.attachment_id = :attachment_id
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':attachment_id' => $attachment_id
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getTokenBalance(int $user_id): int {
+
+        $query = "SELECT token_balance
+                  FROM users
+                  WHERE user_id = :user_id
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id
+        ]);
+
+        return (int) ($stmt->fetchColumn() ?: 0);
+    }
+
+    public function hasUsedFreeDownloadToday(int $user_id): bool {
+
+        $query = "SELECT transaction_id
+                  FROM transactions
+                  WHERE user_id = :user_id
+                  AND token_charge = 0
+                  AND DATE(timestamp) = CURDATE()
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id
+        ]);
+
+        return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function recordTokenTransaction(int $user_id, int $tokenCharge): bool {
+
+        $query = "INSERT INTO transactions (user_id, token_charge, timestamp)
+                  VALUES (:user_id, :token_charge, NOW())";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            ':user_id' => $user_id,
+            ':token_charge' => $tokenCharge
+        ]);
+    }
+
+    public function rewardApprovedPost(int $user_id): void {
+        $this->conn->beginTransaction();
+
+        try {
+            $query = "UPDATE users
+                      SET token_balance = token_balance + 1
+                      WHERE user_id = :user_id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ':user_id' => $user_id
+            ]);
+
+            $this->recordTokenTransaction($user_id, 1);
+
+            $this->conn->commit();
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
+    public function processDownloadTokenCharge(int $user_id, int $tokenCharge): void {
+        $this->conn->beginTransaction();
+
+        try {
+            if ($tokenCharge > 0) {
+                $query = "UPDATE users
+                          SET token_balance = token_balance - :token_charge
+                          WHERE user_id = :user_id";
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute([
+                    ':user_id' => $user_id,
+                    ':token_charge' => $tokenCharge
+                ]);
+            }
+
+            $this->recordTokenTransaction($user_id, -$tokenCharge);
+
+            $this->conn->commit();
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
     // Show_Post()
     public function getApprovedPosts() {
 
@@ -233,13 +347,16 @@ class PostModel {
         // Ενημέρωση της κατάστασης του post σε "approved" (status = 1)
         $query = "UPDATE posts
                   SET status = 1
-                  WHERE post_id = :post_id";
+                  WHERE post_id = :post_id
+                  AND status <> 1";
         // Εκτέλεση του query
         $stmt = $this->conn->prepare($query);
         // Επιστροφή του αποτελέσματος του query
-        return $stmt->execute([
+        $stmt->execute([
             ":post_id" => $post_id
         ]);
+
+        return $stmt->rowCount() > 0;
     }
 
     // reject post by admin

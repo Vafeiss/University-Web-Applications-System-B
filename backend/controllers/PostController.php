@@ -356,7 +356,11 @@ class PostController extends BaseController {
         // Φέρνουμε post data πριν εγκριθεί για να στείλουμε notifications
         $post = $this->postModel->getPostById($post_id);
 
-        $this->postModel->approvePost($post_id);
+        $wasApprovedNow = $this->postModel->approvePost($post_id);
+
+        if ($wasApprovedNow && $post) {
+            $this->postModel->rewardApprovedPost((int)$post['user_id']);
+        }
 
         // Στέλνουμε notifications μετά την έγκριση
         if ($post) {
@@ -385,6 +389,60 @@ class PostController extends BaseController {
         $this->jsonResponse([
             "message" => "Post approved"
         ]);
+    }
+
+    public function downloadAttachment() {
+        $userId = (int)$this->requireLogin();
+        $attachmentId = (int) ($_GET['attachment_id'] ?? 0);
+
+        if ($attachmentId <= 0) {
+            http_response_code(400);
+            exit("Attachment ID required.");
+        }
+
+        $attachment = $this->postModel->getAttachmentById($attachmentId);
+
+        if (!$attachment || (int) ($attachment['deleted'] ?? 0) === 1 || (int) ($attachment['status'] ?? 0) !== 1) {
+            http_response_code(404);
+            exit("Attachment not found.");
+        }
+
+        $filePath = __DIR__ . '/../../frontend/' . ltrim((string) ($attachment['file_path'] ?? ''), '/');
+        if (!is_file($filePath)) {
+            http_response_code(404);
+            exit("File not found.");
+        }
+
+        $postOwnerId = (int) ($attachment['post_owner_id'] ?? 0);
+        if ($postOwnerId !== $userId) {
+            $tokenCharge = 0;
+
+            if ($this->postModel->hasUsedFreeDownloadToday($userId)) {
+                $currentBalance = $this->postModel->getTokenBalance($userId);
+
+                if ($currentBalance < 1) {
+                    http_response_code(403);
+                    exit("Not enough tokens for download.");
+                }
+
+                $tokenCharge = 1;
+            }
+
+            $this->postModel->processDownloadTokenCharge($userId, $tokenCharge);
+        }
+
+        $downloadName = basename((string) ($attachment['file_name'] ?? 'attachment'));
+        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: attachment; filename="' . rawurlencode($downloadName) . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Pragma: no-cache');
+
+        readfile($filePath);
+        exit;
     }
 
     // reject post by admin
@@ -584,6 +642,9 @@ if (isset($_GET['action'])) {
             break;
         case 'get':  // Get_Post()
             $controller->get();
+            break;
+        case 'downloadAttachment':
+            $controller->downloadAttachment();
             break;
         case 'requestDelete':
             $controller->requestDelete();

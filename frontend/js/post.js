@@ -343,7 +343,10 @@ function renderAttachments(attachments){
 
         attachments.forEach(file => {
 
-            const fileUrl = file.file_url || file.file_path || "#";
+            const attachmentId = Number(file.attachment_id);
+            const fileUrl = Number.isInteger(attachmentId) && attachmentId > 0
+                ? `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=downloadAttachment&attachment_id=${attachmentId}`
+                : (file.file_url || file.file_path || "#");
             const fileName = file.file_name || "Attachment";
             const fileType = (file.file_type || "FILE").toUpperCase();
             const fileSize = file.file_size ? `${Math.max(1, Math.round(file.file_size / 1024))} KB` : "Unknown size";

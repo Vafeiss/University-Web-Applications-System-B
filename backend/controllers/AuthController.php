@@ -44,14 +44,15 @@
  * Date: 2026
  */
 require_once __DIR__ . "/../config/database.php";
-require_once __DIR__ . "/../../vendor/autoload.php";
+$autoloadPath = __DIR__ . "/../../vendor/autoload.php";
+if (file_exists($autoloadPath)) {
+    require_once $autoloadPath;
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use Dotenv\Dotenv;
 // ευρεση .env αρχείου για mail configuration
-$dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
-$dotenv->load();
 
 date_default_timezone_set('Europe/Athens');
 
@@ -62,6 +63,30 @@ class AuthController {
     public function __construct() {
         $db = new Database();
         $this->conn = $db->connect();
+    }
+
+    private function generateUniqueReferralCode(): string {
+        do {
+            $referralCode = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+
+            $checkReferralCode = $this->conn->prepare(
+                "SELECT user_id FROM users WHERE referral_code = :rc LIMIT 1"
+            );
+            $checkReferralCode->execute([":rc" => $referralCode]);
+        } while ($checkReferralCode->fetch(PDO::FETCH_ASSOC));
+
+        return $referralCode;
+    }
+
+    private function loadEnvironment(): void {
+        $envPath = __DIR__ . "/../../.env";
+
+        if (!class_exists(Dotenv::class) || !file_exists($envPath)) {
+            return;
+        }
+
+        $dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
+        $dotenv->safeLoad();
     }
 
     /* =========================
@@ -126,7 +151,7 @@ class AuthController {
         // ============================================
         // Generate unique referral code for new user
         // ============================================
-        $referralCode = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+        $referralCode = $this->generateUniqueReferralCode();
 
         $hashed = password_hash($password, PASSWORD_DEFAULT);
 
@@ -154,13 +179,24 @@ class AuthController {
             ":p" => $hashed,
             ":tb" => $newUserTokens,
             ":rc" => $referralCode,
-            ":rb" => $inputReferralCode
+            ":rb" => $referrerUserId
         ]);
+
+        $newUserId = (int)$this->conn->lastInsertId();
 
         // ============================================
         // If referral used → reward referrer
         // ============================================
         if ($referrerUserId !== null) {
+            $recordNewUserReward = $this->conn->prepare(
+                "INSERT INTO transactions (user_id, token_charge, timestamp)
+                 VALUES (:id, :charge, NOW())"
+            );
+
+            $recordNewUserReward->execute([
+                ":id" => $newUserId,
+                ":charge" => 10
+            ]);
 
             $rewardReferrer = $this->conn->prepare(
                 "UPDATE users 
@@ -169,6 +205,16 @@ class AuthController {
             );
 
             $rewardReferrer->execute([":id" => $referrerUserId]);
+
+            $recordReferrerReward = $this->conn->prepare(
+                "INSERT INTO transactions (user_id, token_charge, timestamp)
+                 VALUES (:id, :charge, NOW())"
+            );
+
+            $recordReferrerReward->execute([
+                ":id" => $referrerUserId,
+                ":charge" => 10
+            ]);
         }
 
         // Commit transaction
@@ -223,6 +269,7 @@ class AuthController {
        REQUEST PASSWORD RESET
     ========================= */
     public function requestPasswordReset(string $email): array {
+    $this->loadEnvironment();
 
     $email = trim($email);
 
@@ -276,6 +323,12 @@ class AuthController {
     $resetLink = "http://localhost/University-Web-Applications-System-B/frontend/reset_password.php?token=" . $rawToken;
 
     try {
+        if (!class_exists(PHPMailer::class)) {
+            return [
+                "ok" => false,
+                "message" => "Email support is not configured yet. Install Composer dependencies first."
+            ];
+        }
 
         // Load mail configuration
         $mailConfig = require __DIR__ . '/../config/mail.php';
