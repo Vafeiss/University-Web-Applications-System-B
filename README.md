@@ -35,7 +35,7 @@ SYSTEM_B_DB_PASS
 
 The schema used by this feature is included in:
 
-database/university_web_main.sql
+database/schema.sql
 
 The schema already includes the following fields required by the referral system:
 
@@ -105,7 +105,7 @@ Validates the referral code and assigns token rewards to both users.
 
 2. Import the database schema:
 
-database/university_web_main.sql
+database/schema.sql
 
 3. Ensure the database name is:
 
