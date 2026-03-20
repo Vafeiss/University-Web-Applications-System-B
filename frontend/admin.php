@@ -30,7 +30,7 @@
  * - Role verification handled in middleware
  * - Output escaping using htmlspecialchars()
  *
- * Author: Pela Koniotaki
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

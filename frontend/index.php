@@ -27,6 +27,11 @@
  * - Session-based authentication
  * - Output escaping using htmlspecialchars()
  *
+ * Author: Pelagia Koniotaki
+ */
+/**
+ * Dashboard Page
+ * Accessible only by authenticated users.
  * Author: pela koniotaki
  * Date: 2026
  */
