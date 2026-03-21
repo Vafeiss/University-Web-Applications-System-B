@@ -6,12 +6,12 @@
  * System: University Web Applications System B
  *
  * Description:
- * Displays the login form and processes authentication requests.
- * After successful login the system:
+ * Displays the login form and delegates authentication flow
+ * decisions to AuthController.
+ * After successful login the page:
  * - Regenerates the session ID
  * - Stores user session data
- * - Checks whether the user's profile is completed
- * - Redirects the user to the appropriate page
+ * - Redirects to the target returned by AuthController
  *
  * Session Data Stored:
  * - user_id
@@ -21,7 +21,7 @@
  * Security:
  * - Session regeneration (prevents session fixation)
  * - Escaped output using htmlspecialchars()
- * - Password verification handled in AuthController
+ * - Password verification and profile-completion checks handled in AuthController
  *
  * Access Level:
  * - Public (non-authenticated users only)
@@ -67,44 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION["user_id"] = $res["user"]["user_id"];
         $_SESSION["username"] = $res["user"]["username"];
         $_SESSION["role"] = $res["user"]["role"];
-        // If the user is an admin, redirect to admin dashboard
-    if ($res["user"]["role"] === "admin") {
-      header("Location: /University-Web-Applications-System-B/frontend/admin.php");
-      exit;
-  }
-        /* =========================
-           CHECK PROFILE COMPLETION
-        ========================= */
-
-        require_once "../backend/config/database.php";
-
-        $db = new Database();
-        $conn = $db->connect();
-
-        $stmt = $conn->prepare("
-            SELECT university, year
-            FROM users
-            WHERE user_id = :id
-        ");
-
-        $stmt->execute([
-            ":id" => $res["user"]["user_id"]
-        ]);
-
-        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        /* Redirect based on profile status */
-
-        if (!$profile || $profile["university"] === null || $profile["year"] === null) {
-
-            header("Location: /University-Web-Applications-System-B/frontend/profile_setup.php");
-
-        } else {
-
-            header("Location: /University-Web-Applications-System-B/frontend/index.php");
-
-        }
-
+        header("Location: " . $res["redirect"]);
         exit;
     }
 

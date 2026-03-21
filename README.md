@@ -1,91 +1,120 @@
-# University-Web-Applications-System-B
+# University Web Applications System B
 
-This is the repository of our web application **Student Forum System (System B)** for our University.  
-The system implements authentication, role-based access control, referral system, and token economy.
+This repository contains the implementation of our university web application, **Student Forum System (System B)**.
 
-The purpose of this repository is version control, collaboration, and tracking team progress.
+The purpose of this repository is to support version control, team collaboration, and progress tracking throughout the development process.
 
 ---
 
-# Features Implemented
+## Project Overview
 
-## Authentication System
-- User Registration (with password hashing)
-- Login (secure session handling)
-- Logout
-- Password Reset (token-based, expiring links)
-- Session regeneration (anti-session fixation)
+The system currently focuses on:
 
-## Role-Based Access Control (RBAC)
-- `admin` and `user` roles
-- Admin-only protected pages
-- Middleware protection (`AuthGuard`)
-- Conditional UI rendering based on role
+- user authentication,
+- role-based access control,
+- referral-based registration,
+- token reward management,
+- secure session and password reset handling.
 
-## Referral & Token System
+This module represents the core account and access management functionality of the application.
+
+---
+
+## Implemented Features
+
+### Authentication System
+- User registration with password hashing
+- Secure login with session handling
+- Logout functionality
+- Password reset using time-limited tokens
+- Session ID regeneration to reduce session fixation risks
+
+### Role-Based Access Control (RBAC)
+- Support for two user roles:
+  - `admin`
+  - `user`
+- Access restriction for admin-only pages
+- Middleware-based route protection using `AuthGuard`
+- Conditional interface rendering depending on user role
+
+### Referral and Token System
 - Automatic generation of unique referral codes
-- Optional referral code usage during registration
-- Token rewards:
-  - +10 tokens to new user (if referral used)
-  - +10 tokens to referrer
+- Optional referral code usage during user registration
+- Token rewards when a valid referral code is used:
+  - `+10` tokens for the new user
+  - `+10` tokens for the referring user
 - Transaction-safe token updates
-- Token balance stored per user
+- Token balance tracking per user account
 
-## Security Practices
-- Password hashing (`password_hash`)
-- Password verification (`password_verify`)
-- Prepared statements (PDO)
-- Transaction handling for atomic operations
-- Session ID regeneration
-- Secure password reset with expiration
+### Security Practices
+- Password hashing using `password_hash()`
+- Password verification using `password_verify()`
+- Prepared statements through PDO
+- Transaction handling for sensitive database operations
+- Session regeneration after login
+- Secure password reset with expiration control
 
 ---
 
-# Database Setup
+## Database Setup
 
 To set up the database locally:
 
-1. Open phpMyAdmin
-2. Create a new database (e.g. `university_web`)
-3. Import the file located at:  
-   `database/schema.sql`
-4. The database will be ready to use.
+1. Open **phpMyAdmin**
+2. Create a new database  
+   Example: `university_web`
+3. Import the following file:
+
+```text
+database/schema.sql
+```
+
+4. The database will then be ready for use.
 
 ---
 
-# Database Structure (Core Tables)
+## Core Database Structure
 
-## users table includes:
+### `users` table
+The `users` table includes the following core fields:
 
-- user_id (Primary Key)
-- username
-- email
-- password (hashed)
-- role (admin/user)
-- token_balance
-- referral_code (unique)
-- referred_by (nullable)
-- reset_token
-- reset_expires
-- university (nullable)
-- year (nullable)
-- department (nullable)
+- `user_id` (Primary Key)
+- `username`
+- `email`
+- `password` (hashed)
+- `role` (`admin` / `user`)
+- `token_balance`
+- `referral_code` (unique)
+- `referred_by` (nullable)
+- `reset_token`
+- `reset_expires`
+- `university` (nullable)
+- `year` (nullable)
+- `department` (nullable)
 
 ---
 
-# How to Run the Project Locally
+## How to Run the Project Locally
 
 1. Clone the repository
 2. Move the project folder into:
-   xampp/htdocs/
-3. Start Apache and MySQL from XAMPP
+
+```text
+xampp/htdocs/
+```
+
+3. Start **Apache** and **MySQL** from XAMPP
 4. Open your browser and visit:
-   http://localhost/University-Web-Applications-System-B/frontend/login.php
+
+```text
+http://localhost/University-Web-Applications-System-B/frontend/login.php
+```
 
 ---
 
-# System Architecture
+## Project Structure
 
+```text
 backend/
     config/
     controllers/
@@ -102,86 +131,73 @@ frontend/
 
 database/
     schema.sql
+```
 
 ---
 
-# Role-Based Access Control
+## Role-Based Access Control
 
-The system supports two roles:
+The system supports the following user roles:
 
-- user
-- admin
+- `user`
+- `admin`
 
-Access Rules:
+### Access Rules
+- `login.php` → Public
+- `register.php` → Public
+- `index.php` → Authenticated users only
+- `admin.php` → Admin users only
 
-- login.php → Public
-- register.php → Public
-- index.php → Authenticated users only
-- admin.php → Admin only
-
-Access is enforced via middleware (AuthGuard).
+Access control is enforced through middleware (`AuthGuard`).
 
 ---
 
-# Referral & Token System
+## Referral and Token Logic
 
 - Each user receives a unique referral code.
-- A referral code can be used during registration.
-- If valid referral is used:
-    - New user receives +10 tokens.
-    - Referrer receives +10 tokens.
-- All token updates are handled using database transactions.
+- A referral code may be used during registration.
+- If a valid referral code is provided:
+  - the new user receives `+10` tokens,
+  - the referring user also receives `+10` tokens.
+- All token-related updates are executed through database transactions to ensure consistency.
 
 ---
 
-# Security Implementation
+## Security Implementation
 
-- Password hashing (password_hash)
-- Password verification (password_verify)
-- Prepared statements (PDO)
-- Transaction handling for atomic operations
-- Session ID regeneration after login
-- Reset tokens expire after 1 hour
+The system applies the following security practices:
 
----
-
-# Project Status
-
-System B – Authentication & Referral Module: COMPLETE
-
-Future extension: Forum / Posting module.
+- Password hashing with `password_hash()`
+- Password verification with `password_verify()`
+- Prepared statements using PDO
+- Transaction handling for atomic updates
+- Session ID regeneration after successful login
+- Password reset tokens with a 1-hour expiration period
 
 ---
 
-# Functional Scope (System B)
+## Functional Scope
 
-This module implements the following SRS requirements:
+This module implements the following functional requirements:
 
 - User authentication and session management
 - Role-based authorization
 - Secure password reset mechanism
 - Referral-based token reward system
 - Token balance tracking per user
-This is the repository of our  web application Student Forum system
-for our University with the purpose of keeping versions , updates and 
-tracking our progress as a team.
+
 ---
 
-# Database Setup
-To set up the database locally:
-1. Open phpMyAdmin
-2. Create a new database (e.g. `university_web`)
-3. Import the file located at:
-database/schema.sql
-4. The database will be ready to use.
----
-# How to Run the Project Locally
-1. Clone the repository
-2. Move the project folder into:
-   xampp/htdocs/
-3. Start Apache and MySQL from XAMPP
-4. Open your browser and visit:
-   http://localhost/University-Web-Applications-System-B/frontend/login.php
+## Project Status
+
+**System B – Authentication and Referral Module: Complete**
+
+Planned future extension:
+
+- Forum and posting module
+
 ---
 
+## Notes
 
+This repository is intended for academic development purposes and team collaboration during the implementation of the project.

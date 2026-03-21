@@ -89,6 +89,31 @@ class AuthController {
         $dotenv->safeLoad();
     }
 
+    private function getPostLoginRedirect(array $user): string {
+        if (($user["role"] ?? "") === "admin") {
+            return "/University-Web-Applications-System-B/frontend/admin.php";
+        }
+
+        $stmt = $this->conn->prepare(
+            "SELECT university, year
+             FROM users
+             WHERE user_id = :id
+             LIMIT 1"
+        );
+
+        $stmt->execute([
+            ":id" => $user["user_id"]
+        ]);
+
+        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$profile || $profile["university"] === null || $profile["year"] === null) {
+            return "/University-Web-Applications-System-B/frontend/profile_setup.php";
+        }
+
+        return "/University-Web-Applications-System-B/frontend/index.php";
+    }
+
     /* =========================
        REGISTER
     ========================= */
@@ -258,11 +283,17 @@ class AuthController {
             return ["ok" => false, "message" => "Invalid username or password."];
         }
 
-       return ["ok" => true, "user" => [
-    "user_id" => $user["user_id"],
-    "username" => $user["username"],
-    "role" => $user["role"]
-    ]];
+        $authenticatedUser = [
+            "user_id" => $user["user_id"],
+            "username" => $user["username"],
+            "role" => $user["role"]
+        ];
+
+        return [
+            "ok" => true,
+            "user" => $authenticatedUser,
+            "redirect" => $this->getPostLoginRedirect($authenticatedUser)
+        ];
     }
 
     /* =========================
