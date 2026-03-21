@@ -111,6 +111,7 @@ let deleteRequestPostId = null;
 let reportPostId = null;
 let adminDeletePostId = null;
 let adminDeleteCommentId = null;
+let pendingDownloadUrl = null;
 
 function updateDialogBodyLock(){
     const commentDialog = document.getElementById("commentPolicyDialog");
@@ -119,13 +120,15 @@ function updateDialogBodyLock(){
     const postReportDialog = document.getElementById("postReportDialog");
     const adminPostDeleteDialog = document.getElementById("adminPostDeleteDialog");
     const adminCommentDeleteDialog = document.getElementById("adminCommentDeleteDialog");
+    const downloadDialog = document.getElementById("downloadConfirmDialog");
     const hasOpenDialog = Boolean(
         (commentDialog && !commentDialog.hidden) ||
         (deleteDialog && !deleteDialog.hidden) ||
         (postDeleteDialog && !postDeleteDialog.hidden) ||
         (postReportDialog && !postReportDialog.hidden) ||
         (adminPostDeleteDialog && !adminPostDeleteDialog.hidden) ||
-        (adminCommentDeleteDialog && !adminCommentDeleteDialog.hidden)
+        (adminCommentDeleteDialog && !adminCommentDeleteDialog.hidden) ||
+        (downloadDialog && !downloadDialog.hidden)
     );
 
     document.body.classList.toggle("comment-dialog-open", hasOpenDialog);
@@ -259,6 +262,22 @@ function toggleAdminCommentDeleteDialog(show){
     updateDialogBodyLock();
 }
 
+function toggleDownloadConfirmDialog(show){
+    const dialog = document.getElementById("downloadConfirmDialog");
+
+    if (!dialog) {
+        return;
+    }
+
+    dialog.hidden = !show;
+
+    if (!show) {
+        pendingDownloadUrl = null;
+    }
+
+    updateDialogBodyLock();
+}
+
 function renderPostActionControls(post, adminPreviewMode, dashboardPostsMode) {
     if (adminPreviewMode) {
         return "";
@@ -360,12 +379,22 @@ function renderAttachments(attachments){
                     </span>
                     <span class="attachment-size">${fileSize}</span>
                 </div>
-                <a class="attachment-action" href="${fileUrl}" download>Download</a>
+                <a class="attachment-action" href="${fileUrl}" data-attachment-id="${attachmentId}" data-download-url="${fileUrl}">Download</a>
             </article>
             `;
         });
 
         html += `
+            </div>
+            <div id="downloadConfirmDialog" class="comment-policy-dialog" hidden>
+                <div class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="downloadConfirmTitle">
+                    <h4 id="downloadConfirmTitle">Confirm Download</h4>
+                    <p id="downloadConfirmMessage">This action will use tokens.</p>
+                    <div class="comment-policy-actions">
+                        <button type="button" id="downloadConfirmCancel" class="policy-link cancel">Cancel</button>
+                        <button type="button" id="downloadConfirmAccept" class="policy-link accept">Accept</button>
+                    </div>
+                </div>
             </div>
         </section>
         `;
@@ -628,6 +657,12 @@ document.addEventListener("click", function (event) {
         return;
     }
 
+    const downloadDialog = document.getElementById("downloadConfirmDialog");
+    if (downloadDialog && event.target === downloadDialog) {
+        toggleDownloadConfirmDialog(false);
+        return;
+    }
+
     const acceptBtn = event.target.closest("#commentPolicyAccept");
     if (acceptBtn) {
         commentPolicyAccepted = true;
@@ -681,6 +716,28 @@ document.addEventListener("click", function (event) {
         return;
     }
 
+    const downloadCancelBtn = event.target.closest("#downloadConfirmCancel");
+    if (downloadCancelBtn) {
+        toggleDownloadConfirmDialog(false);
+        return;
+    }
+
+    const downloadAcceptBtn = event.target.closest("#downloadConfirmAccept");
+    if (downloadAcceptBtn) {
+        if (pendingDownloadUrl) {
+            window.location.href = pendingDownloadUrl;
+        }
+        toggleDownloadConfirmDialog(false);
+        return;
+    }
+
+    const downloadTrigger = event.target.closest(".attachment-action[data-attachment-id]");
+    if (downloadTrigger) {
+        event.preventDefault();
+        previewAttachmentDownload(downloadTrigger);
+        return;
+    }
+
     const toggleButton = event.target.closest("#attachmentsToggle");
     if (!toggleButton) {
         return;
@@ -695,6 +752,38 @@ document.addEventListener("click", function (event) {
     list.hidden = !shouldExpand;
     toggleButton.setAttribute("aria-expanded", String(shouldExpand));
 });
+
+async function previewAttachmentDownload(trigger) {
+    const attachmentId = Number(trigger.dataset.attachmentId);
+    const downloadUrl = trigger.dataset.downloadUrl || trigger.getAttribute("href") || "#";
+
+    if (!Number.isInteger(attachmentId) || attachmentId <= 0) {
+        window.location.href = downloadUrl;
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=previewDownload&attachment_id=${attachmentId}`,
+            { cache: "no-store" }
+        );
+
+        const result = await response.json();
+        const messageEl = document.getElementById("downloadConfirmMessage");
+        const acceptButton = document.getElementById("downloadConfirmAccept");
+
+        if (!messageEl || !acceptButton) {
+            return;
+        }
+
+        messageEl.textContent = result.message || "This download requires confirmation.";
+        pendingDownloadUrl = result.can_download ? downloadUrl : null;
+        acceptButton.hidden = !result.can_download;
+        toggleDownloadConfirmDialog(true);
+    } catch (error) {
+        showInlineNotice("Could not prepare the download.", "error");
+    }
+}
 // Αποστολή νέου σχολίου
 document.addEventListener("submit", async function(e){
 
