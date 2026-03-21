@@ -91,7 +91,7 @@ class AuthController {
 
     private function getPostLoginRedirect(array $user): string {
         if (($user["role"] ?? "") === "admin") {
-            return "/University-Web-Applications-System-B/frontend/admin.php";
+            return "/University-Web-Applications-System-B/frontend/admin_dashboard.php";
         }
 
         $stmt = $this->conn->prepare(
@@ -111,7 +111,7 @@ class AuthController {
             return "/University-Web-Applications-System-B/frontend/profile_setup.php";
         }
 
-        return "/University-Web-Applications-System-B/frontend/index.php";
+        return "/University-Web-Applications-System-B/frontend/posts.php";
     }
 
     /* =========================
