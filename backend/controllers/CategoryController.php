@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . "/../modules/CategoryModel.php";
+require_once __DIR__ . "/../modules/NotificationModel.php";
 
 header("Content-Type: application/json");
 
@@ -23,6 +24,15 @@ class CategoryController extends BaseController {
         }
 
         $this->model->requestCategory($userId, $name);
+
+        $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $notificationModel = new NotificationModel();
+        $notificationModel->notifyAdmins(
+            'admin_category_request',
+            null,
+            $actorName . ' submitted a category request: ' . $name
+        );
+
         $this->jsonResponse(["message" => "Category request submitted"]);
     }
 
@@ -30,6 +40,15 @@ class CategoryController extends BaseController {
         $this->requireAdmin();
         $requests = $this->model->getPendingRequests();
         $this->jsonResponse($requests);
+    }
+
+    public function summary(): void {
+        $this->requireAdmin();
+
+        $this->jsonResponse([
+            "pending_requests" => $this->model->getPendingRequests(),
+            "existing_categories" => $this->model->getExistingCategories()
+        ]);
     }
 
     public function approve(): void {
@@ -47,9 +66,41 @@ class CategoryController extends BaseController {
             $this->jsonResponse(["message" => "request_id and name are required"], 400);
         }
 
-        $this->model->createCategory($name);
+        $created = $this->model->createCategory($name);
         $this->model->updateRequestStatus($requestId, 1);
-        $this->jsonResponse(["message" => "Category created"]);
+
+        if ($created) {
+            $this->jsonResponse(["message" => "Category created"]);
+        }
+
+        $this->jsonResponse(["message" => "Category already exists. Request marked as approved."]);
+    }
+
+    public function deleteCategory(): void {
+        $this->requireAdmin();
+        $data = $this->getJSONInput();
+
+        if (!is_array($data)) {
+            $this->jsonResponse(["message" => "Invalid request body"], 400);
+        }
+
+        $categoryId = (int)($data["category_id"] ?? 0);
+        if ($categoryId <= 0) {
+            $this->jsonResponse(["message" => "Valid category_id is required"], 400);
+        }
+
+        $result = $this->model->deleteCategoryAndPosts($categoryId);
+        if (empty($result["ok"])) {
+            $this->jsonResponse(["message" => $result["message"] ?? "Could not delete category"], 404);
+        }
+
+        $categoryName = (string)($result["category_name"] ?? "Category");
+        $deletedPosts = (int)($result["deleted_posts"] ?? 0);
+
+        $this->jsonResponse([
+            "message" => "Deleted category '{$categoryName}' and {$deletedPosts} related posts.",
+            "deleted_posts" => $deletedPosts
+        ]);
     }
 
     public function reject(): void {
@@ -88,6 +139,12 @@ class CategoryController extends BaseController {
                 break;
             case "reject":
                 $this->reject();
+                break;
+            case "deleteCategory":
+                $this->deleteCategory();
+                break;
+            case "summary":
+                $this->summary();
                 break;
             case "userInterests":
                 $this->userInterests();

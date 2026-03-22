@@ -4,6 +4,7 @@ header("Content-Type: application/json");
 // import necessary files
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../modules/CommentModel.php';
+require_once __DIR__ . '/../modules/NotificationModel.php';
 // Controller responsible for handling Comment operations such as creating, listing and requesting deletion of comments
 class CommentController extends BaseController {
 
@@ -107,6 +108,14 @@ class CommentController extends BaseController {
             $comment_id,
             $user_id,
             $reason
+        );
+
+        $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $notificationModel = new NotificationModel();
+        $notificationModel->notifyAdmins(
+            'admin_comment_delete_request',
+            (int)$comment_id,
+            $actorName . ' submitted a comment delete request.'
         );
 
         $this->jsonResponse(["message" => "Request submitted"]);

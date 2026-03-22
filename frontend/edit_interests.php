@@ -10,16 +10,18 @@ $db = new Database();
 $conn = $db->connect();
 
 $categoriesStmt = $conn->query(" 
-    SELECT category_id, name
+    SELECT MIN(category_id) AS category_id, name
     FROM categories
+    GROUP BY name
     ORDER BY name ASC
 ");
 $categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $selectedStmt = $conn->prepare(" 
-    SELECT category_id
-    FROM user_interest
-    WHERE user_id = :id
+    SELECT DISTINCT c.name
+    FROM user_interest ui
+    JOIN categories c ON c.category_id = ui.category_id
+    WHERE ui.user_id = :id
 ");
 $selectedStmt->execute([
     ":id" => $_SESSION["user_id"]
@@ -27,8 +29,8 @@ $selectedStmt->execute([
 $selectedRows = $selectedStmt->fetchAll(PDO::FETCH_COLUMN);
 
 $selectedMap = [];
-foreach ($selectedRows as $categoryId) {
-    $selectedMap[(int)$categoryId] = true;
+foreach ($selectedRows as $categoryName) {
+    $selectedMap[(string)$categoryName] = true;
 }
 
 $success = isset($_GET["success"]);
@@ -67,7 +69,7 @@ $success = isset($_GET["success"]);
                                     name="categories[]"
                                     value="<?= $id ?>"
                                     id="edit-cat<?= $id ?>"
-                                    <?= isset($selectedMap[$id]) ? 'checked' : '' ?>
+                                    <?= isset($selectedMap[(string)$cat['name']]) ? 'checked' : '' ?>
                                 >
                                 <label class="form-check-label" for="edit-cat<?= $id ?>">
                                     <?= htmlspecialchars($cat['name']) ?>
@@ -81,7 +83,7 @@ $success = isset($_GET["success"]);
             </form>
 
             <div class="text-center mt-3">
-                <a href="profile_view.php">Back to profile view</a>
+                <a href="posts.php">Back to posts</a>
             </div>
         </div>
     </div>

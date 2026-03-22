@@ -47,16 +47,178 @@ class CategoryModel {
     }
 
     // ===============================
+    // ADMIN: get existing categories
+    // ===============================
+    public function getExistingCategories(){
+
+        $stmt = $this->db->query(
+            "SELECT MIN(category_id) AS category_id, name
+             FROM categories
+             GROUP BY name
+             ORDER BY name ASC"
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // ===============================
+    // ADMIN: delete category and all related posts
+    // ===============================
+    public function deleteCategoryAndPosts(int $categoryId): array {
+
+        if ($categoryId <= 0) {
+            return [
+                "ok" => false,
+                "message" => "Invalid category id"
+            ];
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $categoryStmt = $this->db->prepare(
+                "SELECT category_id, name
+                 FROM categories
+                 WHERE category_id = ?
+                 LIMIT 1"
+            );
+            $categoryStmt->execute([$categoryId]);
+            $category = $categoryStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$category) {
+                $this->db->rollBack();
+                return [
+                    "ok" => false,
+                    "message" => "Category not found"
+                ];
+            }
+
+            $categoryName = trim((string)($category["name"] ?? ""));
+
+            $postCountStmt = $this->db->prepare(
+                "SELECT COUNT(*)
+                 FROM posts p
+                 INNER JOIN categories c ON p.category_id = c.category_id
+                 WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(?))"
+            );
+            $postCountStmt->execute([$categoryName]);
+            $postCount = (int)$postCountStmt->fetchColumn();
+
+            $deleteCommentRequestsStmt = $this->db->prepare(
+                "DELETE cdr
+                 FROM comment_delete_requests cdr
+                 INNER JOIN comments c ON cdr.comment_id = c.comment_id
+                 INNER JOIN posts p ON c.post_id = p.post_id
+                 INNER JOIN categories cat ON p.category_id = cat.category_id
+                 WHERE LOWER(TRIM(cat.name)) = LOWER(TRIM(?))"
+            );
+            $deleteCommentRequestsStmt->execute([$categoryName]);
+
+            $deleteCommentReportsStmt = $this->db->prepare(
+                "DELETE cr
+                 FROM content_reports cr
+                 INNER JOIN comments c ON cr.content_type = 'comment' AND cr.content_id = c.comment_id
+                 INNER JOIN posts p ON c.post_id = p.post_id
+                 INNER JOIN categories cat ON p.category_id = cat.category_id
+                 WHERE LOWER(TRIM(cat.name)) = LOWER(TRIM(?))"
+            );
+            $deleteCommentReportsStmt->execute([$categoryName]);
+
+            $deletePostReportsStmt = $this->db->prepare(
+                "DELETE FROM content_reports
+                 WHERE content_type = 'post'
+                 AND content_id IN (
+                     SELECT p.post_id
+                     FROM posts p
+                     INNER JOIN categories c ON p.category_id = c.category_id
+                     WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(?))
+                 )"
+            );
+            $deletePostReportsStmt->execute([$categoryName]);
+
+            $deletePostDeleteRequestsStmt = $this->db->prepare(
+                "DELETE FROM post_delete_requests
+                 WHERE post_id IN (
+                     SELECT p.post_id
+                     FROM posts p
+                     INNER JOIN categories c ON p.category_id = c.category_id
+                     WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(?))
+                 )"
+            );
+            $deletePostDeleteRequestsStmt->execute([$categoryName]);
+
+            $deleteNotificationsStmt = $this->db->prepare(
+                "DELETE FROM notifications
+                 WHERE type IN ('new_post_following', 'new_post_interest')
+                 AND reference_id IN (
+                     SELECT p.post_id
+                     FROM posts p
+                     INNER JOIN categories c ON p.category_id = c.category_id
+                     WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(?))
+                 )"
+            );
+            $deleteNotificationsStmt->execute([$categoryName]);
+
+            $deletePostsStmt = $this->db->prepare(
+                "DELETE p
+                 FROM posts p
+                 INNER JOIN categories c ON p.category_id = c.category_id
+                 WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(?))"
+            );
+            $deletePostsStmt->execute([$categoryName]);
+
+            $deleteCategoryStmt = $this->db->prepare(
+                "DELETE FROM categories
+                 WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))"
+            );
+            $deleteCategoryStmt->execute([$categoryName]);
+
+            $this->db->commit();
+
+            return [
+                "ok" => true,
+                "category_name" => $categoryName,
+                "deleted_posts" => $postCount
+            ];
+        } catch (Throwable $exception) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
+    // ===============================
     // ADMIN: create category
     // ===============================
     public function createCategory($name){
+
+        $normalizedName = trim((string)$name);
+
+        if ($normalizedName === "") {
+            return false;
+        }
+
+        $existsStmt = $this->db->prepare(
+            "SELECT category_id
+             FROM categories
+             WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))
+             LIMIT 1"
+        );
+
+        $existsStmt->execute([$normalizedName]);
+
+        if ($existsStmt->fetchColumn()) {
+            return false;
+        }
 
         $stmt = $this->db->prepare("
             INSERT INTO categories (name)
             VALUES (?)
         ");
 
-        return $stmt->execute([$name]);
+        return $stmt->execute([$normalizedName]);
     }
 
     // ===============================
@@ -79,10 +241,11 @@ class CategoryModel {
     public function getUserInterests($userId) {
     // Επιστρέφει τα ενδιαφέροντα του χρήστη με βάση τον πίνακα user_interest
         $stmt = $this->db->prepare("
-            SELECT c.category_id, c.name
+            SELECT MIN(c.category_id) AS category_id, c.name
             FROM user_interest ui
             JOIN categories c ON ui.category_id = c.category_id
             WHERE ui.user_id = ?
+            GROUP BY c.name
             ORDER BY c.name ASC
         ");
     // Εκτελεί το ερώτημα με το userId ως παράμετρο για να πάρει τα ενδιαφέροντα του χρήστη

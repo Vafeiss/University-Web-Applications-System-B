@@ -43,6 +43,34 @@ class NotificationController extends BaseController {
 
         $this->jsonResponse(["message" => "All notifications marked as read"]);
     }
+
+    public function deleteRead() {
+        $userId = $this->requireLogin();
+
+        $deletedCount = $this->notificationModel->deleteAllReadByUser($userId);
+
+        $this->jsonResponse([
+            "message" => "Read notifications deleted",
+            "deleted" => $deletedCount
+        ]);
+    }
+
+    public function deleteOne() {
+        $userId = $this->requireLogin();
+        $data = $this->getJSONInput();
+
+        $notificationId = (int)($data['notification_id'] ?? 0);
+        if ($notificationId <= 0) {
+            $this->jsonResponse(["message" => "Notification ID required"], 400);
+        }
+
+        $deleted = $this->notificationModel->deleteByIdForUser($notificationId, $userId);
+        if (!$deleted) {
+            $this->jsonResponse(["message" => "Notification not found"], 404);
+        }
+
+        $this->jsonResponse(["message" => "Notification deleted"]);
+    }
 }
 
 if (isset($_GET['action'])) {
@@ -60,6 +88,14 @@ if (isset($_GET['action'])) {
 
         case 'markAllRead':
             $controller->markAllRead();
+            break;
+
+        case 'deleteRead':
+            $controller->deleteRead();
+            break;
+
+        case 'deleteOne':
+            $controller->deleteOne();
             break;
     }
 }

@@ -40,6 +40,11 @@ $interestsStmt->execute([
 ]);
 
 $interests = $interestsStmt->fetchAll(PDO::FETCH_COLUMN);
+$success = $_GET["success"] ?? "";
+if ($success === "" && isset($_SESSION["flash_success"])) {
+    $success = (string)$_SESSION["flash_success"];
+}
+unset($_SESSION["flash_success"]);
 
 function displayValue($value): string {
     $normalized = trim((string)$value);
@@ -173,6 +178,10 @@ body {
 <div class="container profile-shell">
     <div class="card profile-card">
         <div class="card-body p-4 p-md-5">
+            <?php if ($success === "profile_updated"): ?>
+                <div class="alert alert-success mb-3">Profile updated successfully.</div>
+            <?php endif; ?>
+
             <h1 class="profile-title">My Profile</h1>
             <p class="profile-subtitle">Overview of your account details and registered interests.</p>
 
@@ -231,7 +240,6 @@ body {
 
             <div class="profile-actions">
                 <a href="edit_profile_setup.php" class="btn btn-outline-primary profile-btn">Edit profile setup</a>
-                <a href="edit_interests.php" class="btn btn-outline-primary profile-btn">Edit interests</a>
                 <a href="posts.php" class="btn btn-primary profile-btn">Back to feed</a>
             </div>
         </div>

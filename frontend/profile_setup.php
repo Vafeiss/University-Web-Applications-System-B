@@ -79,7 +79,12 @@ if ($user && $user["university"] !== null && $user["year"] !== null) {
    LOAD INTEREST CATEGORIES
 ========================= */
 
-$stmt = $conn->query("SELECT category_id, name FROM categories");
+$stmt = $conn->query("
+     SELECT MIN(category_id) AS category_id, name
+     FROM categories
+     GROUP BY name
+     ORDER BY name ASC
+");
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>

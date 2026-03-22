@@ -1,10 +1,23 @@
 <?php
 session_start();
 
+require_once "../backend/config/database.php";
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
+$db = new Database();
+$conn = $db->connect();
+
+$categoriesStmt = $conn->query(
+    "SELECT MIN(category_id) AS category_id, name
+     FROM categories
+     GROUP BY name
+     ORDER BY name ASC"
+);
+$categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -42,10 +55,9 @@ if (!isset($_SESSION['user_id'])) {
         <select name="category_id" required>
 
         <option value="">Select Category</option>
-        <option value="1">Computer Science</option>
-        <option value="2">Electrical Engineering</option>
-        <option value="3">Business Administration</option>
-        <option value="4">Mechanical Engineering</option>
+        <?php foreach ($categories as $category): ?>
+        <option value="<?= (int)$category['category_id'] ?>"><?= htmlspecialchars((string)$category['name'], ENT_QUOTES, 'UTF-8') ?></option>
+        <?php endforeach; ?>
 
         </select>
 

@@ -22,6 +22,11 @@ $categoriesStmt = $conn->query(
     "SELECT category_id, name FROM categories ORDER BY name ASC"
 );
 $categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
+$success = $_GET['success'] ?? '';
+if ($success === '' && isset($_SESSION['flash_success'])) {
+    $success = (string)$_SESSION['flash_success'];
+}
+unset($_SESSION['flash_success']);
 
 $postCssVersion = filemtime(__DIR__ . '/css/post.css');
 $adminCssVersion = filemtime(__DIR__ . '/css/admin_pending_posts.css');
@@ -53,7 +58,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
                     <strong><?= $tokenBalance ?></strong>
                 </div>
                 <?php endif; ?>
-                <!-- προσθετει στο UI, κουδουνακι,unread counter,dropdown λιστα,κουμπί mark all as read-->
+                <!-- προσθετει στο UI κουδουνακι, unread counter, dropdown λιστα και κουμπί διαγραφής των read notifications -->
                 <div class="notifications-wrap">
                     <button type="button" id="notificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">
                         <svg class="notifications-icon" xmlns="http://www.w3.org/2000/svg" 
@@ -75,7 +80,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
                     <div id="notificationsDropdown" class="notifications-dropdown" hidden>
                         <div class="notifications-header">
                             <span>Notifications</span>
-                            <button type="button" id="markAllNotificationsRead" class="notifications-mark-all">Mark all as read</button>
+                            <button type="button" id="deleteReadNotifications" class="notifications-mark-all">Delete all read</button>
                         </div>
 
                         <div id="notificationsList" class="notifications-list">
@@ -96,6 +101,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 
                         <a href="profile_view.php" class="feed-menu-item" role="menuitem">View &amp; Edit profile</a>
                         <a href="edit_interests.php" class="feed-menu-item" role="menuitem">Edit interests</a>
+                        <a href="category_request.php" class="feed-menu-item" role="menuitem">Request category</a>
                         <a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
                     </div>
                 </details>
@@ -154,6 +160,10 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
                 <button type="button" id="feedSearchClear" class="feed-search-btn secondary">Clear</button>
             </div>
         </form>
+
+        <?php if ($success === 'interests_updated'): ?>
+        <div class="alert alert-success py-2 px-3 mb-3" role="status">Interests updated successfully.</div>
+        <?php endif; ?>
 
         <div id="interestsBanner"></div>
     </header>

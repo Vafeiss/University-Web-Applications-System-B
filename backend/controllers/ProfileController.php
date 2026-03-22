@@ -82,7 +82,8 @@ if ($action === 'updateProfile') {
    }
 
    $profile->saveProfile((int)$userId, $university, $year);
-   redirectTo("../../frontend/edit_profile_setup.php?success=1");
+   $_SESSION['flash_success'] = 'profile_updated';
+   redirectTo("../../frontend/profile_view.php");
 }
 
 if ($action === 'updateInterests') {
@@ -104,7 +105,8 @@ if ($action === 'updateInterests') {
    }
 
    $profile->replaceInterests((int)$userId, array_values(array_unique($normalizedCategories)));
-   redirectTo("../../frontend/edit_interests.php?success=1");
+   $_SESSION['flash_success'] = 'interests_updated';
+   redirectTo("../../frontend/posts.php");
 }
 
 /* =========================

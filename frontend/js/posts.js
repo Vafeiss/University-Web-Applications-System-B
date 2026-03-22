@@ -7,6 +7,8 @@ let activeFeedMode = "default";
 let previousSearchMode = "default";
 const followedUserIds = new Set();
 let selectedFollowerFilters = ["__all__"];
+let feedAutoRefreshTimerId = null;
+let isFeedAutoRefreshInFlight = false;
 
 function getAuthorName(post) {
     if (post.is_anonymous == 1 && !isAdmin) {
@@ -153,18 +155,37 @@ function renderNotifications(notifications) {
         item.className = `notification-item${Number(notification.is_read) === 0 ? " unread" : ""}`;
         item.setAttribute("data-notification-id", notification.notification_id);
         item.setAttribute("data-reference-id", notification.reference_id || "");
+        item.setAttribute("data-type", notification.type || "");
 
         const createdAt = notification.created_at
             ? new Date(notification.created_at).toLocaleString()
             : "";
 
         item.innerHTML = `
+            <span class="notification-delete-btn" role="button" tabindex="0" aria-label="Delete notification" title="Delete">x</span>
             <div class="notification-text">${escapeHtml(notification.message || "")}</div>
             <div class="notification-time">${escapeHtml(createdAt)}</div>
         `;
 
         list.appendChild(item);
     });
+}
+
+function getAdminNotificationTarget(type) {
+    const map = {
+        admin_pending_post: "pending",
+        admin_post_delete_request: "deleteRequests",
+        admin_comment_delete_request: "commentDeleteRequests",
+        admin_category_request: "categoryRequests",
+        admin_post_report: "reports"
+    };
+
+    const section = map[String(type || "")];
+    if (!section) {
+        return "";
+    }
+
+    return `admin_dashboard.php?section=${encodeURIComponent(section)}`;
 }
 // Φορτώνει τις ειδοποιήσεις του χρήστη από τον server και τις εμφανίζει στο dropdown menu
 // με κατάλληλο χειρισμό σφαλμάτων σε περίπτωση αποτυχίας φόρτωσης
@@ -193,9 +214,21 @@ async function markNotificationRead(notificationId) {
         })
     });
 }
+
+async function deleteNotification(notificationId) {
+    await fetchJSON(`${NOTIFICATION_URL}?action=deleteOne`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            notification_id: notificationId
+        })
+    });
+}
 // Σημειώνει όλες τις ειδοποιήσεις του χρήστη ως αναγνωσμένες στον server και ενημερώνει την εμφάνιση τους στο dropdown menu
-async function markAllNotificationsRead() {
-    const { ok } = await fetchJSON(`${NOTIFICATION_URL}?action=markAllRead`, {
+async function deleteReadNotifications() {
+    const { ok } = await fetchJSON(`${NOTIFICATION_URL}?action=deleteRead`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -208,11 +241,11 @@ async function markAllNotificationsRead() {
 }
 // ανοιγει/κλεινει dropdown 
 // πατάς notification ,κανει read,σε στελνει σχετικό post
-// αν πατήσεις mark all as read, καθαρίζει το unread count και τα μηνύματα γίνονται read
+// αν πατήσεις delete all read, διαγράφονται μόνο όσα notifications είναι ήδη read
 function setupNotificationsUI() {
     const btn = document.getElementById("notificationsBtn");
     const dropdown = document.getElementById("notificationsDropdown");
-    const markAllBtn = document.getElementById("markAllNotificationsRead");
+    const deleteReadBtn = document.getElementById("deleteReadNotifications");
     const list = document.getElementById("notificationsList");
 
     if (!btn || !dropdown || !list) {
@@ -230,6 +263,21 @@ function setupNotificationsUI() {
     });
 
     document.addEventListener("click", async (event) => {
+        const deleteButton = event.target.closest(".notification-delete-btn");
+        if (deleteButton) {
+            const deleteItem = deleteButton.closest(".notification-item");
+            if (!deleteItem) {
+                return;
+            }
+
+            const deleteNotificationId = Number(deleteItem.getAttribute("data-notification-id"));
+            if (deleteNotificationId > 0) {
+                await deleteNotification(deleteNotificationId);
+                await loadNotifications();
+            }
+            return;
+        }
+
         const item = event.target.closest(".notification-item");
         if (!item) {
             return;
@@ -237,9 +285,16 @@ function setupNotificationsUI() {
 
         const notificationId = Number(item.getAttribute("data-notification-id"));
         const referenceId = Number(item.getAttribute("data-reference-id"));
+        const notificationType = String(item.getAttribute("data-type") || "");
 
         if (notificationId > 0) {
             await markNotificationRead(notificationId);
+        }
+
+        const adminTarget = getAdminNotificationTarget(notificationType);
+        if (adminTarget) {
+            window.location.href = adminTarget;
+            return;
         }
 
         if (referenceId > 0) {
@@ -250,9 +305,9 @@ function setupNotificationsUI() {
         await loadNotifications();
     });
 
-    if (markAllBtn) {
-        markAllBtn.addEventListener("click", async () => {
-            await markAllNotificationsRead();
+    if (deleteReadBtn) {
+        deleteReadBtn.addEventListener("click", async () => {
+            await deleteReadNotifications();
         });
     }
 
@@ -616,11 +671,15 @@ function setupFollowersBannerActions() {
     });
 }
 
-async function loadDefaultFeed() {
+async function loadDefaultFeed(options = {}) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
-    container.innerHTML = '<div class="pending-state">Loading posts...</div>';
+    const silent = Boolean(options.silent);
+
+    if (!silent) {
+        container.innerHTML = '<div class="pending-state">Loading posts...</div>';
+    }
 
     try {
         const { ok, data: posts } = await fetchJSON(`${BASE_URL}?action=list`);
@@ -637,7 +696,7 @@ async function loadDefaultFeed() {
     }
 }
 
-async function loadSearchResults() {
+async function loadSearchResults(options = {}) {
     const container = document.getElementById("postsList");
     const banner = document.getElementById("interestsBanner");
     const keywordInput = document.getElementById("feedSearchKeyword");
@@ -647,6 +706,7 @@ async function loadSearchResults() {
     const toInput = document.getElementById("feedSearchTo");
     const selectedAuthorIds = selectedFollowerFilters.filter((value) => value !== "__all__");
     const followedOnly = selectedFollowerFilters.length > 0;
+    const silent = Boolean(options.silent);
 
     if (!container || !keywordInput || !categoryInput || !sortInput || !fromInput || !toInput) {
         return;
@@ -667,7 +727,9 @@ async function loadSearchResults() {
     if (selectedAuthorIds.length > 0) params.set("author_ids", selectedAuthorIds.join(","));
 
     activeFeedMode = "search";
-    container.innerHTML = '<div class="pending-state">Searching posts...</div>';
+    if (!silent) {
+        container.innerHTML = '<div class="pending-state">Searching posts...</div>';
+    }
 
     try {
         const { ok, data } = await fetchJSON(`${SEARCH_URL}?${params.toString()}`);
@@ -744,11 +806,15 @@ async function loadFollowerFilterOptions() {
     }
 }
 
-async function loadFollowersFeed() {
+async function loadFollowersFeed(options = {}) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
-    container.innerHTML = '<div class="pending-state">Loading followers posts...</div>';
+    const silent = Boolean(options.silent);
+
+    if (!silent) {
+        container.innerHTML = '<div class="pending-state">Loading followers posts...</div>';
+    }
 
     try {
         await refreshFollowingUsersState();
@@ -766,11 +832,15 @@ async function loadFollowersFeed() {
     }
 }
 
-async function loadPendingPostsFeed() {
+async function loadPendingPostsFeed(options = {}) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
-    container.innerHTML = '<div class="pending-state">Loading your posts...</div>';
+    const silent = Boolean(options.silent);
+
+    if (!silent) {
+        container.innerHTML = '<div class="pending-state">Loading your posts...</div>';
+    }
 
     try {
         const { ok, data: posts } = await fetchJSON(`${BASE_URL}?action=myPosts`);
@@ -788,11 +858,15 @@ async function loadPendingPostsFeed() {
     }
 }
 
-async function loadPendingDeleteRequestsFeed() {
+async function loadPendingDeleteRequestsFeed(options = {}) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
-    container.innerHTML = '<div class="pending-state">Loading delete requests...</div>';
+    const silent = Boolean(options.silent);
+
+    if (!silent) {
+        container.innerHTML = '<div class="pending-state">Loading delete requests...</div>';
+    }
 
     try {
         const { ok, data: requests } = await fetchJSON(`${BASE_URL}?action=myDeleteRequests`);
@@ -810,11 +884,15 @@ async function loadPendingDeleteRequestsFeed() {
     }
 }
 
-async function loadReportsFeed() {
+async function loadReportsFeed(options = {}) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
-    container.innerHTML = '<div class="pending-state">Loading reports...</div>';
+    const silent = Boolean(options.silent);
+
+    if (!silent) {
+        container.innerHTML = '<div class="pending-state">Loading reports...</div>';
+    }
 
     try {
         const { ok, data: reports } = await fetchJSON(`${BASE_URL}?action=myReports`);
@@ -830,6 +908,62 @@ async function loadReportsFeed() {
         console.error("Error loading reports:", error);
         container.innerHTML = '<div class="pending-state">Failed to load reports.</div>';
     }
+}
+
+async function refreshActiveFeedWithoutRefresh() {
+    switch (activeFeedMode) {
+        case "followers":
+            await loadFollowersBanner();
+            await loadFollowersFeed({ silent: true });
+            break;
+        case "pending-posts":
+            await loadPendingPostsFeed({ silent: true });
+            break;
+        case "pending-delete-requests":
+            await loadPendingDeleteRequestsFeed({ silent: true });
+            break;
+        case "reports":
+            await loadReportsFeed({ silent: true });
+            break;
+        case "search":
+            await loadSearchResults({ silent: true });
+            break;
+        case "default":
+        default:
+            await loadInterestsBanner();
+            await loadDefaultFeed({ silent: true });
+            break;
+    }
+}
+
+function startFeedAutoRefresh() {
+    if (feedAutoRefreshTimerId !== null) {
+        window.clearInterval(feedAutoRefreshTimerId);
+    }
+
+    const refresh = async () => {
+        if (document.hidden || isFeedAutoRefreshInFlight) {
+            return;
+        }
+
+        isFeedAutoRefreshInFlight = true;
+        try {
+            await Promise.all([
+                loadNotifications(),
+                refreshActiveFeedWithoutRefresh()
+            ]);
+        } finally {
+            isFeedAutoRefreshInFlight = false;
+        }
+    };
+
+    feedAutoRefreshTimerId = window.setInterval(refresh, 5000);
+
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            refresh();
+        }
+    });
 }
 
 function setupFeedMenu() {
@@ -1146,6 +1280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupSearchControls();
     setupFollowActions();
     setupFollowersBannerActions();
+    startFeedAutoRefresh();
 
     refreshFollowingUsersState().finally(async () => {
         await loadFollowerFilterOptions();

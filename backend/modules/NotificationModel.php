@@ -10,6 +10,41 @@ class NotificationModel {
         $database = new Database();
         $this->conn = $database->connect();
     }
+
+    private function getAdminUserIds(?int $excludeUserId = null): array {
+        $query = "SELECT user_id FROM users WHERE role = 'admin'";
+
+        if ($excludeUserId && $excludeUserId > 0) {
+            $query .= " AND user_id <> :exclude_user_id";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        if ($excludeUserId && $excludeUserId > 0) {
+            $stmt->execute([":exclude_user_id" => $excludeUserId]);
+        } else {
+            $stmt->execute();
+        }
+
+        return array_map("intval", $stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    public function notifyAdmins(string $type, ?int $referenceId, string $message, ?int $excludeUserId = null): void {
+        $adminUserIds = $this->getAdminUserIds($excludeUserId);
+
+        if (empty($adminUserIds)) {
+            return;
+        }
+
+        foreach ($adminUserIds as $adminUserId) {
+            $this->createNotification(
+                $adminUserId,
+                $type,
+                $referenceId,
+                $message
+            );
+        }
+    }
     // αποθηκεύει μια νέα ειδοποίηση στη βάση δεδομένων
     public function createNotification($userId, $type, $referenceId, $message) {
 
@@ -71,6 +106,33 @@ class NotificationModel {
         return $stmt->execute([
             ":user_id" => $userId
         ]);
+    }
+
+    public function deleteAllReadByUser($userId): int {
+        $query = "DELETE FROM notifications
+                  WHERE user_id = :user_id
+                  AND is_read = 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ":user_id" => $userId
+        ]);
+
+        return (int)$stmt->rowCount();
+    }
+
+    public function deleteByIdForUser($notificationId, $userId): bool {
+        $query = "DELETE FROM notifications
+                  WHERE notification_id = :notification_id
+                  AND user_id = :user_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ":notification_id" => $notificationId,
+            ":user_id" => $userId
+        ]);
+
+        return $stmt->rowCount() > 0;
     }
     // στελνει ειδοποίηση σε όσους ακολουθούν τον author ενός post όταν δημιουργείται ένα νέο post, με το μήνυμα να περιλαμβάνει τον τίτλο του post και το όνομα του author
     public function notifyFollowersForPost($authorId, $postId, $postTitle) {

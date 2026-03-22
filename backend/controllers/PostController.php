@@ -91,6 +91,14 @@ class PostController extends BaseController {
                 }
             }
 
+            $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+            $notificationModel = new NotificationModel();
+            $notificationModel->notifyAdmins(
+                'admin_pending_post',
+                (int)$post_id,
+                $actorName . ' submitted a new pending post: ' . $title
+            );
+
             $this->jsonResponse([
                 "message" => "Post submitted for review"
             ]);
@@ -295,6 +303,14 @@ class PostController extends BaseController {
 
         $this->postModel->createPostDeleteRequest($post_id, $user_id, $reason);
 
+        $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $notificationModel = new NotificationModel();
+        $notificationModel->notifyAdmins(
+            'admin_post_delete_request',
+            (int)$post_id,
+            $actorName . ' submitted a post delete request for: ' . ((string)($post['title'] ?? 'Untitled post'))
+        );
+
         $this->jsonResponse(["message" => "Post delete request submitted"]);
     }
 
@@ -327,6 +343,14 @@ class PostController extends BaseController {
         }
 
         $this->postModel->createPostReport($post_id, $user_id, $reason);
+
+        $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $notificationModel = new NotificationModel();
+        $notificationModel->notifyAdmins(
+            'admin_post_report',
+            (int)$post_id,
+            $actorName . ' reported a post: ' . ((string)($post['title'] ?? 'Untitled post'))
+        );
 
         $this->jsonResponse(["message" => "Post report submitted"]);
     }

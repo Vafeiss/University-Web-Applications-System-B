@@ -2,11 +2,14 @@
     const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
     const CATEGORY_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
     const SEARCH_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/search_controllers.php";
+    const NOTIFICATION_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/NotificationController.php";
     let selectedAdminAuthorFilters = ["__all__"];
     let publishedPostAuthors = [];
     let selectedPendingAuthorFilters = ["__all__"];
     let pendingPostAuthors = [];
     let activePendingStatus = 0;
+    let dashboardAutoRefreshTimerId = null;
+    let isDashboardAutoRefreshInFlight = false;
     const SECTION_CONFIG = {
         posts: {
             load: loadPostsView
@@ -32,10 +35,13 @@
         bindActions();
         setupAdminPostsSearch();
         setupPendingPostsSearch();
+        setupNotificationsUI();
 
         const params = new URLSearchParams(window.location.search);
         const initialSection = params.get("section");
         activateSection(SECTION_CONFIG[initialSection] ? initialSection : "posts");
+        loadNotifications();
+        startDashboardAutoRefresh();
     });
 
     window.addEventListener("pageshow", function (event) {
@@ -112,11 +118,13 @@
         return activeTab ? activeTab.dataset.section || "posts" : "posts";
     }
 
-    function reloadActiveSection() {
+    function reloadActiveSection(options = {}) {
         const activeSection = getActiveSection();
         if (SECTION_CONFIG[activeSection]) {
-            SECTION_CONFIG[activeSection].load();
+            return SECTION_CONFIG[activeSection].load(options);
         }
+
+        return Promise.resolve();
     }
 
     async function fetchJSON(url, options = {}) {
@@ -136,6 +144,222 @@
             .replace(/>/g, "&gt;")
             .replace(/\"/g, "&quot;")
             .replace(/'/g, "&#39;");
+    }
+
+    function renderNotifications(notifications) {
+        const list = document.getElementById("adminNotificationsList");
+        const count = document.getElementById("adminNotificationsCount");
+
+        if (!list || !count) {
+            return;
+        }
+
+        if (!Array.isArray(notifications) || notifications.length === 0) {
+            list.innerHTML = '<div class="notifications-empty">No notifications yet.</div>';
+            count.hidden = true;
+            return;
+        }
+
+        const unreadCount = notifications.filter((item) => Number(item.is_read) === 0).length;
+
+        count.textContent = unreadCount;
+        count.hidden = unreadCount === 0;
+
+        list.innerHTML = "";
+
+        notifications.forEach((notification) => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = `notification-item${Number(notification.is_read) === 0 ? " unread" : ""}`;
+            item.setAttribute("data-notification-id", notification.notification_id);
+            item.setAttribute("data-reference-id", notification.reference_id || "");
+            item.setAttribute("data-type", notification.type || "");
+
+            const createdAt = notification.created_at
+                ? new Date(notification.created_at).toLocaleString()
+                : "";
+
+            item.innerHTML = `
+                <span class="notification-delete-btn" role="button" tabindex="0" aria-label="Delete notification" title="Delete">x</span>
+                <div class="notification-text">${escapeHtml(notification.message || "")}</div>
+                <div class="notification-time">${escapeHtml(createdAt)}</div>
+            `;
+
+            list.appendChild(item);
+        });
+    }
+
+    async function loadNotifications() {
+        try {
+            const { response, data } = await fetchJSON(`${NOTIFICATION_URL}?action=list`);
+
+            if (!response.ok) {
+                return;
+            }
+
+            renderNotifications(data);
+        } catch (error) {
+            console.error("Could not load notifications:", error);
+        }
+    }
+
+    async function markNotificationRead(notificationId) {
+        await fetchJSON(`${NOTIFICATION_URL}?action=markRead`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                notification_id: notificationId
+            })
+        });
+    }
+
+    async function deleteNotification(notificationId) {
+        await fetchJSON(`${NOTIFICATION_URL}?action=deleteOne`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                notification_id: notificationId
+            })
+        });
+    }
+
+    async function deleteReadNotifications() {
+        const { response } = await fetchJSON(`${NOTIFICATION_URL}?action=deleteRead`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            await loadNotifications();
+        }
+    }
+
+    function getAdminNotificationTarget(type) {
+        const sectionMap = {
+            admin_pending_post: "pending",
+            admin_post_delete_request: "deleteRequests",
+            admin_comment_delete_request: "commentDeleteRequests",
+            admin_category_request: "categoryRequests",
+            admin_post_report: "reports"
+        };
+
+        return sectionMap[String(type || "")] || "";
+    }
+
+    function setupNotificationsUI() {
+        const wrap = document.querySelector(".notifications-wrap");
+        const btn = document.getElementById("adminNotificationsBtn");
+        const dropdown = document.getElementById("adminNotificationsDropdown");
+        const deleteReadBtn = document.getElementById("adminDeleteReadNotifications");
+
+        if (!wrap || !btn || !dropdown) {
+            return;
+        }
+
+        btn.addEventListener("click", async () => {
+            const isHidden = dropdown.hidden;
+            dropdown.hidden = !isHidden;
+            btn.setAttribute("aria-expanded", isHidden ? "true" : "false");
+
+            if (isHidden) {
+                await loadNotifications();
+            }
+        });
+
+        document.addEventListener("click", async (event) => {
+            const deleteButton = event.target.closest(".notification-delete-btn");
+            if (deleteButton) {
+                const deleteItem = deleteButton.closest(".notification-item");
+                if (!deleteItem) {
+                    return;
+                }
+
+                const deleteNotificationId = Number(deleteItem.getAttribute("data-notification-id"));
+                if (deleteNotificationId > 0) {
+                    await deleteNotification(deleteNotificationId);
+                    await loadNotifications();
+                }
+                return;
+            }
+
+            const item = event.target.closest(".notification-item");
+            if (!item) {
+                return;
+            }
+
+            const notificationId = Number(item.getAttribute("data-notification-id"));
+            const referenceId = Number(item.getAttribute("data-reference-id"));
+            const notificationType = String(item.getAttribute("data-type") || "");
+
+            if (notificationId > 0) {
+                await markNotificationRead(notificationId);
+            }
+
+            const targetSection = getAdminNotificationTarget(notificationType);
+            if (targetSection) {
+                activateSection(targetSection);
+                dropdown.hidden = true;
+                btn.setAttribute("aria-expanded", "false");
+                await loadNotifications();
+                return;
+            }
+
+            if (referenceId > 0) {
+                window.location.href = `post.php?id=${encodeURIComponent(referenceId)}&admin_preview=1`;
+                return;
+            }
+
+            await loadNotifications();
+        });
+
+        if (deleteReadBtn) {
+            deleteReadBtn.addEventListener("click", async () => {
+                await deleteReadNotifications();
+            });
+        }
+
+        document.addEventListener("click", (event) => {
+            if (!dropdown.hidden && !wrap.contains(event.target)) {
+                dropdown.hidden = true;
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+    }
+
+    function startDashboardAutoRefresh() {
+        if (dashboardAutoRefreshTimerId !== null) {
+            window.clearInterval(dashboardAutoRefreshTimerId);
+        }
+
+        const refresh = async () => {
+            if (document.hidden || isDashboardAutoRefreshInFlight) {
+                return;
+            }
+
+            isDashboardAutoRefreshInFlight = true;
+            try {
+                await Promise.all([
+                    loadNotifications(),
+                    reloadActiveSection({ silent: true })
+                ]);
+            } finally {
+                isDashboardAutoRefreshInFlight = false;
+            }
+        };
+
+        dashboardAutoRefreshTimerId = window.setInterval(refresh, 5000);
+
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) {
+                refresh();
+            }
+        });
     }
 
     function showFeedback(elementId, message, type) {
@@ -403,8 +627,11 @@
         });
     }
 
-    async function loadPostsView() {
-        const container = setLoading("postsGrid", "Loading published posts...");
+    async function loadPostsView(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("postsGrid")
+            : setLoading("postsGrid", "Loading published posts...");
         if (!container) {
             return;
         }
@@ -437,8 +664,11 @@
         }
     }
 
-    async function loadPendingPosts() {
-        const container = setLoading("pendingPosts", "Loading pending posts...");
+    async function loadPendingPosts(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("pendingPosts")
+            : setLoading("pendingPosts", "Loading pending posts...");
         if (!container) {
             return;
         }
@@ -475,8 +705,11 @@
         }
     }
 
-    async function loadDeleteRequests() {
-        const container = setLoading("deleteRequests", "Loading delete requests...");
+    async function loadDeleteRequests(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("deleteRequests")
+            : setLoading("deleteRequests", "Loading delete requests...");
         if (!container) {
             return;
         }
@@ -523,8 +756,11 @@
         }
     }
 
-    async function loadCommentDeleteRequests() {
-        const container = setLoading("commentDeleteRequests", "Loading comment delete requests...");
+    async function loadCommentDeleteRequests(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("commentDeleteRequests")
+            : setLoading("commentDeleteRequests", "Loading comment delete requests...");
         if (!container) {
             return;
         }
@@ -576,8 +812,11 @@
         }
     }
 
-    async function loadReports() {
-        const container = setLoading("reports", "Loading reports...");
+    async function loadReports(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("reports")
+            : setLoading("reports", "Loading reports...");
         if (!container) {
             return;
         }
@@ -625,23 +864,115 @@
         }
     }
 
-    async function loadCategoryRequests() {
-        const container = setLoading("categoryRequests", "Loading category requests...");
+    async function loadCategoryRequests(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("categoryRequests")
+            : setLoading("categoryRequests", "Loading category requests...");
         if (!container) {
             return;
         }
 
         try {
-            const { response, data: requests } = await fetchJSON(`${CATEGORY_URL}?action=list`);
+            const { response, data: summary } = await fetchJSON(`${CATEGORY_URL}?action=summary`);
 
             if (!response.ok) {
-                throw new Error(requests.message || "Failed to load category requests");
+                throw new Error(summary.message || "Failed to load category requests");
             }
+
+            const requests = Array.isArray(summary.pending_requests)
+                ? summary.pending_requests
+                : [];
+
+            const existingCategories = Array.isArray(summary.existing_categories)
+                ? summary.existing_categories
+                : [];
 
             container.innerHTML = "";
 
-            if (!Array.isArray(requests) || requests.length === 0) {
-                container.innerHTML = '<div class="pending-state">No pending category requests.</div>';
+            const existingWrap = document.createElement("div");
+            existingWrap.className = "pending-card";
+
+            const existingTitle = document.createElement("h3");
+            existingTitle.className = "dashboard-subtitle";
+            existingTitle.textContent = "Existing Categories";
+            existingWrap.appendChild(existingTitle);
+
+            if (existingCategories.length === 0) {
+                const emptyExisting = document.createElement("div");
+                emptyExisting.className = "pending-state";
+                emptyExisting.textContent = "No categories available.";
+                existingWrap.appendChild(emptyExisting);
+            } else {
+                const chips = existingCategories
+                    .map((category) => {
+                        const id = Number(category.category_id || 0);
+                        const name = escapeHtml(category.name || "");
+
+                        return `<button type="button" class="admin-category-delete-trigger" data-category-id="${id}" data-category-name="${name}"><span class="admin-category-delete-name">${name}</span><span class="admin-category-delete-label">Delete</span></button>`;
+                    })
+                    .join(" ");
+
+                existingWrap.insertAdjacentHTML("beforeend", `<div class="pending-content" style="display:flex;flex-wrap:wrap;gap:10px 8px;padding-top:4px;">${chips}</div>`);
+
+                existingWrap.querySelectorAll(".admin-category-delete-trigger").forEach((button) => {
+                    button.addEventListener("click", async () => {
+                        const categoryId = Number(button.dataset.categoryId || 0);
+                        const categoryName = String(button.dataset.categoryName || "category");
+
+                        if (!categoryId) {
+                            showFeedback("categoryRequestsFeedback", "Invalid category id.", "error");
+                            return;
+                        }
+
+                        const confirmed = window.confirm(
+                            `Delete category \"${categoryName}\" and all posts in this category? This cannot be undone.`
+                        );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        button.disabled = true;
+
+                        try {
+                            const { response, data: result } = await fetchJSON(`${CATEGORY_URL}?action=deleteCategory`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({ category_id: categoryId })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(result.message || "Could not delete category");
+                            }
+
+                            showFeedback("categoryRequestsFeedback", result.message || "Category deleted.", "success");
+                            await loadCategoryRequests();
+                        } catch (error) {
+                            console.error("Category delete error:", error);
+                            showFeedback("categoryRequestsFeedback", error.message || "Could not delete category.", "error");
+                            button.disabled = false;
+                        }
+                    });
+                });
+
+            }
+
+            container.appendChild(existingWrap);
+
+            const pendingTitle = document.createElement("h3");
+            pendingTitle.className = "dashboard-subtitle";
+            pendingTitle.style.marginTop = "14px";
+            pendingTitle.textContent = "Pending Category Requests";
+            container.appendChild(pendingTitle);
+
+            if (requests.length === 0) {
+                const emptyPending = document.createElement("div");
+                emptyPending.className = "pending-state";
+                emptyPending.textContent = "No pending category requests.";
+                container.appendChild(emptyPending);
                 return;
             }
 

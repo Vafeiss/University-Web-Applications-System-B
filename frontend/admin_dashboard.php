@@ -33,6 +33,19 @@ body {
 	margin-bottom: 20px;
 }
 
+.dashboard-header-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.dashboard-header-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
 .dashboard-header h1 {
 	margin: 0;
 }
@@ -97,10 +110,10 @@ body {
 .dashboard-search-panel {
 	display: flex;
 	align-items: center;
-	flex-wrap: nowrap;
-	gap: 8px;
-	margin-top: 18px;
-	padding: 10px;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 16px 0 18px;
+	padding: 8px;
 	border: 1px solid #d7e1f0;
 	border-radius: 16px;
 	background: #ffffff;
@@ -114,24 +127,34 @@ body {
 	border: 1px solid #d3ddeb;
 	border-radius: 9px;
 	background: #fbfcfe;
-	font-size: 12px;
-	padding: 8px 10px;
-	min-height: 38px;
+	font-size: 11px;
+	padding: 0 9px;
+	height: 36px;
+	line-height: 36px;
+	box-sizing: border-box;
 }
 
 .dashboard-search-input {
-	flex: 1 1 190px;
-	min-width: 160px;
+	flex: 1 1 165px;
+	min-width: 138px;
 }
 
-.dashboard-search-select,
 .dashboard-search-date {
-	min-width: 118px;
+	flex: 1 1 130px;
+	min-width: 120px;
+}
+
+.dashboard-search-select {
+	flex: 1 1 120px;
+	min-width: 108px;
 }
 
 .dashboard-search-users {
 	position: relative;
-	min-width: 150px;
+	flex: 1 1 122px;
+	min-width: 110px;
+	height: 36px;
+	box-sizing: border-box;
 }
 
 .dashboard-search-users-toggle {
@@ -140,12 +163,14 @@ body {
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
-	padding: 8px 10px;
+	padding: 0 9px;
+	height: 36px;
+	box-sizing: border-box;
 	border: 1px solid #d7e1f0;
 	border-radius: 9px;
 	background: #fbfcfe;
 	color: #28405f;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 600;
 	cursor: pointer;
 }
@@ -167,8 +192,8 @@ body {
 	border: 1px solid #d7e1f0;
 	border-radius: 12px;
 	background: #ffffff;
-	box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
-	z-index: 20;
+	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+	z-index: 40;
 }
 
 .dashboard-search-users-option {
@@ -178,6 +203,8 @@ body {
 	padding: 8px 10px;
 	border-radius: 10px;
 	color: #28405f;
+	font-size: 14px;
+	font-weight: 600;
 }
 
 .dashboard-search-users-option:hover {
@@ -188,13 +215,17 @@ body {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
+	margin-left: auto;
+	flex-shrink: 0;
 }
 
 .dashboard-search-btn {
 	width: auto;
-	padding: 8px 12px;
+	padding: 0 11px;
+	height: 36px;
+	box-sizing: border-box;
 	border-radius: 9px;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 700;
 	border: 0;
 	cursor: pointer;
@@ -208,6 +239,14 @@ body {
 .dashboard-search-btn.secondary {
 	background: #eef2f8;
 	color: #4f5f78;
+}
+
+.dashboard-search-btn.primary:hover {
+	background: #183f79;
+}
+
+.dashboard-search-btn.secondary:hover {
+	background: #e4e9f1;
 }
 
 .dashboard-status-filters {
@@ -263,6 +302,343 @@ body {
 	line-height: 1.5;
 	white-space: pre-wrap;
 }
+
+.dashboard-subtitle {
+	margin: 6px 0 10px;
+	font-size: 18px;
+	font-weight: 700;
+	color: #243559;
+}
+
+.admin-category-delete-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 14px;
+	border: 1px solid #d7e1f0;
+	border-radius: 999px;
+	background: #f8fbff;
+	color: #28405f;
+	font: inherit;
+	cursor: pointer;
+	transition: border-color 0.2s ease, background 0.2s ease;
+	line-height: 1.2;
+}
+
+.admin-category-delete-name {
+	line-height: 1.2;
+	color: #2f4772;
+	font-weight: 700;
+}
+
+.admin-category-delete-label {
+	line-height: 1.2;
+	font-size: 11px;
+	font-weight: 700;
+	color: #9c2f3e;
+	letter-spacing: 0.01em;
+}
+
+.admin-category-delete-trigger:hover {
+	background: #fff2f2;
+	border-color: #e8c1c1;
+}
+
+.admin-category-delete-trigger:disabled {
+	opacity: 0.6;
+	cursor: wait;
+}
+
+.notifications-wrap {
+	position: relative;
+}
+
+.notifications-btn {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 1px solid #d7e1f0;
+	border-radius: 10px;
+	background: #ffffff;
+	color: #1f3659;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	user-select: none;
+	transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.notifications-icon {
+	display: block;
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
+	stroke: currentColor;
+	pointer-events: none;
+}
+
+.notifications-btn:hover {
+	background: #f5f8fd;
+	border-color: #c7d6ec;
+}
+
+.notifications-count {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 4px;
+	background: #ef4444;
+	color: #ffffff;
+	font-size: 11px;
+	font-weight: 700;
+	border-radius: 9px;
+	border: 2px solid #ffffff;
+}
+
+.notifications-count[hidden] {
+	display: none;
+}
+
+.notifications-dropdown {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	width: 320px;
+	max-height: 400px;
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	border: 1px solid #d7e1f0;
+	border-radius: 12px;
+	background: #ffffff;
+	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+	z-index: 30;
+	overflow: hidden;
+}
+
+.notifications-dropdown[hidden] {
+	display: none;
+}
+
+.notifications-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 12px 14px;
+	border-bottom: 1px solid #e5ebf3;
+	background: #f9fbff;
+}
+
+.notifications-header > span {
+	font-size: 14px;
+	font-weight: 700;
+	color: #142b53;
+}
+
+.notifications-mark-all {
+	padding: 4px 8px;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	color: #3b82f6;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.notifications-mark-all:hover {
+	background: #e0e7ff;
+}
+
+.notifications-list {
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	flex: 1;
+	max-height: 340px;
+}
+
+.notifications-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 32px 16px;
+	color: #9ca3af;
+	font-size: 14px;
+	text-align: center;
+}
+
+.notification-item {
+	position: relative;
+	padding: 12px 14px;
+	padding-right: 34px;
+	border-bottom: 1px solid #f0f3f8;
+	background: #ffffff;
+	cursor: pointer;
+	transition: background 0.2s ease;
+	text-align: left;
+	border: none;
+}
+
+.notification-delete-btn {
+	position: absolute;
+	top: 10px;
+	right: 12px;
+	background: none;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	appearance: none;
+	text-decoration: none;
+	background: none;
+	color: #b6bcc8;
+	opacity: 0.55;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1;
+	padding: 0;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	transition: color 0.2s ease, opacity 0.2s ease, font-weight 0.2s ease;
+}
+
+.notification-delete-btn:hover {
+	color: #dc2626;
+	opacity: 1;
+	font-weight: 700;
+	background: none;
+	text-decoration: none;
+}
+
+.notification-delete-btn:focus,
+.notification-delete-btn:focus-visible {
+	outline: none;
+	color: #dc2626;
+	opacity: 1;
+	font-weight: 700;
+	background: none;
+	text-decoration: none;
+}
+
+.notification-item:hover {
+	background: #f5f8fd;
+}
+
+.notification-item:last-child {
+	border-bottom: none;
+}
+
+.notification-item.unread {
+	background: #f0f4ff;
+	border-left: 3px solid #3b82f6;
+	padding-left: 11px;
+}
+
+.notification-item.unread:hover {
+	background: #e8ecff;
+}
+
+.notification-text {
+	font-size: 13px;
+	color: #28405f;
+	line-height: 1.4;
+}
+
+.notification-time {
+	display: block;
+	margin-top: 4px;
+	font-size: 11px;
+	color: #9ca3af;
+}
+
+.feed-menu {
+	position: relative;
+}
+
+.feed-menu-trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 1px solid #d7e1f0;
+	border-radius: 10px;
+	background: #ffffff;
+	color: #1f3659;
+	font-size: 24px;
+	line-height: 1;
+	cursor: pointer;
+	user-select: none;
+	transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.feed-menu-trigger:hover {
+	background: #f5f8fd;
+	border-color: #c7d6ec;
+}
+
+.feed-menu summary {
+	list-style: none;
+}
+
+.feed-menu summary::-webkit-details-marker {
+	display: none;
+}
+
+.feed-menu-dropdown {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	min-width: 180px;
+	padding: 8px;
+	border: 1px solid #d7e1f0;
+	border-radius: 12px;
+	background: #ffffff;
+	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+	z-index: 30;
+}
+
+.feed-menu-item {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: #28405f;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	padding: 10px 10px;
+	cursor: pointer;
+}
+
+.feed-menu-item:visited {
+	color: #28405f;
+}
+
+.feed-menu-item:hover {
+	background: #f5f8fd;
+}
+
+.feed-menu-item.danger {
+	color: #a12d3d;
+}
+
+.feed-menu-item.danger:hover {
+	background: #fdeff0;
+}
 </style>
 </head>
 
@@ -270,7 +646,36 @@ body {
 
 <main class="pending-page dashboard-shell">
 	<header class="dashboard-header">
-		<h1>Admin Moderation Panel</h1>
+		<div class="dashboard-header-top">
+			<h1>Admin Moderation Panel</h1>
+			<div class="dashboard-header-actions">
+				<div class="notifications-wrap">
+					<button type="button" id="adminNotificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">
+						<svg class="notifications-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="20" height="20" aria-hidden="true" focusable="false">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082A23.848 23.848 0 0112 17.25c-1.013 0-2.006-.063-2.857-.168M12 3a6 6 0 00-6 6v3.586l-.707.707A1 1 0 006 15h12a1 1 0 00.707-1.707L18 12.586V9a6 6 0 00-6-6zM15 19a3 3 0 11-6 0"/>
+						</svg>
+						<span id="adminNotificationsCount" class="notifications-count" hidden>0</span>
+					</button>
+
+					<div id="adminNotificationsDropdown" class="notifications-dropdown" hidden>
+						<div class="notifications-header">
+							<span>Notifications</span>
+							<button type="button" id="adminDeleteReadNotifications" class="notifications-mark-all">Delete all read</button>
+						</div>
+						<div id="adminNotificationsList" class="notifications-list">
+							<div class="notifications-empty">No notifications yet.</div>
+						</div>
+					</div>
+				</div>
+
+				<details class="feed-menu" id="adminMenu">
+					<summary class="feed-menu-trigger" aria-label="Open admin menu" title="Menu">&#8942;</summary>
+					<div class="feed-menu-dropdown" role="menu" aria-label="Admin quick actions">
+						<a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
+					</div>
+				</details>
+			</div>
+		</div>
 
 		<nav class="dashboard-tabs" aria-label="Admin moderation sections">
 			<button type="button" class="dashboard-tab is-active" data-section="posts">Posts</button>
