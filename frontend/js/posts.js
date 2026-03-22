@@ -581,6 +581,8 @@ function setupFollowersBannerActions() {
             if (!ok) {
                 if (data.message === "You do not follow this user") {
                     followedUserIds.delete(targetId);
+                    await loadFollowerFilterOptions();
+                    updateFollowerFilterLabel();
 
                     if (activeFeedMode === "followers") {
                         await loadFollowersBanner();
@@ -597,6 +599,8 @@ function setupFollowersBannerActions() {
             }
 
             followedUserIds.delete(targetId);
+            await loadFollowerFilterOptions();
+            updateFollowerFilterLabel();
 
             if (activeFeedMode === "followers") {
                 await loadFollowersBanner();
@@ -837,14 +841,6 @@ function setupFeedMenu() {
         if (!menu.contains(event.target)) {
             menu.open = false;
         }
-    });
-
-    menu.querySelectorAll("[data-coming-soon]").forEach((button) => {
-        button.addEventListener("click", () => {
-            const feature = button.getAttribute("data-coming-soon") || "Feature";
-            alert(`${feature} page is coming soon.`);
-            menu.open = false;
-        });
     });
 }
 
@@ -1109,6 +1105,8 @@ function setupFollowActions() {
                 if (data.message === "You already follow this user") {
                     followedUserIds.add(targetId);
                     replaceOwnerTriggersWithPlainName(targetId);
+                    await loadFollowerFilterOptions();
+                    updateFollowerFilterLabel();
 
                     if (activeFeedMode === "followers") {
                         await loadFollowersBanner();
@@ -1127,6 +1125,8 @@ function setupFollowActions() {
 
             followedUserIds.add(targetId);
             replaceOwnerTriggersWithPlainName(targetId);
+            await loadFollowerFilterOptions();
+            updateFollowerFilterLabel();
         } catch (error) {
             console.error("Follow request failed:", error);
             alert("Could not follow user.");

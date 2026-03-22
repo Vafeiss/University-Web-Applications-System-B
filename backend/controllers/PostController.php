@@ -381,8 +381,7 @@ class PostController extends BaseController {
                 (int)$post['user_id'],
                 (int)$post_id,
                 $post['title'],
-                $post['category_id'] ?? null,
-                $isAnonymous
+                $post['category_id'] ?? null
             );
         }
 

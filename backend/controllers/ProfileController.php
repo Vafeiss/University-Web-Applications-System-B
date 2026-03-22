@@ -125,4 +125,4 @@ if (is_array($categories) && !empty($categories)) {
    $profile->saveInterests((int)$userId, $categories);
 }
 
-redirectTo("../../frontend/index.php");
+redirectTo("../../frontend/posts.php");

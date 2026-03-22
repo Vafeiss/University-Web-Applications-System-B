@@ -50,7 +50,7 @@ if (file_exists($autoloadPath)) {
 }
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\Exception as MailException;
 use Dotenv\Dotenv;
 // ευρεση .env αρχείου για mail configuration
 
@@ -107,7 +107,10 @@ class AuthController {
 
         $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$profile || $profile["university"] === null || $profile["year"] === null) {
+        $university = trim((string)($profile["university"] ?? ""));
+        $year = trim((string)($profile["year"] ?? ""));
+
+        if (!$profile || $university === "" || $year === "") {
             return "/University-Web-Applications-System-B/frontend/profile_setup.php";
         }
 
@@ -236,10 +239,12 @@ class AuthController {
             "message" => "Registration successful. You can login now."
         ];
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
 
         // Rollback on error
-        $this->conn->rollBack();
+        if ($this->conn->inTransaction()) {
+            $this->conn->rollBack();
+        }
 
         return [
             "ok" => false,
@@ -375,7 +380,7 @@ class AuthController {
 
         $mail->send();
 
-    } catch (Exception $e) {
+    } catch (MailException $e) {
         error_log("Mailer Error: " . $e->getMessage());
     }
 

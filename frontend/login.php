@@ -37,7 +37,7 @@ session_start();
 ========================= */
 
 if (isset($_SESSION["user_id"])) {
-    header("Location: /University-Web-Applications-System-B/frontend/index.php");
+    header("Location: /University-Web-Applications-System-B/frontend/posts.php");
     exit;
 }
 

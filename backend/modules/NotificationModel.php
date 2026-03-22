@@ -101,8 +101,7 @@ class NotificationModel {
         }
     }
     // στέλνει ειδοποίηση σε users με ίδια category interest.
-    // Χρησιμοποιεί ενιαίο μήνυμα για anonymous και non-anonymous post.
-    public function notifyInterestedUsersForPost($authorId, $postId, $postTitle, $categoryId, $isAnonymous = false) {
+    public function notifyInterestedUsersForPost($authorId, $postId, $postTitle, $categoryId) {
 
         if (!$categoryId) {
             return;
