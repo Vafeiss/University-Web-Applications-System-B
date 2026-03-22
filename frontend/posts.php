@@ -155,6 +155,12 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
             </div>
         </form>
 
+        <div id="feedModerationStatusFilters" class="feed-status-filters" hidden>
+            <button type="button" class="feed-status-filter is-active" data-feed-status="0">Pending</button>
+            <button type="button" class="feed-status-filter" data-feed-status="1">Approved</button>
+            <button type="button" class="feed-status-filter" data-feed-status="2">Rejected</button>
+        </div>
+
         <div id="interestsBanner"></div>
     </header>
 
