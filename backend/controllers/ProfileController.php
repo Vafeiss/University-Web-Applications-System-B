@@ -48,6 +48,11 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once "../modules/ProfileModule.php";
 
+function redirectTo(string $path): void {
+   header("Location: " . $path);
+   exit;
+}
+
 
 /* =========================
    READ FORM DATA
@@ -55,54 +60,69 @@ require_once "../modules/ProfileModule.php";
 
 $userId = $_SESSION['user_id'];
 
-$university = $_POST['university'] ?? null;
-$year = $_POST['year'] ?? null;
-
-/* categories are optional */
-$categories = $_POST['categories'] ?? [];
+$action = $_GET['action'] ?? 'setup';
 
 
 /* =========================
    BASIC VALIDATION
 ========================= */
 
-if (!$university || !$year) {
-
-    header("Location: ../../frontend/profile_setup.php?error=missing_fields");
-    exit;
-
-}
-
-
-/* =========================
-   INITIALIZE MODULE
-========================= */
-
 $profile = new ProfileModule();
 
+if ($action === 'updateProfile') {
+   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      redirectTo("../../frontend/edit_profile_setup.php");
+   }
 
-/* =========================
-   SAVE PROFILE DATA
-========================= */
+   $university = trim($_POST['university'] ?? '');
+   $year = trim($_POST['year'] ?? '');
 
-$profile->saveProfile($userId, $university, $year);
+   if ($university === '' || $year === '') {
+      redirectTo("../../frontend/edit_profile_setup.php?error=missing_fields");
+   }
 
-
-/* =========================
-   SAVE USER INTERESTS
-   Only if categories selected
-========================= */
-
-if (!empty($categories)) {
-
-    $profile->saveInterests($userId, $categories);
-
+   $profile->saveProfile((int)$userId, $university, $year);
+   redirectTo("../../frontend/edit_profile_setup.php?success=1");
 }
 
+if ($action === 'updateInterests') {
+   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      redirectTo("../../frontend/edit_interests.php");
+   }
+
+   $categories = $_POST['categories'] ?? [];
+   if (!is_array($categories)) {
+      $categories = [];
+   }
+
+   $normalizedCategories = [];
+   foreach ($categories as $categoryId) {
+      $value = (int)$categoryId;
+      if ($value > 0) {
+         $normalizedCategories[] = $value;
+      }
+   }
+
+   $profile->replaceInterests((int)$userId, array_values(array_unique($normalizedCategories)));
+   redirectTo("../../frontend/edit_interests.php?success=1");
+}
 
 /* =========================
-   REDIRECT TO MAIN PAGE
+   DEFAULT: INITIAL PROFILE SETUP
 ========================= */
 
-header("Location: ../../frontend/index.php");
-exit;
+$university = trim($_POST['university'] ?? '');
+$year = trim($_POST['year'] ?? '');
+$categories = $_POST['categories'] ?? [];
+
+if ($university === '' || $year === '') {
+   redirectTo("../../frontend/profile_setup.php?error=missing_fields");
+}
+
+$profile->saveProfile((int)$userId, $university, $year);
+
+if (is_array($categories) && !empty($categories)) {
+   $profile->saveInterests((int)$userId, $categories);
+}
+
+redirectTo("../../frontend/index.php");

@@ -87,8 +87,8 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
                         <a href="admin_dashboard.php" class="feed-menu-item" role="menuitem">Admin panel</a>
                         <?php endif; ?>
 
-                        <button type="button" class="feed-menu-item" role="menuitem" data-coming-soon="Edit profile setup">Edit profile setup</button>
-                        <button type="button" class="feed-menu-item" role="menuitem" data-coming-soon="Edit interests">Edit interests</button>
+                        <a href="profile_view.php" class="feed-menu-item" role="menuitem">View &amp; Edit profile</a>
+                        <a href="edit_interests.php" class="feed-menu-item" role="menuitem">Edit interests</a>
                         <a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
                     </div>
                 </details>

@@ -134,6 +134,48 @@ class ProfileModule {
         }
     }
 
+    public function replaceInterests(int $userId, array $categories): void
+    {
+        $normalized = [];
+        foreach ($categories as $categoryId) {
+            $value = (int)$categoryId;
+            if ($value > 0) {
+                $normalized[] = $value;
+            }
+        }
+
+        $normalized = array_values(array_unique($normalized));
+
+        try {
+            $this->conn->beginTransaction();
+
+            $deleteStmt = $this->conn->prepare("DELETE FROM user_interest WHERE user_id = :uid");
+            $deleteStmt->execute([":uid" => $userId]);
+
+            if (!empty($normalized)) {
+                $insertStmt = $this->conn->prepare(" 
+                    INSERT INTO user_interest (user_id, category_id)
+                    VALUES (:uid, :cid)
+                ");
+
+                foreach ($normalized as $categoryId) {
+                    $insertStmt->execute([
+                        ":uid" => $userId,
+                        ":cid" => $categoryId
+                    ]);
+                }
+            }
+
+            $this->conn->commit();
+        } catch (Throwable $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
     /* =========================
        SAVE FULL PROFILE
        Optional transactional method
