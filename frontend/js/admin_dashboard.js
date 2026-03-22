@@ -1,6 +1,12 @@
 (function () {
     const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
     const CATEGORY_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
+    const SEARCH_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/search_controllers.php";
+    let selectedAdminAuthorFilters = ["__all__"];
+    let publishedPostAuthors = [];
+    let selectedPendingAuthorFilters = ["__all__"];
+    let pendingPostAuthors = [];
+    let activePendingStatus = 0;
     const SECTION_CONFIG = {
         posts: {
             load: loadPostsView
@@ -24,6 +30,8 @@
     document.addEventListener("DOMContentLoaded", function () {
         bindTabs();
         bindActions();
+        setupAdminPostsSearch();
+        setupPendingPostsSearch();
 
         const params = new URLSearchParams(window.location.search);
         const initialSection = params.get("section");
@@ -176,6 +184,225 @@
         return `<a class="pending-title-link" href="post.php?id=${encodeURIComponent(postId)}&admin_source=dashboard_posts">${label}</a>`;
     }
 
+    function renderPublishedPosts(container, posts) {
+        container.innerHTML = "";
+
+        if (!Array.isArray(posts) || posts.length === 0) {
+            container.innerHTML = '<div class="pending-state">No published posts available.</div>';
+            return;
+        }
+
+        posts.forEach((post) => {
+            const card = document.createElement("article");
+            const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : "Unknown date";
+            const status = statusLabel(post);
+            const excerpt = String(post.content || "").trim().slice(0, 220);
+            const postId = post.post_id ?? post.id;
+
+            card.className = "pending-card";
+            card.innerHTML = `
+                <h3>${buildPublicPostLink(postId, escapeHtml(post.title || "Untitled post"))}</h3>
+                <div class="pending-meta">
+                    <span class="pending-chip">${escapeHtml(post.category || "General")}</span>
+                    <span class="status-chip ${status.className}">${escapeHtml(status.text)}</span>
+                    <span>Author: ${escapeHtml(post.username || "Unknown")}</span>
+                    <span>Submitted: ${escapeHtml(createdAt)}</span>
+                </div>
+                <div class="post-excerpt">${escapeHtml(excerpt || "No content preview available.")}</div>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    function updateAdminUsersLabel() {
+        const label = document.getElementById("adminSearchUsersLabel");
+        if (!label) {
+            return;
+        }
+
+        if (selectedAdminAuthorFilters.includes("__all__")) {
+            label.textContent = "All users";
+            return;
+        }
+
+        if (selectedAdminAuthorFilters.length === 0) {
+            label.textContent = "Users";
+            return;
+        }
+
+        label.textContent = "Selected users";
+    }
+
+    function renderAdminUserOptions() {
+        const optionsContainer = document.getElementById("adminSearchUsersOptions");
+        if (!optionsContainer) {
+            return;
+        }
+
+        if (!publishedPostAuthors.length) {
+            optionsContainer.innerHTML = `
+                <label class="dashboard-search-users-option">
+                    <input type="checkbox" disabled>
+                    <span>No post authors found</span>
+                </label>
+            `;
+            return;
+        }
+
+        optionsContainer.innerHTML = publishedPostAuthors.map((user) => `
+            <label class="dashboard-search-users-option">
+                <input type="checkbox" value="${Number(user.user_id)}">
+                <span>${escapeHtml(user.username)}</span>
+            </label>
+        `).join("");
+    }
+
+    function populateAdminSearchCategories(posts) {
+        const select = document.getElementById("adminSearchCategory");
+        if (!select) {
+            return;
+        }
+
+        const currentValue = select.value;
+        const categoryMap = new Map();
+
+        posts.forEach((post) => {
+            const id = Number(post.category_id);
+            const name = String(post.category || "").trim();
+            if (id > 0 && name !== "" && !categoryMap.has(id)) {
+                categoryMap.set(id, name);
+            }
+        });
+
+        select.innerHTML = '<option value="">All categories</option>' +
+            Array.from(categoryMap.entries())
+                .sort((a, b) => a[1].localeCompare(b[1]))
+                .map(([id, name]) => `<option value="${id}">${escapeHtml(name)}</option>`)
+                .join("");
+
+        if (currentValue && categoryMap.has(Number(currentValue))) {
+            select.value = currentValue;
+        }
+    }
+
+    function renderPendingModerationPosts(container, posts) {
+        container.innerHTML = "";
+
+        if (!Array.isArray(posts) || posts.length === 0) {
+            container.innerHTML = '<div class="pending-state">No posts found for this status.</div>';
+            return;
+        }
+
+        posts.forEach((post) => {
+            const card = document.createElement("article");
+            const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : "Unknown date";
+            const status = statusLabel(post);
+            const postId = post.post_id ?? post.id;
+            const excerpt = String(post.content || "").trim().slice(0, 220);
+
+            card.className = "pending-card";
+            card.innerHTML = `
+                <h3>${buildPostLink(postId, escapeHtml(post.title || "Untitled post"), "dashboard_pending")}</h3>
+                <div class="pending-meta">
+                    <span class="pending-chip">${escapeHtml(post.category || "General")}</span>
+                    <span class="status-chip ${status.className}">${escapeHtml(status.text)}</span>
+                    <span>Author: ${escapeHtml(post.username || "Unknown")}</span>
+                    <span>Submitted: ${escapeHtml(createdAt)}</span>
+                </div>
+                <div class="post-excerpt">${escapeHtml(excerpt || "No content preview available.")}</div>
+                ${Number(post.status) === 0 ? `
+                <div class="pending-actions">
+                    <button type="button" class="pending-btn approve" data-section="pending" data-feedback-target="pendingFeedback" data-reload-section="pending" data-action="approve" data-id="${escapeHtml(postId)}">Approve</button>
+                    <button type="button" class="pending-btn reject" data-section="pending" data-feedback-target="pendingFeedback" data-reload-section="pending" data-action="reject" data-id="${escapeHtml(postId)}">Reject</button>
+                </div>` : ""}
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    function updatePendingUsersLabel() {
+        const label = document.getElementById("pendingSearchUsersLabel");
+        if (!label) {
+            return;
+        }
+
+        if (selectedPendingAuthorFilters.includes("__all__")) {
+            label.textContent = "All users";
+            return;
+        }
+
+        if (selectedPendingAuthorFilters.length === 0) {
+            label.textContent = "Users";
+            return;
+        }
+
+        label.textContent = "Selected users";
+    }
+
+    function renderPendingUserOptions() {
+        const optionsContainer = document.getElementById("pendingSearchUsersOptions");
+        if (!optionsContainer) {
+            return;
+        }
+
+        if (!pendingPostAuthors.length) {
+            optionsContainer.innerHTML = `
+                <label class="dashboard-search-users-option">
+                    <input type="checkbox" disabled>
+                    <span>No post authors found</span>
+                </label>
+            `;
+            return;
+        }
+
+        optionsContainer.innerHTML = pendingPostAuthors.map((user) => `
+            <label class="dashboard-search-users-option">
+                <input type="checkbox" value="${Number(user.user_id)}">
+                <span>${escapeHtml(user.username)}</span>
+            </label>
+        `).join("");
+    }
+
+    function populatePendingSearchCategories(posts) {
+        const select = document.getElementById("pendingSearchCategory");
+        if (!select) {
+            return;
+        }
+
+        const currentValue = select.value;
+        const categoryMap = new Map();
+
+        posts.forEach((post) => {
+            const id = Number(post.category_id);
+            const name = String(post.category || "").trim();
+            if (id > 0 && name !== "" && !categoryMap.has(id)) {
+                categoryMap.set(id, name);
+            }
+        });
+
+        select.innerHTML = '<option value="">All categories</option>' +
+            Array.from(categoryMap.entries())
+                .sort((a, b) => a[1].localeCompare(b[1]))
+                .map(([id, name]) => `<option value="${id}">${escapeHtml(name)}</option>`)
+                .join("");
+
+        if (currentValue && categoryMap.has(Number(currentValue))) {
+            select.value = currentValue;
+        }
+    }
+
+    function updatePendingStatusButtons() {
+        if (activePendingStatus !== 0 && activePendingStatus !== 1) {
+            activePendingStatus = 0;
+        }
+
+        document.querySelectorAll(".dashboard-status-filter[data-pending-status]").forEach((button) => {
+            button.classList.toggle("is-active", Number(button.dataset.pendingStatus) === activePendingStatus);
+        });
+    }
+
     async function loadPostsView() {
         const container = setLoading("postsGrid", "Loading published posts...");
         if (!container) {
@@ -189,33 +416,20 @@
                 throw new Error(posts.message || "Could not load published posts");
             }
 
-            container.innerHTML = "";
+            publishedPostAuthors = Array.isArray(posts)
+                ? Array.from(
+                    new Map(
+                        posts
+                            .filter((post) => Number(post.user_id) > 0 && String(post.username || "").trim() !== "")
+                            .map((post) => [Number(post.user_id), { user_id: Number(post.user_id), username: String(post.username).trim() }])
+                    ).values()
+                ).sort((a, b) => a.username.localeCompare(b.username))
+                : [];
 
-            if (!Array.isArray(posts) || posts.length === 0) {
-                container.innerHTML = '<div class="pending-state">No published posts available.</div>';
-                return;
-            }
-
-            posts.forEach((post) => {
-                const card = document.createElement("article");
-                const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : "Unknown date";
-                const status = statusLabel(post);
-                const excerpt = String(post.content || "").trim().slice(0, 220);
-
-                card.className = "pending-card";
-                card.innerHTML = `
-                    <h3>${buildPublicPostLink(post.post_id, escapeHtml(post.title || "Untitled post"))}</h3>
-                    <div class="pending-meta">
-                        <span class="pending-chip">${escapeHtml(post.category || "General")}</span>
-                        <span class="status-chip ${status.className}">${escapeHtml(status.text)}</span>
-                        <span>Author: ${escapeHtml(post.username || "Unknown")}</span>
-                        <span>Submitted: ${escapeHtml(createdAt)}</span>
-                    </div>
-                    <div class="post-excerpt">${escapeHtml(excerpt || "No content preview available.")}</div>
-                `;
-
-                container.appendChild(card);
-            });
+            populateAdminSearchCategories(Array.isArray(posts) ? posts : []);
+            renderAdminUserOptions();
+            updateAdminUsersLabel();
+            renderPublishedPosts(container, posts);
         } catch (error) {
             console.error("Posts view error:", error);
             container.innerHTML = '<div class="pending-state">Failed to load published posts.</div>';
@@ -230,39 +444,30 @@
         }
 
         try {
-            const { response, data: posts } = await fetchJSON(`${BASE_URL}?action=pending`);
-
-            if (!response.ok) {
-                throw new Error(posts.message || "Could not load pending posts");
-            }
-
-            container.innerHTML = "";
-
-            if (!Array.isArray(posts) || posts.length === 0) {
-                container.innerHTML = '<div class="pending-state">No pending posts at the moment.</div>';
-                return;
-            }
-
-            posts.forEach((post) => {
-                const card = document.createElement("article");
-                const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : "Unknown date";
-
-                card.className = "pending-card";
-                card.innerHTML = `
-                    <h3>${buildPostLink(post.post_id, escapeHtml(post.title || "Untitled post"), "dashboard_pending")}</h3>
-                    <div class="pending-meta">
-                        <span class="pending-chip">${escapeHtml(post.category || "General")}</span>
-                        <span>Author: ${escapeHtml(post.username || "Unknown")}</span>
-                        <span>Submitted: ${escapeHtml(createdAt)}</span>
-                    </div>
-                    <div class="pending-actions">
-                        <button type="button" class="pending-btn approve" data-section="pending" data-feedback-target="pendingFeedback" data-reload-section="pending" data-action="approve" data-id="${escapeHtml(post.post_id)}">Approve</button>
-                        <button type="button" class="pending-btn reject" data-section="pending" data-feedback-target="pendingFeedback" data-reload-section="pending" data-action="reject" data-id="${escapeHtml(post.post_id)}">Reject</button>
-                    </div>
-                `;
-
-                container.appendChild(card);
+            const params = new URLSearchParams({
+                sort: "newest",
+                status: String(activePendingStatus)
             });
+            const { response, data: result } = await fetchJSON(`${SEARCH_URL}?${params.toString()}`);
+
+            if (!response.ok || !result.ok) {
+                throw new Error(result.error || "Could not load pending posts");
+            }
+
+            const posts = Array.isArray(result.data) ? result.data : [];
+            pendingPostAuthors = Array.from(
+                new Map(
+                    posts
+                        .filter((post) => Number(post.user_id) > 0 && String(post.username || "").trim() !== "")
+                        .map((post) => [Number(post.user_id), { user_id: Number(post.user_id), username: String(post.username).trim() }])
+                ).values()
+            ).sort((a, b) => a.username.localeCompare(b.username));
+
+            populatePendingSearchCategories(posts);
+            renderPendingUserOptions();
+            updatePendingUsersLabel();
+            updatePendingStatusButtons();
+            renderPendingModerationPosts(container, posts);
         } catch (error) {
             console.error("Pending posts error:", error);
             container.innerHTML = '<div class="pending-state">Failed to load pending posts.</div>';
@@ -521,5 +726,303 @@
                 button.disabled = false;
             });
         }
+    }
+
+    async function loadAdminSearchResults() {
+        const container = setLoading("postsGrid", "Searching posts...");
+        const keywordInput = document.getElementById("adminSearchKeyword");
+        const categoryInput = document.getElementById("adminSearchCategory");
+        const sortInput = document.getElementById("adminSearchSort");
+        const fromInput = document.getElementById("adminSearchFrom");
+        const toInput = document.getElementById("adminSearchTo");
+
+        if (!container || !keywordInput || !categoryInput || !sortInput || !fromInput || !toInput) {
+            return;
+        }
+
+        const params = new URLSearchParams({
+            keyword: keywordInput.value.trim(),
+            sort: sortInput.value || "newest",
+            status: "1"
+        });
+
+        if (categoryInput.value) {
+            params.set("category", categoryInput.value);
+        }
+
+        if (fromInput.value) {
+            params.set("from", fromInput.value);
+        }
+
+        if (toInput.value) {
+            params.set("to", toInput.value);
+        }
+
+        const selectedAuthorIds = selectedAdminAuthorFilters.filter((value) => value !== "__all__");
+        if (selectedAuthorIds.length > 0) {
+            params.set("author_ids", selectedAuthorIds.join(","));
+        }
+
+        try {
+            const { response, data: result } = await fetchJSON(`${SEARCH_URL}?${params.toString()}`);
+            if (!response.ok || !result.ok) {
+                throw new Error(result.error || "Could not search posts");
+            }
+
+            renderPublishedPosts(container, Array.isArray(result.data) ? result.data : []);
+        } catch (error) {
+            console.error("Admin search error:", error);
+            container.innerHTML = '<div class="pending-state">Failed to load search results.</div>';
+            showFeedback("postsFeedback", error.message || "Could not search posts.", "error");
+        }
+    }
+
+    function setupAdminPostsSearch() {
+        const form = document.getElementById("adminPostsSearchForm");
+        const clearButton = document.getElementById("adminSearchClear");
+        const usersToggle = document.getElementById("adminSearchUsersToggle");
+        const usersMenu = document.getElementById("adminSearchUsersMenu");
+        const usersFilter = document.getElementById("adminSearchUsersFilter");
+
+        if (!form || !clearButton) {
+            return;
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            await loadAdminSearchResults();
+        });
+
+        clearButton.addEventListener("click", async () => {
+            form.reset();
+            selectedAdminAuthorFilters = ["__all__"];
+
+            const allOption = usersMenu?.querySelector('input[value="__all__"]');
+            if (allOption) {
+                allOption.checked = true;
+            }
+
+            usersMenu?.querySelectorAll('#adminSearchUsersOptions input[type="checkbox"]').forEach((input) => {
+                input.checked = false;
+            });
+
+            if (usersMenu) {
+                usersMenu.hidden = true;
+            }
+
+            if (usersToggle) {
+                usersToggle.setAttribute("aria-expanded", "false");
+            }
+
+            updateAdminUsersLabel();
+            await loadPostsView();
+        });
+
+        if (usersToggle && usersMenu && usersFilter) {
+            usersToggle.addEventListener("click", () => {
+                const shouldOpen = usersMenu.hidden;
+                usersMenu.hidden = !shouldOpen;
+                usersToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+            });
+
+            usersMenu.addEventListener("change", (event) => {
+                const input = event.target.closest('input[type="checkbox"]');
+                if (!input) {
+                    return;
+                }
+
+                const allOption = usersMenu.querySelector('input[value="__all__"]');
+                const userOptions = usersMenu.querySelectorAll('#adminSearchUsersOptions input[type="checkbox"]');
+
+                if (input.value === "__all__") {
+                    if (input.checked) {
+                        selectedAdminAuthorFilters = ["__all__"];
+                        userOptions.forEach((option) => {
+                            option.checked = false;
+                        });
+                    } else {
+                        selectedAdminAuthorFilters = [];
+                    }
+
+                    updateAdminUsersLabel();
+                    return;
+                }
+
+                if (allOption) {
+                    allOption.checked = false;
+                }
+
+                selectedAdminAuthorFilters = Array.from(userOptions)
+                    .filter((option) => option.checked)
+                    .map((option) => option.value);
+
+                if (selectedAdminAuthorFilters.length === 0 && allOption) {
+                    allOption.checked = true;
+                    selectedAdminAuthorFilters = ["__all__"];
+                }
+
+                updateAdminUsersLabel();
+            });
+
+            document.addEventListener("click", (event) => {
+                if (!usersFilter.contains(event.target)) {
+                    usersMenu.hidden = true;
+                    usersToggle.setAttribute("aria-expanded", "false");
+                }
+            });
+        }
+    }
+
+    async function loadPendingSearchResults() {
+        const container = setLoading("pendingPosts", "Searching posts...");
+        const keywordInput = document.getElementById("pendingSearchKeyword");
+        const categoryInput = document.getElementById("pendingSearchCategory");
+        const sortInput = document.getElementById("pendingSearchSort");
+        const fromInput = document.getElementById("pendingSearchFrom");
+        const toInput = document.getElementById("pendingSearchTo");
+
+        if (!container || !keywordInput || !categoryInput || !sortInput || !fromInput || !toInput) {
+            return;
+        }
+
+        const params = new URLSearchParams({
+            keyword: keywordInput.value.trim(),
+            sort: sortInput.value || "newest",
+            status: String(activePendingStatus)
+        });
+
+        if (categoryInput.value) {
+            params.set("category", categoryInput.value);
+        }
+
+        if (fromInput.value) {
+            params.set("from", fromInput.value);
+        }
+
+        if (toInput.value) {
+            params.set("to", toInput.value);
+        }
+
+        const selectedAuthorIds = selectedPendingAuthorFilters.filter((value) => value !== "__all__");
+        if (selectedAuthorIds.length > 0) {
+            params.set("author_ids", selectedAuthorIds.join(","));
+        }
+
+        try {
+            const { response, data: result } = await fetchJSON(`${SEARCH_URL}?${params.toString()}`);
+            if (!response.ok || !result.ok) {
+                throw new Error(result.error || "Could not search posts");
+            }
+
+            renderPendingModerationPosts(container, Array.isArray(result.data) ? result.data : []);
+        } catch (error) {
+            console.error("Pending search error:", error);
+            container.innerHTML = '<div class="pending-state">Failed to load search results.</div>';
+            showFeedback("pendingFeedback", error.message || "Could not search pending posts.", "error");
+        }
+    }
+
+    function setupPendingPostsSearch() {
+        const form = document.getElementById("pendingPostsSearchForm");
+        const clearButton = document.getElementById("pendingSearchClear");
+        const usersToggle = document.getElementById("pendingSearchUsersToggle");
+        const usersMenu = document.getElementById("pendingSearchUsersMenu");
+        const usersFilter = document.getElementById("pendingSearchUsersFilter");
+
+        if (!form || !clearButton) {
+            return;
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            await loadPendingSearchResults();
+        });
+
+        clearButton.addEventListener("click", async () => {
+            form.reset();
+            selectedPendingAuthorFilters = ["__all__"];
+
+            const allOption = usersMenu?.querySelector('input[value="__all__"]');
+            if (allOption) {
+                allOption.checked = true;
+            }
+
+            usersMenu?.querySelectorAll('#pendingSearchUsersOptions input[type="checkbox"]').forEach((input) => {
+                input.checked = false;
+            });
+
+            if (usersMenu) {
+                usersMenu.hidden = true;
+            }
+
+            if (usersToggle) {
+                usersToggle.setAttribute("aria-expanded", "false");
+            }
+
+            updatePendingUsersLabel();
+            await loadPendingPosts();
+        });
+
+        if (usersToggle && usersMenu && usersFilter) {
+            usersToggle.addEventListener("click", () => {
+                const shouldOpen = usersMenu.hidden;
+                usersMenu.hidden = !shouldOpen;
+                usersToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+            });
+
+            usersMenu.addEventListener("change", (event) => {
+                const input = event.target.closest('input[type="checkbox"]');
+                if (!input) {
+                    return;
+                }
+
+                const allOption = usersMenu.querySelector('input[value="__all__"]');
+                const userOptions = usersMenu.querySelectorAll('#pendingSearchUsersOptions input[type="checkbox"]');
+
+                if (input.value === "__all__") {
+                    if (input.checked) {
+                        selectedPendingAuthorFilters = ["__all__"];
+                        userOptions.forEach((option) => {
+                            option.checked = false;
+                        });
+                    } else {
+                        selectedPendingAuthorFilters = [];
+                    }
+
+                    updatePendingUsersLabel();
+                    return;
+                }
+
+                if (allOption) {
+                    allOption.checked = false;
+                }
+
+                selectedPendingAuthorFilters = Array.from(userOptions)
+                    .filter((option) => option.checked)
+                    .map((option) => option.value);
+
+                if (selectedPendingAuthorFilters.length === 0 && allOption) {
+                    allOption.checked = true;
+                    selectedPendingAuthorFilters = ["__all__"];
+                }
+
+                updatePendingUsersLabel();
+            });
+
+            document.addEventListener("click", (event) => {
+                if (!usersFilter.contains(event.target)) {
+                    usersMenu.hidden = true;
+                    usersToggle.setAttribute("aria-expanded", "false");
+                }
+            });
+        }
+
+        document.querySelectorAll(".dashboard-status-filter[data-pending-status]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                activePendingStatus = Number(button.dataset.pendingStatus);
+                updatePendingStatusButtons();
+                await loadPendingPosts();
+            });
+        });
     }
 })();

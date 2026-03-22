@@ -445,6 +445,66 @@ class PostController extends BaseController {
         exit;
     }
 
+    public function previewDownload() {
+        $userId = (int) $this->requireLogin();
+        $attachmentId = (int) ($_GET['attachment_id'] ?? 0);
+
+        if ($attachmentId <= 0) {
+            $this->jsonResponse([
+                "message" => "Attachment ID required.",
+                "can_download" => false
+            ], 400);
+        }
+
+        $attachment = $this->postModel->getAttachmentById($attachmentId);
+
+        if (!$attachment || (int) ($attachment['deleted'] ?? 0) === 1 || (int) ($attachment['status'] ?? 0) !== 1) {
+            $this->jsonResponse([
+                "message" => "Attachment not found.",
+                "can_download" => false
+            ], 404);
+        }
+
+        $postOwnerId = (int) ($attachment['post_owner_id'] ?? 0);
+        $currentBalance = $this->postModel->getTokenBalance($userId);
+
+        if ($postOwnerId === $userId) {
+            $this->jsonResponse([
+                "can_download" => true,
+                "token_charge" => 0,
+                "remaining_tokens" => $currentBalance,
+                "message" => "This is your own file. No tokens will be used."
+            ]);
+        }
+
+        if (!$this->postModel->hasUsedFreeDownloadToday($userId)) {
+            $this->jsonResponse([
+                "can_download" => true,
+                "token_charge" => 0,
+                "remaining_tokens" => $currentBalance,
+                "message" => "This is your free daily download. No tokens will be used."
+            ]);
+        }
+
+        if ($currentBalance < 1) {
+            $this->jsonResponse([
+                "can_download" => false,
+                "token_charge" => 1,
+                "remaining_tokens" => $currentBalance,
+                "message" => "You do not have enough tokens to complete this download."
+            ], 403);
+        }
+
+        $remainingTokens = $currentBalance - 1;
+
+        $this->jsonResponse([
+            "can_download" => true,
+            "token_charge" => 1,
+            "remaining_tokens" => $remainingTokens,
+            "message" => "This action will cost 1 token. You will have {$remainingTokens} tokens left."
+        ]);
+    }
+
     // reject post by admin
     public function reject() {
 
@@ -645,6 +705,9 @@ if (isset($_GET['action'])) {
             break;
         case 'downloadAttachment':
             $controller->downloadAttachment();
+            break;
+        case 'previewDownload':
+            $controller->previewDownload();
             break;
         case 'requestDelete':
             $controller->requestDelete();

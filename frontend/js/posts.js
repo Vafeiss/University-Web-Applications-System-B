@@ -2,8 +2,11 @@ const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/
 const CAT_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
 const FOLLOW_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/FollowController.php";
 const NOTIFICATION_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/NotificationController.php";
+const SEARCH_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/search_controllers.php";
 let activeFeedMode = "default";
+let previousSearchMode = "default";
 const followedUserIds = new Set();
+let selectedFollowerFilters = ["__all__"];
 
 function getAuthorName(post) {
     if (post.is_anonymous == 1 && !isAdmin) {
@@ -630,6 +633,113 @@ async function loadDefaultFeed() {
     }
 }
 
+async function loadSearchResults() {
+    const container = document.getElementById("postsList");
+    const banner = document.getElementById("interestsBanner");
+    const keywordInput = document.getElementById("feedSearchKeyword");
+    const categoryInput = document.getElementById("feedSearchCategory");
+    const sortInput = document.getElementById("feedSearchSort");
+    const fromInput = document.getElementById("feedSearchFrom");
+    const toInput = document.getElementById("feedSearchTo");
+    const selectedAuthorIds = selectedFollowerFilters.filter((value) => value !== "__all__");
+    const followedOnly = selectedFollowerFilters.length > 0;
+
+    if (!container || !keywordInput || !categoryInput || !sortInput || !fromInput || !toInput) {
+        return;
+    }
+
+    const params = new URLSearchParams();
+    const keyword = keywordInput.value.trim();
+    const category = categoryInput.value;
+    const sort = sortInput.value;
+    const from = fromInput.value;
+    const to = toInput.value;
+    if (keyword) params.set("keyword", keyword);
+    if (category) params.set("category", category);
+    if (sort) params.set("sort", sort);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    if (followedOnly) params.set("followed_only", "1");
+    if (selectedAuthorIds.length > 0) params.set("author_ids", selectedAuthorIds.join(","));
+
+    activeFeedMode = "search";
+    container.innerHTML = '<div class="pending-state">Searching posts...</div>';
+
+    try {
+        const { ok, data } = await fetchJSON(`${SEARCH_URL}?${params.toString()}`);
+
+        if (!ok || !data.ok) {
+            container.innerHTML = '<div class="pending-state">Could not load search results.</div>';
+            return;
+        }
+
+        if (banner) {
+            banner.innerHTML = `
+                <div class="interests-banner">
+                    <div class="interests-label">Search results</div>
+                    <div class="interests-chips">
+                        <span class="pending-chip">${escapeHtml(`${data.count ?? 0} posts found`)}</span>
+                    </div>
+                </div>`;
+        }
+
+        renderPosts(Array.isArray(data.data) ? data.data : []);
+    } catch (error) {
+        console.error("Error loading search results:", error);
+        container.innerHTML = '<div class="pending-state">Failed to load search results.</div>';
+    }
+}
+
+function updateFollowerFilterLabel() {
+    const label = document.getElementById("feedSearchFollowersLabel");
+    if (!label) return;
+
+    if (selectedFollowerFilters.includes("__all__")) {
+        label.textContent = "All followers";
+        return;
+    }
+
+    if (selectedFollowerFilters.length === 0) {
+        label.textContent = "Followers";
+        return;
+    }
+
+    label.textContent = "Selected followers";
+}
+
+async function loadFollowerFilterOptions() {
+    const optionsContainer = document.getElementById("feedSearchFollowersOptions");
+    if (!optionsContainer) return;
+
+    try {
+        const { ok, data: users } = await fetchJSON(`${FOLLOW_URL}?action=followingList`);
+
+        if (!ok || !Array.isArray(users) || users.length === 0) {
+            optionsContainer.innerHTML = `
+                <label class="feed-search-followers-option">
+                    <input type="checkbox" disabled>
+                    <span>No followed users yet</span>
+                </label>
+            `;
+            selectedFollowerFilters = [];
+            updateFollowerFilterLabel();
+            return;
+        }
+
+        optionsContainer.innerHTML = users.map((user) => `
+            <label class="feed-search-followers-option">
+                <input type="checkbox" value="${Number(user.user_id)}">
+                <span>${escapeHtml(user.username)}</span>
+            </label>
+        `).join("");
+
+        selectedFollowerFilters = ["__all__"];
+        updateFollowerFilterLabel();
+    } catch (error) {
+        console.error("Could not load follower filter options:", error);
+    }
+}
+
 async function loadFollowersFeed() {
     const container = document.getElementById("postsList");
     if (!container) return;
@@ -745,16 +855,23 @@ function setupFeedModeToggle() {
     const pendingPostsButton = document.getElementById("pendingPostsBtn");
     const pendingDeleteRequestsButton = document.getElementById("pendingDeleteRequestsBtn");
     const reportsButton = document.getElementById("reportsBtn");
+    const searchPanel = document.getElementById("feedSearchForm");
 
     if (!followersButton || !postsButton || !pendingPostsButton || !pendingDeleteRequestsButton || !reportsButton || !title) return;
 
     const setMode = (mode) => {
         activeFeedMode = mode;
-        postsButton.classList.toggle("is-active", mode === "default");
+        postsButton.classList.toggle("is-active", mode === "default" || mode === "search");
         followersButton.classList.toggle("is-active", mode === "followers");
         pendingPostsButton.classList.toggle("is-active", mode === "pending-posts");
         pendingDeleteRequestsButton.classList.toggle("is-active", mode === "pending-delete-requests");
         reportsButton.classList.toggle("is-active", mode === "reports");
+
+        if (searchPanel) {
+            const showSearchPanel = mode === "default" || mode === "search" || mode === "followers";
+            searchPanel.hidden = !showSearchPanel;
+            searchPanel.style.display = showSearchPanel ? "flex" : "none";
+        }
     };
 
     postsButton.addEventListener("click", async () => {
@@ -810,6 +927,110 @@ function setupFeedModeToggle() {
         title.textContent = "Reports";
         await loadReportsFeed();
     });
+}
+
+function setupSearchControls() {
+    const form = document.getElementById("feedSearchForm");
+    const clearButton = document.getElementById("feedSearchClear");
+    const title = document.getElementById("feedTitle");
+    const followersToggle = document.getElementById("feedSearchFollowersToggle");
+    const followersMenu = document.getElementById("feedSearchFollowersMenu");
+    const followersFilter = document.getElementById("feedSearchFollowersFilter");
+
+    if (!form || !clearButton || !title) {
+        return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
+        title.textContent = "Search Results";
+        await loadSearchResults();
+    });
+
+    clearButton.addEventListener("click", async () => {
+        form.reset();
+        selectedFollowerFilters = ["__all__"];
+
+        const allOption = followersMenu?.querySelector('input[value="__all__"]');
+        if (allOption) {
+            allOption.checked = true;
+        }
+
+        followersMenu?.querySelectorAll('#feedSearchFollowersOptions input[type="checkbox"]').forEach((input) => {
+            input.checked = false;
+        });
+
+        if (followersMenu) {
+            followersMenu.hidden = true;
+        }
+
+        if (followersToggle) {
+            followersToggle.setAttribute("aria-expanded", "false");
+        }
+
+        updateFollowerFilterLabel();
+
+        if (previousSearchMode === "followers") {
+            title.textContent = "Following";
+            await loadFollowersBanner();
+            await loadFollowersFeed();
+            return;
+        }
+
+        title.textContent = "Posts Feed";
+        await loadInterestsBanner();
+        await loadDefaultFeed();
+    });
+
+    if (followersToggle && followersMenu && followersFilter) {
+        followersToggle.addEventListener("click", () => {
+            const shouldOpen = followersMenu.hidden;
+            followersMenu.hidden = !shouldOpen;
+            followersToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+        });
+
+        followersMenu.addEventListener("change", (event) => {
+            const input = event.target.closest('input[type="checkbox"]');
+            if (!input) return;
+
+            const allOption = followersMenu.querySelector('input[value="__all__"]');
+            const userOptions = followersMenu.querySelectorAll('#feedSearchFollowersOptions input[type="checkbox"]');
+
+            if (input.value === "__all__") {
+                if (input.checked) {
+                    selectedFollowerFilters = ["__all__"];
+                    userOptions.forEach((option) => {
+                        option.checked = false;
+                    });
+                } else {
+                    selectedFollowerFilters = [];
+                }
+            } else {
+                if (allOption) {
+                    allOption.checked = false;
+                }
+
+                selectedFollowerFilters = Array.from(userOptions)
+                    .filter((option) => option.checked)
+                    .map((option) => option.value);
+
+                if (selectedFollowerFilters.length === 0 && allOption) {
+                    allOption.checked = true;
+                    selectedFollowerFilters = ["__all__"];
+                }
+            }
+
+            updateFollowerFilterLabel();
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!followersFilter.contains(event.target)) {
+                followersMenu.hidden = true;
+                followersToggle.setAttribute("aria-expanded", "false");
+            }
+        });
+    }
 }
 
 function confirmFollowAction() {
@@ -922,10 +1143,13 @@ document.addEventListener("DOMContentLoaded", () => {
     loadNotifications();
     setupFeedMenu();
     setupFeedModeToggle();
+    setupSearchControls();
     setupFollowActions();
     setupFollowersBannerActions();
 
-    refreshFollowingUsersState().finally(() => {
+    refreshFollowingUsersState().finally(async () => {
+        await loadFollowerFilterOptions();
+        updateFollowerFilterLabel();
         loadInterestsBanner();
         loadDefaultFeed();
     });

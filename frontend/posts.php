@@ -18,6 +18,11 @@ $tokenBalanceStmt = $conn->prepare(
 $tokenBalanceStmt->execute([":id" => $_SESSION['user_id']]);
 $tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
+$categoriesStmt = $conn->query(
+    "SELECT category_id, name FROM categories ORDER BY name ASC"
+);
+$categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
+
 $postCssVersion = filemtime(__DIR__ . '/css/post.css');
 $adminCssVersion = filemtime(__DIR__ . '/css/admin_pending_posts.css');
 $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
@@ -85,6 +90,8 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
                     <div class="feed-menu-dropdown" role="menu" aria-label="Feed quick actions">
                         <?php if ($isAdmin): ?>
                         <a href="admin_dashboard.php" class="feed-menu-item" role="menuitem">Admin panel</a>
+                        <?php else: ?>
+                        <a href="token_history.php" class="feed-menu-item" role="menuitem">Token history</a>
                         <?php endif; ?>
 
                         <a href="profile_view.php" class="feed-menu-item" role="menuitem">View &amp; Edit profile</a>
@@ -106,6 +113,47 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
             <a href="admin_dashboard.php" class="feed-tab">&#9881; Admin Panel</a>
             <?php endif; ?>
         </nav>
+
+        <form id="feedSearchForm" class="feed-search-panel">
+            <input type="text" id="feedSearchKeyword" class="feed-search-input" placeholder="Search posts by keyword">
+
+            <select id="feedSearchCategory" class="feed-search-select">
+                <option value="">All categories</option>
+                <?php foreach ($categories as $category): ?>
+                <option value="<?= (int) $category['category_id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <select id="feedSearchSort" class="feed-search-select">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="title_asc">Title A-Z</option>
+                <option value="title_desc">Title Z-A</option>
+            </select>
+
+            <input type="date" id="feedSearchFrom" class="feed-search-date" aria-label="Search from date">
+            <input type="date" id="feedSearchTo" class="feed-search-date" aria-label="Search to date">
+
+            <?php if (!$isAdmin): ?>
+            <div class="feed-search-followers" id="feedSearchFollowersFilter">
+                <button type="button" id="feedSearchFollowersToggle" class="feed-search-followers-toggle" aria-haspopup="true" aria-expanded="false">
+                    <span id="feedSearchFollowersLabel">All followers</span>
+                </button>
+                <div id="feedSearchFollowersMenu" class="feed-search-followers-menu" hidden>
+                    <label class="feed-search-followers-option">
+                        <input type="checkbox" value="__all__" checked>
+                        <span>All followers</span>
+                    </label>
+                    <div id="feedSearchFollowersOptions"></div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <div class="feed-search-actions">
+                <button type="submit" class="feed-search-btn primary">Search</button>
+                <button type="button" id="feedSearchClear" class="feed-search-btn secondary">Clear</button>
+            </div>
+        </form>
 
         <div id="interestsBanner"></div>
     </header>

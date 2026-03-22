@@ -185,10 +185,6 @@ class AuthController {
         // ============================================
         $newUserTokens = 0;
 
-        if ($referrerUserId !== null) {
-            $newUserTokens = 10; // reward for new user
-        }
-
         // ============================================
         // Insert new user
         // ============================================
@@ -213,16 +209,6 @@ class AuthController {
         // If referral used → reward referrer
         // ============================================
         if ($referrerUserId !== null) {
-            $recordNewUserReward = $this->conn->prepare(
-                "INSERT INTO transactions (user_id, token_charge, timestamp)
-                 VALUES (:id, :charge, NOW())"
-            );
-
-            $recordNewUserReward->execute([
-                ":id" => $newUserId,
-                ":charge" => 10
-            ]);
-
             $rewardReferrer = $this->conn->prepare(
                 "UPDATE users 
                  SET token_balance = token_balance + 10 

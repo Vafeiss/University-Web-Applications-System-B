@@ -389,6 +389,136 @@ body {
     gap: 8px;
 }
 
+.feed-search-panel {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin: 16px 0 18px;
+    padding: 8px;
+    border: 1px solid #d7e1f0;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.feed-search-input,
+.feed-search-select,
+.feed-search-date {
+    margin: 0;
+    border: 1px solid #d3ddeb;
+    border-radius: 9px;
+    background: #fbfcfe;
+    font-size: 11px;
+    padding: 7px 9px;
+    min-height: 36px;
+}
+
+.feed-search-input {
+    flex: 1 1 165px;
+    min-width: 138px;
+}
+
+.feed-search-select,
+.feed-search-date {
+    width: auto;
+    min-width: 108px;
+}
+
+.feed-search-followers {
+    position: relative;
+    min-width: 122px;
+}
+
+.feed-search-followers-toggle {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 9px;
+    border: 1px solid #d7e1f0;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: #28405f;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.feed-search-followers-toggle::after {
+    content: "▾";
+    color: #62708a;
+    font-size: 12px;
+}
+
+.feed-search-followers-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 220px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #d7e1f0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    z-index: 40;
+}
+
+.feed-search-followers-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: #28405f;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.feed-search-followers-option:hover {
+    background: #f5f8fd;
+}
+
+.feed-search-followers-option input {
+    width: auto;
+    margin: 0;
+}
+
+.feed-search-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.feed-search-btn {
+    width: auto;
+    padding: 7px 11px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.feed-search-btn.primary {
+    background: #214f95;
+}
+
+.feed-search-btn.primary:hover {
+    background: #183f79;
+}
+
+.feed-search-btn.secondary {
+    background: #eef2f8;
+    color: #4f5f78;
+}
+
+.feed-search-btn.secondary:hover {
+    background: #e4e9f1;
+}
+
 .token-balance-badge {
     display: inline-flex;
     align-items: center;
@@ -466,6 +596,18 @@ body {
     text-decoration: none;
     padding: 10px 10px;
     cursor: pointer;
+}
+
+.feed-menu-item:visited {
+    color: #28405f;
+}
+
+.feed-menu-item:hover,
+.feed-menu-item:focus,
+.feed-menu-item:focus-visible,
+.feed-menu-item:active {
+    color: #28405f;
+    font-weight: 600;
 }
 
 .feed-menu-item:hover {
