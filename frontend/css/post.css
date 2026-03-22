@@ -392,7 +392,7 @@ body {
 .feed-search-panel {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 6px;
     margin: 16px 0 18px;
     padding: 8px;
@@ -410,8 +410,10 @@ body {
     border-radius: 9px;
     background: #fbfcfe;
     font-size: 11px;
-    padding: 7px 9px;
-    min-height: 36px;
+    padding: 0 9px;
+    height: 36px;
+    line-height: 36px;
+    box-sizing: border-box;
 }
 
 .feed-search-input {
@@ -419,15 +421,22 @@ body {
     min-width: 138px;
 }
 
-.feed-search-select,
-.feed-search-date {
-    width: auto;
+.feed-search-select {
+    flex: 1 1 120px;
     min-width: 108px;
+}
+
+.feed-search-date {
+    flex: 1 1 130px;
+    min-width: 120px;
 }
 
 .feed-search-followers {
     position: relative;
-    min-width: 122px;
+    flex: 1 1 122px;
+    min-width: 110px;
+    height: 36px;
+    box-sizing: border-box;
 }
 
 .feed-search-followers-toggle {
@@ -436,7 +445,9 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 7px 9px;
+    padding: 0 9px;
+    height: 36px;
+    box-sizing: border-box;
     border: 1px solid #d7e1f0;
     border-radius: 9px;
     background: #fbfcfe;
@@ -492,11 +503,14 @@ body {
     align-items: center;
     gap: 8px;
     margin-left: auto;
+    flex-shrink: 0;
 }
 
 .feed-search-btn {
     width: auto;
-    padding: 7px 11px;
+    padding: 0 11px;
+    height: 36px;
+    box-sizing: border-box;
     border-radius: 9px;
     font-size: 11px;
     font-weight: 700;
