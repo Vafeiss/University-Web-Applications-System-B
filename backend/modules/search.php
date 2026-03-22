@@ -76,6 +76,10 @@ class Search {
             $sql .= " AND p.user_id IN (" . implode(', ', $placeholders) . ")";
         }
 
+        if (!empty($authorIds)) {
+            $sql .= " AND p.is_anonymous = 0";
+        }
+
         $orderBy = match ($sort) {
             'oldest' => 'p.timestamp ASC',
             'title_asc' => 'p.title ASC',
