@@ -9,6 +9,10 @@ const followedUserIds = new Set();
 let selectedFollowerFilters = ["__all__"];
 let feedAutoRefreshTimerId = null;
 let isFeedAutoRefreshInFlight = false;
+let activeFeedStatusFilter = 0;
+let cachedPendingPosts = [];
+let cachedPendingDeleteRequests = [];
+let cachedReports = [];
 
 function getAuthorName(post) {
     if (post.is_anonymous == 1 && !isAdmin) {
@@ -322,7 +326,6 @@ function setupNotificationsUI() {
 // Επιστρέφει το κείμενο και την CSS κλάση που αντιστοιχεί στην κατάσταση ενός post, λαμβάνοντας υπόψη αν έχει διαγραφεί ή όχι
 function getPostStatusInfo(status, deleted) {
     const numericStatus = Number(status);
-    const isDeleted = Number(deleted) === 1;
 
     if (numericStatus === 0) {
         return { text: "Pending", className: "pending" };
@@ -330,10 +333,6 @@ function getPostStatusInfo(status, deleted) {
 
     if (numericStatus === 2) {
         return { text: "Rejected", className: "rejected" };
-    }
-
-    if (numericStatus === 1 && isDeleted) {
-        return { text: "Deleted", className: "rejected" };
     }
 
     return { text: "Approved", className: "approved" };
@@ -402,6 +401,145 @@ function renderSimpleBanner(label, text, isWarning = false) {
                 <span class="pending-chip">${escapeHtml(text)}</span>
             </div>
         </div>`;
+}
+
+function parseDateValue(value) {
+    const timestamp = value ? new Date(value).getTime() : NaN;
+    return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function updateFeedStatusButtons() {
+    document.querySelectorAll(".feed-status-filter[data-feed-status]").forEach((button) => {
+        button.classList.toggle("is-active", Number(button.dataset.feedStatus) === activeFeedStatusFilter);
+    });
+}
+
+function filterPendingPostsData(posts, filters) {
+    const keyword = filters.keyword.toLowerCase();
+    const fromTime = filters.from ? new Date(`${filters.from}T00:00:00`).getTime() : null;
+    const toTime = filters.to ? new Date(`${filters.to}T23:59:59`).getTime() : null;
+
+    let filtered = Array.isArray(posts) ? posts.filter((post) => {
+        if (Number(post.status) !== activeFeedStatusFilter) {
+            return false;
+        }
+
+        if (filters.category && String(post.category_id ?? "") !== filters.category) {
+            return false;
+        }
+
+        if (keyword) {
+            const haystack = `${post.title ?? ""} ${post.content ?? ""} ${post.category ?? ""}`.toLowerCase();
+            if (!haystack.includes(keyword)) {
+                return false;
+            }
+        }
+
+        const createdTime = parseDateValue(post.timestamp);
+        if (fromTime !== null && (createdTime === null || createdTime < fromTime)) {
+            return false;
+        }
+
+        if (toTime !== null && (createdTime === null || createdTime > toTime)) {
+            return false;
+        }
+
+        return true;
+    }) : [];
+
+    filtered.sort((a, b) => {
+        const aTime = parseDateValue(a.timestamp) ?? 0;
+        const bTime = parseDateValue(b.timestamp) ?? 0;
+
+        switch (filters.sort) {
+            case "oldest":
+                return aTime - bTime;
+            case "title_asc":
+                return String(a.title ?? "").localeCompare(String(b.title ?? ""));
+            case "title_desc":
+                return String(b.title ?? "").localeCompare(String(a.title ?? ""));
+            default:
+                return bTime - aTime;
+        }
+    });
+
+    return filtered;
+}
+
+function filterPendingDeleteRequestsData(requests, filters) {
+    const keyword = filters.keyword.toLowerCase();
+    const fromTime = filters.from ? new Date(`${filters.from}T00:00:00`).getTime() : null;
+    const toTime = filters.to ? new Date(`${filters.to}T23:59:59`).getTime() : null;
+
+    let filtered = Array.isArray(requests) ? requests.filter((request) => {
+        if (Number(request.status) !== activeFeedStatusFilter) {
+            return false;
+        }
+
+        if (keyword) {
+            const haystack = `${request.title ?? ""} ${request.reason ?? ""}`.toLowerCase();
+            if (!haystack.includes(keyword)) {
+                return false;
+            }
+        }
+
+        const createdTime = parseDateValue(request.timestamp);
+        if (fromTime !== null && (createdTime === null || createdTime < fromTime)) {
+            return false;
+        }
+
+        if (toTime !== null && (createdTime === null || createdTime > toTime)) {
+            return false;
+        }
+
+        return true;
+    }) : [];
+
+    filtered.sort((a, b) => {
+        const aTime = parseDateValue(a.timestamp) ?? 0;
+        const bTime = parseDateValue(b.timestamp) ?? 0;
+        return filters.sort === "oldest" ? aTime - bTime : bTime - aTime;
+    });
+
+    return filtered;
+}
+
+function filterReportsData(reports, filters) {
+    const keyword = filters.keyword.toLowerCase();
+    const fromTime = filters.from ? new Date(`${filters.from}T00:00:00`).getTime() : null;
+    const toTime = filters.to ? new Date(`${filters.to}T23:59:59`).getTime() : null;
+
+    let filtered = Array.isArray(reports) ? reports.filter((report) => {
+        if (Number(report.status) !== activeFeedStatusFilter) {
+            return false;
+        }
+
+        if (keyword) {
+            const haystack = `${report.post_title ?? ""} ${report.reason ?? ""}`.toLowerCase();
+            if (!haystack.includes(keyword)) {
+                return false;
+            }
+        }
+
+        const createdTime = parseDateValue(report.created);
+        if (fromTime !== null && (createdTime === null || createdTime < fromTime)) {
+            return false;
+        }
+
+        if (toTime !== null && (createdTime === null || createdTime > toTime)) {
+            return false;
+        }
+
+        return true;
+    }) : [];
+
+    filtered.sort((a, b) => {
+        const aTime = parseDateValue(a.created) ?? 0;
+        const bTime = parseDateValue(b.created) ?? 0;
+        return filters.sort === "oldest" ? aTime - bTime : bTime - aTime;
+    });
+
+    return filtered;
 }
 
     function renderPendingPosts(posts) {
@@ -494,6 +632,7 @@ function renderReports(reports) {
         const createdAt = report.created ? new Date(report.created).toLocaleString() : "Unknown date";
         const reportStatus = getRequestStatusInfo(report.status);
         const postDeleted = Number(report.deleted) === 1;
+        const showPostStatus = Number(report.status) !== 2;
         const postStatus = postDeleted
             ? { text: "Removed", className: "rejected" }
             : { text: "Visible", className: "approved" };
@@ -506,7 +645,7 @@ function renderReports(reports) {
             <h3>${link}</h3>
             <div class="pending-meta">
                 <span class="status-chip ${reportStatus.className}">Report: ${escapeHtml(reportStatus.text)}</span>
-                <span class="status-chip ${postStatus.className}">Post: ${escapeHtml(postStatus.text)}</span>
+                ${showPostStatus ? `<span class="status-chip ${postStatus.className}">Post: ${escapeHtml(postStatus.text)}</span>` : ""}
                 <span>${escapeHtml(createdAt)}</span>
             </div>
             <div class="pending-content"><strong>Reason:</strong> ${escapeHtml(report.reason || "-")}</div>
@@ -850,8 +989,15 @@ async function loadPendingPostsFeed(options = {}) {
             return;
         }
 
+        cachedPendingPosts = Array.isArray(posts) ? posts : [];
         renderSimpleBanner("Your pending posts", "Track moderation status: Pending, Approved, Rejected");
-        renderPendingPosts(posts);
+        renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
+            keyword: "",
+            category: "",
+            from: "",
+            to: "",
+            sort: "newest"
+        }));
     } catch (error) {
         console.error("Error loading pending posts:", error);
         container.innerHTML = '<div class="pending-state">Failed to load your posts.</div>';
@@ -876,8 +1022,14 @@ async function loadPendingDeleteRequestsFeed(options = {}) {
             return;
         }
 
+        cachedPendingDeleteRequests = Array.isArray(requests) ? requests : [];
         renderSimpleBanner("Your delete requests", "Track each request status and final post decision");
-        renderPendingDeleteRequests(requests);
+        renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
+            keyword: "",
+            from: "",
+            to: "",
+            sort: "newest"
+        }));
     } catch (error) {
         console.error("Error loading pending delete requests:", error);
         container.innerHTML = '<div class="pending-state">Failed to load delete requests.</div>';
@@ -902,8 +1054,14 @@ async function loadReportsFeed(options = {}) {
             return;
         }
 
+        cachedReports = Array.isArray(reports) ? reports : [];
         renderSimpleBanner("Your reports", "Track report status and moderation outcome");
-        renderReports(reports);
+        renderReports(filterReportsData(cachedReports, {
+            keyword: "",
+            from: "",
+            to: "",
+            sort: "newest"
+        }));
     } catch (error) {
         console.error("Error loading reports:", error);
         container.innerHTML = '<div class="pending-state">Failed to load reports.</div>';
@@ -986,6 +1144,8 @@ function setupFeedModeToggle() {
     const pendingDeleteRequestsButton = document.getElementById("pendingDeleteRequestsBtn");
     const reportsButton = document.getElementById("reportsBtn");
     const searchPanel = document.getElementById("feedSearchForm");
+    const statusFilters = document.getElementById("feedModerationStatusFilters");
+    const followersFilter = document.getElementById("feedSearchFollowersFilter");
 
     if (!followersButton || !postsButton || !pendingPostsButton || !pendingDeleteRequestsButton || !reportsButton || !title) return;
 
@@ -998,11 +1158,25 @@ function setupFeedModeToggle() {
         reportsButton.classList.toggle("is-active", mode === "reports");
 
         if (searchPanel) {
-            const showSearchPanel = mode === "default" || mode === "search" || mode === "followers";
+            const showSearchPanel = mode === "default" || mode === "search" || mode === "followers" || mode === "pending-posts" || mode === "pending-delete-requests" || mode === "reports";
             searchPanel.hidden = !showSearchPanel;
             searchPanel.style.display = showSearchPanel ? "flex" : "none";
         }
+
+        if (statusFilters) {
+            const showStatusFilters = mode === "pending-posts" || mode === "pending-delete-requests" || mode === "reports";
+            statusFilters.hidden = !showStatusFilters;
+            statusFilters.style.display = showStatusFilters ? "inline-flex" : "none";
+        }
+
+        if (followersFilter) {
+            const showFollowersFilter = mode === "default" || mode === "search" || mode === "followers";
+            followersFilter.hidden = !showFollowersFilter;
+            followersFilter.style.display = showFollowersFilter ? "block" : "none";
+        }
     };
+
+    setMode("default");
 
     postsButton.addEventListener("click", async () => {
         if (activeFeedMode === "default") {
@@ -1033,6 +1207,8 @@ function setupFeedModeToggle() {
             return;
         }
 
+        activeFeedStatusFilter = 0;
+        updateFeedStatusButtons();
         setMode("pending-posts");
         title.textContent = "Pending Posts";
         await loadPendingPostsFeed();
@@ -1043,6 +1219,8 @@ function setupFeedModeToggle() {
             return;
         }
 
+        activeFeedStatusFilter = 0;
+        updateFeedStatusButtons();
         setMode("pending-delete-requests");
         title.textContent = "Pending Delete Requests";
         await loadPendingDeleteRequestsFeed();
@@ -1053,6 +1231,8 @@ function setupFeedModeToggle() {
             return;
         }
 
+        activeFeedStatusFilter = 0;
+        updateFeedStatusButtons();
         setMode("reports");
         title.textContent = "Reports";
         await loadReportsFeed();
@@ -1066,6 +1246,7 @@ function setupSearchControls() {
     const followersToggle = document.getElementById("feedSearchFollowersToggle");
     const followersMenu = document.getElementById("feedSearchFollowersMenu");
     const followersFilter = document.getElementById("feedSearchFollowersFilter");
+    const statusButtons = document.querySelectorAll(".feed-status-filter[data-feed-status]");
 
     if (!form || !clearButton || !title) {
         return;
@@ -1073,6 +1254,38 @@ function setupSearchControls() {
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
+
+        if (activeFeedMode === "pending-posts") {
+            renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
+                keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                category: document.getElementById("feedSearchCategory")?.value || "",
+                from: document.getElementById("feedSearchFrom")?.value || "",
+                to: document.getElementById("feedSearchTo")?.value || "",
+                sort: document.getElementById("feedSearchSort")?.value || "newest"
+            }));
+            return;
+        }
+
+        if (activeFeedMode === "pending-delete-requests") {
+            renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
+                keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                from: document.getElementById("feedSearchFrom")?.value || "",
+                to: document.getElementById("feedSearchTo")?.value || "",
+                sort: document.getElementById("feedSearchSort")?.value || "newest"
+            }));
+            return;
+        }
+
+        if (activeFeedMode === "reports") {
+            renderReports(filterReportsData(cachedReports, {
+                keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                from: document.getElementById("feedSearchFrom")?.value || "",
+                to: document.getElementById("feedSearchTo")?.value || "",
+                sort: document.getElementById("feedSearchSort")?.value || "newest"
+            }));
+            return;
+        }
+
         previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
         title.textContent = "Search Results";
         await loadSearchResults();
@@ -1108,9 +1321,70 @@ function setupSearchControls() {
             return;
         }
 
+        if (activeFeedMode === "pending-posts") {
+            activeFeedStatusFilter = 0;
+            updateFeedStatusButtons();
+            title.textContent = "Pending Posts";
+            await loadPendingPostsFeed();
+            return;
+        }
+
+        if (activeFeedMode === "pending-delete-requests") {
+            activeFeedStatusFilter = 0;
+            updateFeedStatusButtons();
+            title.textContent = "Pending Delete Requests";
+            await loadPendingDeleteRequestsFeed();
+            return;
+        }
+
+        if (activeFeedMode === "reports") {
+            activeFeedStatusFilter = 0;
+            updateFeedStatusButtons();
+            title.textContent = "Reports";
+            await loadReportsFeed();
+            return;
+        }
+
         title.textContent = "Posts Feed";
         await loadInterestsBanner();
         await loadDefaultFeed();
+    });
+
+    statusButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+            activeFeedStatusFilter = Number(button.dataset.feedStatus);
+            updateFeedStatusButtons();
+
+            if (activeFeedMode === "pending-posts") {
+                renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
+                    keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                    category: document.getElementById("feedSearchCategory")?.value || "",
+                    from: document.getElementById("feedSearchFrom")?.value || "",
+                    to: document.getElementById("feedSearchTo")?.value || "",
+                    sort: document.getElementById("feedSearchSort")?.value || "newest"
+                }));
+                return;
+            }
+
+            if (activeFeedMode === "pending-delete-requests") {
+                renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
+                    keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                    from: document.getElementById("feedSearchFrom")?.value || "",
+                    to: document.getElementById("feedSearchTo")?.value || "",
+                    sort: document.getElementById("feedSearchSort")?.value || "newest"
+                }));
+                return;
+            }
+
+            if (activeFeedMode === "reports") {
+                renderReports(filterReportsData(cachedReports, {
+                    keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                    from: document.getElementById("feedSearchFrom")?.value || "",
+                    to: document.getElementById("feedSearchTo")?.value || "",
+                    sort: document.getElementById("feedSearchSort")?.value || "newest"
+                }));
+            }
+        });
     });
 
     if (followersToggle && followersMenu && followersFilter) {
