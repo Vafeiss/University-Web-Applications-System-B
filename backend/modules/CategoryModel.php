@@ -222,6 +222,23 @@ class CategoryModel {
     }
 
     // ===============================
+    // ADMIN: get request by id
+    // ===============================
+    public function getRequestById($requestId) {
+
+        $stmt = $this->db->prepare("
+            SELECT request_id, requested_by, suggested_name, status
+            FROM category_requests
+            WHERE request_id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$requestId]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    // ===============================
     // ADMIN: update request status
     // ===============================
     public function updateRequestStatus($requestId, $status){
@@ -233,6 +250,23 @@ class CategoryModel {
         ");
 
         return $stmt->execute([$status, $requestId]);
+    }
+
+    // ===============================
+    // ADMIN: update request status only if pending
+    // ===============================
+    public function updateRequestStatusIfPending($requestId, $status): bool {
+
+        $stmt = $this->db->prepare("
+            UPDATE category_requests
+            SET status = ?
+            WHERE request_id = ?
+            AND status = 0
+        ");
+
+        $stmt->execute([$status, $requestId]);
+
+        return $stmt->rowCount() > 0;
     }
 
     // ===============================

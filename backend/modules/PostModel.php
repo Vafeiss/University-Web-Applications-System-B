@@ -364,13 +364,15 @@ class PostModel {
 
         $query = "UPDATE posts
                   SET status = 2, deleted = 1
-                  WHERE post_id = :post_id";
+                  WHERE post_id = :post_id
+                  AND status <> 2";
 
         $stmt = $this->conn->prepare($query);
-
-        return $stmt->execute([
+        $stmt->execute([
             ":post_id" => $post_id
         ]);
+
+        return $stmt->rowCount() > 0;
     }
 
     public function getPendingPosts() {
@@ -406,42 +408,73 @@ class PostModel {
     }
     // Admin approves delete request
     public function approveDeleteRequest($request_id) {
-        // Ενημέρωση του post ως διαγραμμένο (deleted = 1) και της κατάστασης του αιτήματος σε "approved"
-        $query = "UPDATE posts
-                  SET deleted = 1
-                  WHERE post_id = (
-                        SELECT post_id
-                        FROM post_delete_requests
-                        WHERE request_id = :request_id
-                  )";
-        // Εκτέλεση του query
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([
-            ":request_id" => $request_id
-        ]);
-        // Ενημέρωση της κατάστασης του αιτήματος σε "approved"
-        $query = "UPDATE post_delete_requests
-                  SET status = 1
-                  WHERE request_id = :request_id";
-        
-        $stmt = $this->conn->prepare($query);
+        $this->conn->beginTransaction();
 
-        return $stmt->execute([
-            ":request_id" => $request_id
-        ]);
+        try {
+            $query = "SELECT post_id
+                      FROM post_delete_requests
+                      WHERE request_id = :request_id
+                      LIMIT 1";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":request_id" => $request_id
+            ]);
+
+            $postId = (int) ($stmt->fetchColumn() ?: 0);
+            if ($postId <= 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $query = "UPDATE post_delete_requests
+                      SET status = 1
+                      WHERE request_id = :request_id
+                      AND status = 0";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":request_id" => $request_id
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $query = "UPDATE posts
+                      SET deleted = 1
+                      WHERE post_id = :post_id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $postId
+            ]);
+
+            $this->conn->commit();
+            return true;
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
+        }
     }
     // Admin rejects delete request
     public function rejectDeleteRequest($request_id) {
         // Ενημέρωση της κατάστασης του αιτήματος σε "rejected"
         $query = "UPDATE post_delete_requests
                   SET status = 2
-                  WHERE request_id = :request_id";
+                  WHERE request_id = :request_id
+                  AND status = 0";
 
         $stmt = $this->conn->prepare($query);
-
-        return $stmt->execute([
+        $stmt->execute([
             ":request_id" => $request_id
         ]);
+
+        return $stmt->rowCount() > 0;
     }
     // φερνει απο την βαση τα posts που εχουν γινει report
     public function getReportedContent() {
@@ -469,7 +502,7 @@ class PostModel {
     public function approveReport($report_id) {
 
         // βρίσκουμε τι report είναι
-        $query = "SELECT content_type, content_id
+        $query = "SELECT content_type, content_id, status
                   FROM content_reports
                   WHERE report_id = :report_id";
 
@@ -479,6 +512,10 @@ class PostModel {
         $report = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if(!$report){
+            return false;
+        }
+
+        if ((int)($report['status'] ?? 0) !== 0) {
             return false;
         }
 
@@ -507,27 +544,71 @@ class PostModel {
   
         $query = "UPDATE content_reports
                   SET status = 1
-                  WHERE report_id = :report_id";
+                  WHERE report_id = :report_id
+                  AND status = 0";
 
         $stmt = $this->conn->prepare($query);
-
-        return $stmt->execute([
+        $stmt->execute([
             ":report_id"=>$report_id
         ]);
+
+        return $stmt->rowCount() > 0;
     }
     // ενημερωνει την βαση για να απορριφθεί ένα report και να παραμείνει το σχετικό post 
     public function rejectReport($report_id){
 
         $query = "UPDATE content_reports
                   SET status = 2
-                  WHERE report_id = :report_id";
+                  WHERE report_id = :report_id
+                  AND status = 0";
 
         $stmt = $this->conn->prepare($query);
-
-        return $stmt->execute([
+        $stmt->execute([
             ":report_id"=>$report_id
         ]);
+
+        return $stmt->rowCount() > 0;
     }
+
+public function getDeleteRequestById($request_id) {
+
+    $query = "SELECT r.request_id,
+                     r.requested_by,
+                     r.post_id,
+                     p.title
+              FROM post_delete_requests r
+              JOIN posts p ON r.post_id = p.post_id
+              WHERE r.request_id = :request_id
+              LIMIT 1";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":request_id" => $request_id
+    ]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+public function getReportById($report_id) {
+
+    $query = "SELECT r.report_id,
+                     r.reported_by,
+                     r.content_type,
+                     r.content_id,
+                     p.post_id,
+                     p.title AS post_title
+              FROM content_reports r
+              LEFT JOIN posts p ON r.content_type = 'post' AND r.content_id = p.post_id
+              WHERE r.report_id = :report_id
+              LIMIT 1";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([
+        ":report_id" => $report_id
+    ]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
     // φερνει όλα τα pending delete requests για admin 
 public function getCommentDeleteRequests() {
 

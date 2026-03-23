@@ -117,12 +117,8 @@ postForm.addEventListener("submit", async function(e){
         const result = await response.json();
 
         showResponseMessage(result.message, "success");
-
-        // Reset form μετά τη δημιουργία
-        this.reset();
-        selectedFiles = [];
-        attachmentsInput.value = "";
-        renderSelectedFiles();
+        const pendingUrl = "/University-Web-Applications-System-B/frontend/posts.php?mode=pending&status=0";
+        window.location.replace(pendingUrl);
 
     } catch(error) {
 

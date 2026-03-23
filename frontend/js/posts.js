@@ -10,9 +10,63 @@ let selectedFollowerFilters = ["__all__"];
 let feedAutoRefreshTimerId = null;
 let isFeedAutoRefreshInFlight = false;
 let activeFeedStatusFilter = 0;
+let initialFeedTargetMode = null;
+let initialFeedStatusFilter = null;
 let cachedPendingPosts = [];
 let cachedPendingDeleteRequests = [];
 let cachedReports = [];
+
+function mapStatusParamToNumeric(status) {
+    const normalized = String(status ?? "").toLowerCase();
+    if (normalized === "approved" || normalized === "1") {
+        return 1;
+    }
+    if (normalized === "rejected" || normalized === "2") {
+        return 2;
+    }
+    return 0;
+}
+
+function getFeedTargetFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+
+    const mode = params.get("mode");
+    const status = params.get("status");
+    if (mode === "pending" && status !== null) {
+        return {
+            mode: "pending-posts",
+            status: mapStatusParamToNumeric(status)
+        };
+    }
+
+    const view = String(params.get("view") || "").toLowerCase();
+    if (view === "reports") {
+        return {
+            mode: "reports",
+            status: mapStatusParamToNumeric(status ?? "pending")
+        };
+    }
+
+    if (view === "delete_requests") {
+        return {
+            mode: "pending-delete-requests",
+            status: mapStatusParamToNumeric(status ?? "pending")
+        };
+    }
+
+    return null;
+}
+
+function consumeInitialStatusForMode(mode) {
+    if (initialFeedTargetMode === mode && initialFeedStatusFilter !== null) {
+        activeFeedStatusFilter = Number(initialFeedStatusFilter);
+        initialFeedTargetMode = null;
+        initialFeedStatusFilter = null;
+        return;
+    }
+
+    activeFeedStatusFilter = 0;
+}
 
 function getAuthorName(post) {
     if (post.is_anonymous == 1 && !isAdmin) {
@@ -191,6 +245,59 @@ function getAdminNotificationTarget(type) {
 
     return `admin_dashboard.php?section=${encodeURIComponent(section)}`;
 }
+
+function handleNotificationClick(notification) {
+    const type = String(notification?.type || "");
+    const referenceId = Number(notification?.reference_id || 0);
+
+    if (type === "post_approved") {
+        window.location.href = "posts.php?mode=pending&status=1";
+        return true;
+    }
+
+    if (type === "post_rejected") {
+        window.location.href = "posts.php?mode=pending&status=2";
+        return true;
+    }
+
+    if (type === "report_approved") {
+        window.location.href = "posts.php?view=reports&status=approved";
+        return true;
+    }
+
+    if (type === "report_rejected") {
+        window.location.href = "posts.php?view=reports&status=rejected";
+        return true;
+    }
+
+    if (type === "delete_approved") {
+        window.location.href = "posts.php?view=delete_requests&status=approved";
+        return true;
+    }
+
+    if (type === "delete_rejected") {
+        window.location.href = "posts.php?view=delete_requests&status=rejected";
+        return true;
+    }
+
+    if (type === "category_request_approved" || type === "category_request_rejected") {
+        window.location.href = "category_request.php";
+        return true;
+    }
+
+    const adminTarget = getAdminNotificationTarget(type);
+    if (adminTarget) {
+        window.location.href = adminTarget;
+        return true;
+    }
+
+    if (referenceId > 0) {
+        window.location.href = `post.php?id=${encodeURIComponent(referenceId)}`;
+        return true;
+    }
+
+    return false;
+}
 // Φορτώνει τις ειδοποιήσεις του χρήστη από τον server και τις εμφανίζει στο dropdown menu
 // με κατάλληλο χειρισμό σφαλμάτων σε περίπτωση αποτυχίας φόρτωσης
 async function loadNotifications() {
@@ -295,14 +402,10 @@ function setupNotificationsUI() {
             await markNotificationRead(notificationId);
         }
 
-        const adminTarget = getAdminNotificationTarget(notificationType);
-        if (adminTarget) {
-            window.location.href = adminTarget;
-            return;
-        }
-
-        if (referenceId > 0) {
-            window.location.href = `post.php?id=${encodeURIComponent(referenceId)}`;
+        if (handleNotificationClick({
+            type: notificationType,
+            reference_id: referenceId
+        })) {
             return;
         }
 
@@ -1207,7 +1310,7 @@ function setupFeedModeToggle() {
             return;
         }
 
-        activeFeedStatusFilter = 0;
+        consumeInitialStatusForMode("pending-posts");
         updateFeedStatusButtons();
         setMode("pending-posts");
         title.textContent = "Pending Posts";
@@ -1219,7 +1322,7 @@ function setupFeedModeToggle() {
             return;
         }
 
-        activeFeedStatusFilter = 0;
+        consumeInitialStatusForMode("pending-delete-requests");
         updateFeedStatusButtons();
         setMode("pending-delete-requests");
         title.textContent = "Pending Delete Requests";
@@ -1231,7 +1334,7 @@ function setupFeedModeToggle() {
             return;
         }
 
-        activeFeedStatusFilter = 0;
+        consumeInitialStatusForMode("reports");
         updateFeedStatusButtons();
         setMode("reports");
         title.textContent = "Reports";
@@ -1547,6 +1650,14 @@ function setupFollowActions() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const feedTargetFromUrl = getFeedTargetFromUrl();
+
+    if (feedTargetFromUrl !== null) {
+        initialFeedTargetMode = feedTargetFromUrl.mode;
+        initialFeedStatusFilter = feedTargetFromUrl.status;
+        activeFeedStatusFilter = feedTargetFromUrl.status;
+    }
+
     setupNotificationsUI();
     loadNotifications();
     setupFeedMenu();
@@ -1559,6 +1670,22 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshFollowingUsersState().finally(async () => {
         await loadFollowerFilterOptions();
         updateFollowerFilterLabel();
+
+        if (feedTargetFromUrl !== null) {
+            if (feedTargetFromUrl.mode === "reports") {
+                document.getElementById("reportsBtn")?.click();
+                return;
+            }
+
+            if (feedTargetFromUrl.mode === "pending-delete-requests") {
+                document.getElementById("pendingDeleteRequestsBtn")?.click();
+                return;
+            }
+
+            document.getElementById("pendingPostsBtn")?.click();
+            return;
+        }
+
         loadInterestsBanner();
         loadDefaultFeed();
     });

@@ -182,7 +182,11 @@ body {
                 <div class="alert alert-success mb-3">Profile updated successfully.</div>
             <?php endif; ?>
 
-            <h1 class="profile-title">My Profile</h1>
+            <div class="page-top" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px;">
+                <a class="back-link" href="posts.php">&larr; Back to posts</a>
+                <a href="edit_profile_setup.php" class="back-link">Edit profile setup</a>
+            </div>
+            <h1 class="profile-title" style="margin-bottom: 2px;">My Profile</h1>
             <p class="profile-subtitle">Overview of your account details and registered interests.</p>
 
             <div class="row g-3 mb-4">
@@ -236,11 +240,6 @@ body {
                 <?php else: ?>
                     <div class="alert alert-warning mb-0">No interests selected yet.</div>
                 <?php endif; ?>
-            </div>
-
-            <div class="profile-actions">
-                <a href="edit_profile_setup.php" class="btn btn-outline-primary profile-btn">Edit profile setup</a>
-                <a href="posts.php" class="btn btn-primary profile-btn">Back to feed</a>
             </div>
         </div>
     </div>

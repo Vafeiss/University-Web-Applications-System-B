@@ -66,8 +66,26 @@ class CategoryController extends BaseController {
             $this->jsonResponse(["message" => "request_id and name are required"], 400);
         }
 
+        $request = $this->model->getRequestById($requestId);
+        if (!$request) {
+            $this->jsonResponse(["message" => "Request not found"], 404);
+        }
+
+        $wasApprovedNow = $this->model->updateRequestStatusIfPending($requestId, 1);
+        if (!$wasApprovedNow) {
+            $this->jsonResponse(["message" => "Request already processed"]);
+        }
+
         $created = $this->model->createCategory($name);
-        $this->model->updateRequestStatus($requestId, 1);
+
+        $notificationModel = new NotificationModel();
+        $requestedName = (string)($request["suggested_name"] ?? $name);
+        $notificationModel->createNotification(
+            (int)$request["requested_by"],
+            "category_request_approved",
+            $requestId,
+            "Your category request \"" . $requestedName . "\" was approved"
+        );
 
         if ($created) {
             $this->jsonResponse(["message" => "Category created"]);
@@ -116,7 +134,25 @@ class CategoryController extends BaseController {
             $this->jsonResponse(["message" => "Valid request_id is required"], 400);
         }
 
-        $this->model->updateRequestStatus($requestId, 2);
+        $request = $this->model->getRequestById($requestId);
+        if (!$request) {
+            $this->jsonResponse(["message" => "Request not found"], 404);
+        }
+
+        $wasRejectedNow = $this->model->updateRequestStatusIfPending($requestId, 2);
+        if (!$wasRejectedNow) {
+            $this->jsonResponse(["message" => "Request already processed"]);
+        }
+
+        $notificationModel = new NotificationModel();
+        $requestedName = (string)($request["suggested_name"] ?? "Unnamed category");
+        $notificationModel->createNotification(
+            (int)$request["requested_by"],
+            "category_request_rejected",
+            $requestId,
+            "Your category request \"" . $requestedName . "\" was rejected"
+        );
+
         $this->jsonResponse(["message" => "Request rejected"]);
     }
 

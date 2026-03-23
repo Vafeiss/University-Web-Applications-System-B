@@ -18,6 +18,7 @@ $categoriesStmt = $conn->query(
      ORDER BY name ASC"
 );
 $categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
+$createPostJsVersion = filemtime(__DIR__ . "/js/createPost.js");
 ?>
 
 <!DOCTYPE html>
@@ -116,7 +117,7 @@ $categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
 
         </div>
 
-        <script src="js/createPost.js"></script>
+        <script src="js/createPost.js?v=<?php echo $createPostJsVersion; ?>"></script>
 
 </body>
 </html>

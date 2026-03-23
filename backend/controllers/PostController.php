@@ -386,12 +386,21 @@ class PostController extends BaseController {
             $this->postModel->rewardApprovedPost((int)$post['user_id']);
         }
 
-        // Στέλνουμε notifications μετά την έγκριση
-        if ($post) {
+
+        // Στέλνουμε notifications μόνο όταν αλλάζει πραγματικά σε approved
+        if ($wasApprovedNow && $post) {
             $notificationModel = new NotificationModel();
             $isAnonymous = !empty($post['is_anonymous']);
 
-            // Follower notifications μόνο αν δεν είναι anonymous
+            // OWNER notification
+            $notificationModel->createNotification(
+                (int)$post['user_id'],
+                "post_approved",
+                (int)$post_id,
+                "Your post \"" . $post['title'] . "\" has been approved"
+            );
+
+            // Followers (μόνο αν όχι anonymous)
             if (!$isAnonymous) {
                 $notificationModel->notifyFollowersForPost(
                     (int)$post['user_id'],
@@ -400,7 +409,7 @@ class PostController extends BaseController {
                 );
             }
 
-            // Interest notifications (ουδέτερο μήνυμα αν anonymous)
+            // Interests
             $notificationModel->notifyInterestedUsersForPost(
                 (int)$post['user_id'],
                 (int)$post_id,
@@ -538,13 +547,27 @@ class PostController extends BaseController {
         }
 
         $post_id = $_GET['id'] ?? null;
-
+        // Έλεγχος αν υπάρχει το post
         if (!$post_id) {
             $this->jsonResponse(["message" => "Post ID required"], 400);
         }
 
-        $this->postModel->rejectPost($post_id);
+        // Φέρνουμε post data πριν την απόρριψη για να στείλουμε notification
+        $post = $this->postModel->getPostById($post_id);
 
+        $wasRejectedNow = $this->postModel->rejectPost($post_id);
+
+        // Ειδοποίηση μόνο όταν αλλάζει πραγματικά σε rejected
+        if ($wasRejectedNow && $post) {
+            $notificationModel = new NotificationModel();
+
+            $notificationModel->createNotification(
+                (int)$post['user_id'],
+                "post_rejected",
+                (int)$post_id,
+                "Your post \"" . $post['title'] . "\" was rejected"
+            );
+        }
         $this->jsonResponse([
             "message" => "Post rejected"
         ]);
@@ -569,8 +592,19 @@ class PostController extends BaseController {
         if (!$request_id) {
             $this->jsonResponse(["message" => "Request ID required"], 400);
         }
-        // Έλεγχος αν υπάρχει το request
-        $this->postModel->approveDeleteRequest($request_id);
+
+        $request = $this->postModel->getDeleteRequestById($request_id);
+        $wasApprovedNow = $this->postModel->approveDeleteRequest($request_id);
+
+        if ($wasApprovedNow && $request) {
+            $notificationModel = new NotificationModel();
+            $notificationModel->createNotification(
+                (int)$request['requested_by'],
+                "delete_approved",
+                (int)$request['post_id'],
+                "Your delete request for \"" . ((string)($request['title'] ?? 'Untitled post')) . "\" was approved"
+            );
+        }
 
         $this->jsonResponse([
             "message" => "Delete request approved"
@@ -586,7 +620,18 @@ class PostController extends BaseController {
             $this->jsonResponse(["message" => "Request ID required"], 400);
         }
 
-        $this->postModel->rejectDeleteRequest($request_id);
+        $request = $this->postModel->getDeleteRequestById($request_id);
+        $wasRejectedNow = $this->postModel->rejectDeleteRequest($request_id);
+
+        if ($wasRejectedNow && $request) {
+            $notificationModel = new NotificationModel();
+            $notificationModel->createNotification(
+                (int)$request['requested_by'],
+                "delete_rejected",
+                (int)$request['post_id'],
+                "Your delete request for \"" . ((string)($request['title'] ?? 'Untitled post')) . "\" was rejected"
+            );
+        }
 
         $this->jsonResponse([
             "message" => "Delete request rejected"
@@ -612,7 +657,21 @@ class PostController extends BaseController {
             $this->jsonResponse(["message" => "Report ID required"], 400);
         }
 
-        $this->postModel->approveReport($report_id);
+        $report = $this->postModel->getReportById($report_id);
+        $wasApprovedNow = $this->postModel->approveReport($report_id);
+
+        if ($wasApprovedNow && $report) {
+            $notificationModel = new NotificationModel();
+            $postTitle = (string)($report['post_title'] ?? ('Post #' . (int)($report['content_id'] ?? 0)));
+            $referenceId = (int)($report['post_id'] ?? $report['content_id'] ?? 0);
+
+            $notificationModel->createNotification(
+                (int)$report['reported_by'],
+                "report_approved",
+                $referenceId,
+                "Your report for \"" . $postTitle . "\" was approved. Action was taken."
+            );
+        }
 
         $this->jsonResponse([
             "message" => "Post removed"
@@ -629,7 +688,21 @@ class PostController extends BaseController {
             $this->jsonResponse(["message" => "Report ID required"], 400);
         }
 
-        $this->postModel->rejectReport($report_id);
+        $report = $this->postModel->getReportById($report_id);
+        $wasRejectedNow = $this->postModel->rejectReport($report_id);
+
+        if ($wasRejectedNow && $report) {
+            $notificationModel = new NotificationModel();
+            $postTitle = (string)($report['post_title'] ?? ('Post #' . (int)($report['content_id'] ?? 0)));
+            $referenceId = (int)($report['post_id'] ?? $report['content_id'] ?? 0);
+
+            $notificationModel->createNotification(
+                (int)$report['reported_by'],
+                "report_rejected",
+                $referenceId,
+                "Your report for \"" . $postTitle . "\" was rejected."
+            );
+        }
 
         $this->jsonResponse([
             "message" => "Report rejected"
