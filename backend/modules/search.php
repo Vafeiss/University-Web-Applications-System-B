@@ -30,7 +30,7 @@ class Search {
 
         if ($keyword !== '') {
             $sql .= " AND (p.title LIKE :keyword OR p.content LIKE :keyword)";
-            $params[':keyword'] = '%' . $keyword . '%';
+            $params[':keyword'] = $keyword . '%';
         }
 
         if ($category !== null) {

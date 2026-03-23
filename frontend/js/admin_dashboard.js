@@ -1121,11 +1121,6 @@
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
-            const keyword = document.getElementById("adminSearchKeyword")?.value.trim() || "";
-            if (!isKeywordSearchValid(keyword)) {
-                showFeedback("postsFeedback", "Please enter at least 3 characters for keyword search.", "error");
-                return;
-            }
             await loadAdminSearchResults();
         });
 
@@ -1271,11 +1266,6 @@
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
-            const keyword = document.getElementById("pendingSearchKeyword")?.value.trim() || "";
-            if (!isKeywordSearchValid(keyword)) {
-                showFeedback("pendingFeedback", "Please enter at least 3 characters for keyword search.", "error");
-                return;
-            }
             await loadPendingSearchResults();
         });
 

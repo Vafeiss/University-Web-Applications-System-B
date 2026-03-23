@@ -35,17 +35,12 @@ function escapeHtml(value) {
         .replace(/'/g, "&#39;");
 }
 
-function isKeywordSearchValid(keyword) {
-    return keyword.length === 0 || keyword.length >= 3;
-}
-
-function showKeywordValidationMessage() {
-    const container = document.getElementById("postsList");
-    if (!container) {
-        return;
+function matchesStartsWithKeyword(keyword, values) {
+    if (!keyword) {
+        return true;
     }
 
-    container.innerHTML = '<div class="pending-state">Please enter at least 3 characters for keyword search.</div>';
+    return values.some((value) => String(value ?? "").toLowerCase().startsWith(keyword));
 }
 
 function replaceOwnerTriggersWithPlainName(userId) {
@@ -446,11 +441,8 @@ function filterPendingPostsData(posts, filters) {
             return false;
         }
 
-        if (keyword) {
-            const haystack = `${post.title ?? ""} ${post.content ?? ""} ${post.category ?? ""}`.toLowerCase();
-            if (!haystack.includes(keyword)) {
-                return false;
-            }
+        if (!matchesStartsWithKeyword(keyword, [post.title, post.content, post.category])) {
+            return false;
         }
 
         const createdTime = parseDateValue(post.timestamp);
@@ -494,11 +486,8 @@ function filterPendingDeleteRequestsData(requests, filters) {
             return false;
         }
 
-        if (keyword) {
-            const haystack = `${request.title ?? ""} ${request.reason ?? ""}`.toLowerCase();
-            if (!haystack.includes(keyword)) {
-                return false;
-            }
+        if (!matchesStartsWithKeyword(keyword, [request.title, request.reason])) {
+            return false;
         }
 
         const createdTime = parseDateValue(request.timestamp);
@@ -532,11 +521,8 @@ function filterReportsData(reports, filters) {
             return false;
         }
 
-        if (keyword) {
-            const haystack = `${report.post_title ?? ""} ${report.reason ?? ""}`.toLowerCase();
-            if (!haystack.includes(keyword)) {
-                return false;
-            }
+        if (!matchesStartsWithKeyword(keyword, [report.post_title, report.reason])) {
+            return false;
         }
 
         const createdTime = parseDateValue(report.created);
@@ -1273,11 +1259,6 @@ function setupSearchControls() {
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const keyword = document.getElementById("feedSearchKeyword")?.value.trim() || "";
-
-        if (!isKeywordSearchValid(keyword)) {
-            showKeywordValidationMessage();
-            return;
-        }
 
         if (activeFeedMode === "pending-posts") {
             renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
