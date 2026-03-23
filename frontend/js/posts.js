@@ -89,6 +89,14 @@ function escapeHtml(value) {
         .replace(/'/g, "&#39;");
 }
 
+function matchesStartsWithKeyword(keyword, values) {
+    if (!keyword) {
+        return true;
+    }
+
+    return values.some((value) => String(value ?? "").toLowerCase().startsWith(keyword));
+}
+
 function replaceOwnerTriggersWithPlainName(userId) {
     const ownerBlocks = document.querySelectorAll(`.owner-meta-block .post-owner-trigger[data-follow-id="${userId}"]`);
 
@@ -497,6 +505,11 @@ function renderSimpleBanner(label, text, isWarning = false) {
     const banner = document.getElementById("interestsBanner");
     if (!banner) return;
 
+    if (!label && !text) {
+        banner.innerHTML = "";
+        return;
+    }
+
     banner.innerHTML = `
         <div class="interests-banner${isWarning ? " no-interests" : ""}">
             <div class="interests-label">${escapeHtml(label)}</div>
@@ -531,11 +544,8 @@ function filterPendingPostsData(posts, filters) {
             return false;
         }
 
-        if (keyword) {
-            const haystack = `${post.title ?? ""} ${post.content ?? ""} ${post.category ?? ""}`.toLowerCase();
-            if (!haystack.includes(keyword)) {
-                return false;
-            }
+        if (!matchesStartsWithKeyword(keyword, [post.title, post.content, post.category])) {
+            return false;
         }
 
         const createdTime = parseDateValue(post.timestamp);
@@ -579,11 +589,8 @@ function filterPendingDeleteRequestsData(requests, filters) {
             return false;
         }
 
-        if (keyword) {
-            const haystack = `${request.title ?? ""} ${request.reason ?? ""}`.toLowerCase();
-            if (!haystack.includes(keyword)) {
-                return false;
-            }
+        if (!matchesStartsWithKeyword(keyword, [request.title, request.reason])) {
+            return false;
         }
 
         const createdTime = parseDateValue(request.timestamp);
@@ -617,11 +624,8 @@ function filterReportsData(reports, filters) {
             return false;
         }
 
-        if (keyword) {
-            const haystack = `${report.post_title ?? ""} ${report.reason ?? ""}`.toLowerCase();
-            if (!haystack.includes(keyword)) {
-                return false;
-            }
+        if (!matchesStartsWithKeyword(keyword, [report.post_title, report.reason])) {
+            return false;
         }
 
         const createdTime = parseDateValue(report.created);
@@ -1093,7 +1097,7 @@ async function loadPendingPostsFeed(options = {}) {
         }
 
         cachedPendingPosts = Array.isArray(posts) ? posts : [];
-        renderSimpleBanner("Your pending posts", "Track moderation status: Pending, Approved, Rejected");
+        renderSimpleBanner("", "");
         renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
             keyword: "",
             category: "",
@@ -1126,7 +1130,7 @@ async function loadPendingDeleteRequestsFeed(options = {}) {
         }
 
         cachedPendingDeleteRequests = Array.isArray(requests) ? requests : [];
-        renderSimpleBanner("Your delete requests", "Track each request status and final post decision");
+        renderSimpleBanner("", "");
         renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
             keyword: "",
             from: "",
@@ -1158,7 +1162,7 @@ async function loadReportsFeed(options = {}) {
         }
 
         cachedReports = Array.isArray(reports) ? reports : [];
-        renderSimpleBanner("Your reports", "Track report status and moderation outcome");
+        renderSimpleBanner("", "");
         renderReports(filterReportsData(cachedReports, {
             keyword: "",
             from: "",
@@ -1357,10 +1361,11 @@ function setupSearchControls() {
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        const keyword = document.getElementById("feedSearchKeyword")?.value.trim() || "";
 
         if (activeFeedMode === "pending-posts") {
             renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
-                keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                keyword,
                 category: document.getElementById("feedSearchCategory")?.value || "",
                 from: document.getElementById("feedSearchFrom")?.value || "",
                 to: document.getElementById("feedSearchTo")?.value || "",
@@ -1371,7 +1376,7 @@ function setupSearchControls() {
 
         if (activeFeedMode === "pending-delete-requests") {
             renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
-                keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                keyword,
                 from: document.getElementById("feedSearchFrom")?.value || "",
                 to: document.getElementById("feedSearchTo")?.value || "",
                 sort: document.getElementById("feedSearchSort")?.value || "newest"
@@ -1381,7 +1386,7 @@ function setupSearchControls() {
 
         if (activeFeedMode === "reports") {
             renderReports(filterReportsData(cachedReports, {
-                keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+                keyword,
                 from: document.getElementById("feedSearchFrom")?.value || "",
                 to: document.getElementById("feedSearchTo")?.value || "",
                 sort: document.getElementById("feedSearchSort")?.value || "newest"

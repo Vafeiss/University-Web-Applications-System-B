@@ -30,7 +30,7 @@ class Search {
 
         if ($keyword !== '') {
             $sql .= " AND (p.title LIKE :keyword OR p.content LIKE :keyword)";
-            $params[':keyword'] = '%' . $keyword . '%';
+            $params[':keyword'] = $keyword . '%';
         }
 
         if ($category !== null) {
@@ -74,6 +74,10 @@ class Search {
             }
 
             $sql .= " AND p.user_id IN (" . implode(', ', $placeholders) . ")";
+        }
+
+        if (!empty($authorIds)) {
+            $sql .= " AND p.is_anonymous = 0";
         }
 
         $orderBy = match ($sort) {
