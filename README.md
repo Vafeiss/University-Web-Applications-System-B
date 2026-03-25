@@ -17,7 +17,7 @@ The system currently focuses on:
 - secure session and password reset handling.
 
 This module represents the core account and access management functionality of the application.
-
+The system has been extended with a full forum and interaction module, including post creation, moderation workflows, notification handling, and user-driven requests (reports, delete requests, and category requests).
 ---
 
 ## Implemented Features
@@ -54,6 +54,40 @@ This module represents the core account and access management functionality of t
 - Session regeneration after login
 - Secure password reset with expiration control
 
+### Post and Feed System
+- Users can create posts that appear in a shared feed
+- Posts are subject to moderation (pending, approved, rejected)
+- Filtering options based on category, date, and followers
+
+### Moderation System
+- Admins can approve or reject posts
+- Structured moderation workflow with status tracking
+- Users are notified about moderation outcomes
+
+### Notification System
+- Notifications for:
+  - post approval / rejection
+  - delete request decisions
+  - report outcomes
+  - category request decisions
+  - follow interactions
+- Notifications redirect users to the relevant system view
+
+### Reports and Delete Requests
+- Users can report posts
+- Users can request deletion of their posts
+- Admin review and decision process
+- Status tracking per request
+
+### Category Requests
+- Users can request new categories
+- Admin approval or rejection
+- Feedback through notifications
+
+### Profile Management
+- Users can view and edit their profile
+- Interest selection and management
+- Profile completion validation
 ---
 
 ## Database Setup
@@ -119,12 +153,27 @@ backend/
     config/
     controllers/
     middleware/
+    modules/
 
 frontend/
     login.php
     register.php
     index.php
     admin.php
+    posts.php
+    post.php
+    create_post.php
+    profile_view.php
+    profile_setup.php
+    edit_profile_setup.php
+    edit_interests.php
+    search.php
+    token_history.php
+    category_request.php
+    admin_dashboard.php
+    admin_pending_posts.php
+    admin_delete_requests.php
+    admin_reports.php
     forgot_password.php
     reset_password.php
     logout.php
@@ -190,14 +239,27 @@ This module implements the following functional requirements:
 
 ## Project Status
 
-**System B – Authentication and Referral Module: Complete**
+**System B – Authentication, Forum, and Moderation System: Complete**
 
 Planned future extension:
-
-- Forum and posting module
-
+- Advertisement integration
+- UI/UX improvements and system design refinement
 ---
 
 ## Notes
 
 This repository is intended for academic development purposes and team collaboration during the implementation of the project.
+### Password Reset Setup
+
+To enable the forgot password functionality, valid SMTP credentials must be configured in the `.env` file.
+
+Without proper email configuration, password reset links will not be delivered.
+
+Make sure to set:
+
+SMTP_HOST  
+SMTP_USER  
+SMTP_PASS  
+SMTP_PORT  
+
+before testing this feature.

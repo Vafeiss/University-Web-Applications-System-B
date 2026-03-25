@@ -342,7 +342,7 @@ class AuthController {
     // =========================================
     // Create reset link (raw token in URL)
     // =========================================
-    $resetLink = "http://localhost/University-Web-Applications-System-B/frontend/reset_password.php?token=" . $rawToken;
+    $resetLink = "https://subeffectively-easier-kera.ngrok-free.dev/University-Web-Applications-System-B/frontend/reset_password.php?token=" . $rawToken;
 
     try {
         if (!class_exists(PHPMailer::class)) {
