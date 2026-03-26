@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 	exit();
 }
 
-$cssVersion = filemtime(__DIR__ . '/css/admin_pending_posts.css');
+$adminDashboardCssVersion = filemtime(__DIR__ . '/css/admin_dashboard.css');
 $jsVersion = filemtime(__DIR__ . '/js/admin_dashboard.js');
 ?>
 
@@ -17,7 +17,7 @@ $jsVersion = filemtime(__DIR__ . '/js/admin_dashboard.js');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Moderation Panel</title>
-<link rel="stylesheet" href="css/admin_pending_posts.css?v=<?php echo $cssVersion; ?>">
+<link rel="stylesheet" href="css/admin_dashboard.css?v=<?php echo $adminDashboardCssVersion; ?>">
 <style>
 body {
 	margin: 0;

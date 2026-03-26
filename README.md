@@ -171,7 +171,6 @@ frontend/
     token_history.php
     category_request.php
     admin_dashboard.php
-    admin_pending_posts.php
     admin_delete_requests.php
     admin_reports.php
     forgot_password.php
@@ -198,6 +197,10 @@ The system supports the following user roles:
 - `admin.php` → Admin users only
 
 Access control is enforced through middleware (`AuthGuard`).
+
+### Admin Entry Point
+- Canonical admin panel entry point: `admin_dashboard.php`
+- Legacy admin pages are maintained as redirects for compatibility
 
 ---
 

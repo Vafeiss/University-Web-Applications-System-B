@@ -109,7 +109,7 @@ async function loadCommentDeleteRequests() {
 			const createdAt = req.created ? new Date(req.created).toLocaleString() : "Unknown date";
 			const hasPostId = req.post_id !== null && req.post_id !== undefined && req.post_id !== "";
 			const titleHtml = hasPostId
-				? `<a class="pending-title-link" href="post.php?id=${encodeURIComponent(req.post_id)}&admin_preview=1&admin_source=comment_delete_requests">Comment ID: ${escapeHtml(req.comment_id)}</a>`
+				? `<a class="pending-title-link" href="post.php?id=${encodeURIComponent(req.post_id)}&admin_preview=1&admin_source=dashboard_comment_delete_requests">Comment ID: ${escapeHtml(req.comment_id)}</a>`
 				: `Comment ID: ${escapeHtml(req.comment_id)}`;
 
 			card.className = "pending-card";

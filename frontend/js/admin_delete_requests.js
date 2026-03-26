@@ -110,7 +110,7 @@ async function loadDeleteRequests() {
 
             card.className = "pending-card";
             card.innerHTML = `
-                <h3><a class="pending-title-link" href="post.php?id=${req.post_id}&admin_preview=1">${escapeHtml(req.title)}</a></h3>
+                <h3><a class="pending-title-link" href="post.php?id=${req.post_id}&admin_preview=1&admin_source=dashboard_delete_requests">${escapeHtml(req.title)}</a></h3>
                 <div class="pending-meta">
                     <span class="pending-chip">Delete request</span>
                     <span>Requested by: ${escapeHtml(req.username || "Unknown")}</span>

@@ -86,7 +86,7 @@ function reportTypeLabel(type) {
 
 function renderReportedContent(contentType, contentId, postTitle) {
     const label = postTitle ? escapeHtml(postTitle) : `Post #${contentId}`;
-    return `<a class="pending-title-link" href="post.php?id=${contentId}&admin_preview=1&admin_source=reports">${label}</a>`;
+    return `<a class="pending-title-link" href="post.php?id=${contentId}&admin_preview=1&admin_source=dashboard_reports">${label}</a>`;
 }
 
 async function loadReports() {

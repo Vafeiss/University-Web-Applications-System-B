@@ -23,9 +23,6 @@ $is_admin_session = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 if ($is_admin_session && !$is_admin_preview && $admin_source === 'dashboard_posts') {
     $back_href = 'admin_dashboard.php?section=posts';
     $back_label = 'Back to dashboard';
-} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'reports') {
-    $back_href = 'admin_reports.php';
-    $back_label = 'Back to reported posts';
 } elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_posts') {
     $back_href = 'admin_dashboard.php?section=posts';
     $back_label = 'Back to all posts';
@@ -41,11 +38,8 @@ if ($is_admin_session && !$is_admin_preview && $admin_source === 'dashboard_post
 } elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_reports') {
     $back_href = 'admin_dashboard.php?section=reports';
     $back_label = 'Back to reports';
-} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'comment_delete_requests') {
-    $back_href = 'admin_comment_delete_requests.php';
-    $back_label = 'Back to comment delete requests';
 } elseif ($is_admin_session && $is_admin_preview) {
-    $back_href = 'admin_pending_posts.php';
+    $back_href = 'admin_dashboard.php?section=pending';
     $back_label = 'Back to pending posts';
 } else {
     $back_href = 'posts.php';

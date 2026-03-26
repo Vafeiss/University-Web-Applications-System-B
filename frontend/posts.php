@@ -29,7 +29,7 @@ if ($success === '' && isset($_SESSION['flash_success'])) {
 unset($_SESSION['flash_success']);
 
 $postCssVersion = filemtime(__DIR__ . '/css/post.css');
-$adminCssVersion = filemtime(__DIR__ . '/css/admin_pending_posts.css');
+$adminDashboardCssVersion = filemtime(__DIR__ . '/css/admin_dashboard.css');
 $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 ?>
 
@@ -41,7 +41,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Κάνει τη σελίδα responsive σε κινητές συσκευές -->
 <title>Posts Feed</title>   
 <link rel="stylesheet" href="css/post.css?v=<?php echo $postCssVersion; ?>">
-<link rel="stylesheet" href="css/admin_pending_posts.css?v=<?php echo $adminCssVersion; ?>">
+<link rel="stylesheet" href="css/admin_dashboard.css?v=<?php echo $adminDashboardCssVersion; ?>">
 </head>
 
 <body>

@@ -127,7 +127,7 @@ Logout
 
 <div class="mt-3">
 
-<a href="admin.php" class="btn btn-dark">
+<a href="admin_dashboard.php" class="btn btn-dark">
 Go to Admin Panel
 </a>
 
