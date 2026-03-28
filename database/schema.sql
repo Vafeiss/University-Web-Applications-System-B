@@ -213,6 +213,8 @@ CREATE TABLE `users` (
   `token_balance` int(11) DEFAULT 0,
   `referral_code` varchar(20) DEFAULT NULL,
   `referred_by` int(11) DEFAULT NULL,
+  `is_banned` tinyint(1) DEFAULT 0,
+  `ban_reason` text DEFAULT NULL,
   `reset_token` varchar(255) DEFAULT NULL,
   `reset_expires` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

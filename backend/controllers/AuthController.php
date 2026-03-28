@@ -44,6 +44,7 @@
  * Date: 2026
  */
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../middleware/BanGuard.php";
 $autoloadPath = __DIR__ . "/../../vendor/autoload.php";
 if (file_exists($autoloadPath)) {
     require_once $autoloadPath;
@@ -261,10 +262,15 @@ class AuthController {
 
         $username = trim($username);
 
+        $selectFields = "user_id, username, password, role";
+        if (hasBanColumns()) {
+            $selectFields .= ", is_banned, ban_reason";
+        }
+
         $stmt = $this->conn->prepare("
-            SELECT user_id, username, password, role 
-            FROM users 
-            WHERE username = :u 
+            SELECT {$selectFields}
+            FROM users
+            WHERE username = :u
             LIMIT 1
         ");
         $stmt->execute([":u" => $username]);
@@ -272,6 +278,15 @@ class AuthController {
 
         if (!$user || !password_verify($password, $user["password"])) {
             return ["ok" => false, "message" => "Invalid username or password."];
+        }
+
+        if ((int) ($user["is_banned"] ?? 0) === 1) {
+            return [
+                "ok" => false,
+                "message" => trim((string) ($user["ban_reason"] ?? "")) !== ""
+                    ? (string) $user["ban_reason"]
+                    : getBannedAccountMessage()
+            ];
         }
 
         $authenticatedUser = [

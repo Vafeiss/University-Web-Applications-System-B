@@ -1,6 +1,8 @@
 <?php
 require_once "../backend/config/database.php";
+require_once "../backend/middleware/BanGuard.php";
 session_start();
+enforceFrontendUserNotBanned();
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");

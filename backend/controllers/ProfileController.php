@@ -29,6 +29,8 @@
  */
 
 session_start();
+require_once __DIR__ . '/../middleware/BanGuard.php';
+enforceFrontendUserNotBanned();
 
 /* =========================
    ACCESS CONTROL

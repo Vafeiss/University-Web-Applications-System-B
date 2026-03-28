@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once "../backend/middleware/BanGuard.php";
+enforceFrontendUserNotBanned();
 
 require_once "../backend/config/database.php";
 

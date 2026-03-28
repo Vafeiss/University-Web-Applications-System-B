@@ -5,10 +5,28 @@ require_once __DIR__ . '/../config/database.php';
 class PostModel {
 
     private PDO $conn;
+    private const BAN_MESSAGE = "Your account has been banned because it exceeded the allowed number of reports.";
+    private ?bool $banColumnsAvailable = null;
 
     public function __construct() {
         $database = new Database();
         $this->conn = $database->connect();
+    }
+
+    private function hasBanColumns(): bool {
+
+        if ($this->banColumnsAvailable !== null) {
+            return $this->banColumnsAvailable;
+        }
+
+        try {
+            $stmt = $this->conn->query("SHOW COLUMNS FROM users LIKE 'is_banned'");
+            $this->banColumnsAvailable = (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Throwable $exception) {
+            $this->banColumnsAvailable = false;
+        }
+
+        return $this->banColumnsAvailable;
     }
 
     // Create_Post()
@@ -299,6 +317,9 @@ class PostModel {
         $this->conn->beginTransaction();
 
         try {
+            $post = $this->getPostById($post_id);
+            $postOwnerId = (int) ($post['user_id'] ?? 0);
+
             $query = "UPDATE posts
                       SET deleted = 1
                       WHERE post_id = :post_id AND deleted = 0";
@@ -330,6 +351,10 @@ class PostModel {
             $stmt->execute([
                 ":post_id" => $post_id
             ]);
+
+            if ($postOwnerId > 0) {
+                $this->banUserIfThresholdReached($postOwnerId);
+            }
 
             $this->conn->commit();
             return true;
@@ -627,6 +652,133 @@ class PostModel {
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    private function getReportTarget(int $report_id): ?array {
+
+        $query = "SELECT r.report_id,
+                         r.content_type,
+                         r.content_id,
+                         r.status,
+                         CASE
+                             WHEN r.content_type = 'post' THEN p.user_id
+                             WHEN r.content_type = 'comment' THEN c.user_id
+                             ELSE NULL
+                         END AS reported_user_id
+                  FROM content_reports r
+                  LEFT JOIN posts p
+                    ON r.content_type = 'post'
+                   AND r.content_id = p.post_id
+                  LEFT JOIN comments c
+                    ON r.content_type = 'comment'
+                   AND r.content_id = c.comment_id
+                  WHERE r.report_id = :report_id
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':report_id' => $report_id
+        ]);
+
+        $report = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $report ?: null;
+    }
+
+    private function countAcceptedReportsForUser(int $user_id): int {
+
+        $query = "SELECT COUNT(DISTINCT r.report_id)
+                  FROM content_reports r
+                  LEFT JOIN posts p
+                    ON r.content_type = 'post'
+                   AND r.content_id = p.post_id
+                  LEFT JOIN comments c
+                    ON r.content_type = 'comment'
+                   AND r.content_id = c.comment_id
+                  WHERE r.status = 1
+                    AND (
+                        (r.content_type = 'post' AND p.user_id = :user_id)
+                        OR
+                        (r.content_type = 'comment' AND c.user_id = :user_id)
+                    )";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id
+        ]);
+
+        return (int) ($stmt->fetchColumn() ?: 0);
+    }
+
+    private function notifyBannedUser(int $user_id): void {
+
+        $query = "SELECT notification_id
+                  FROM notifications
+                  WHERE user_id = :user_id
+                    AND type = 'ban'
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id
+        ]);
+
+        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+            return;
+        }
+
+        $query = "INSERT INTO notifications (user_id, type, reference_id, message, is_read, created_at)
+                  VALUES (:user_id, 'ban', NULL, :message, 0, NOW())";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id,
+            ':message' => "Your account has been banned due to multiple accepted reports."
+        ]);
+    }
+
+    private function banUserIfThresholdReached(int $user_id): void {
+
+        if ($user_id <= 0) {
+            return;
+        }
+
+        if (!$this->hasBanColumns()) {
+            return;
+        }
+
+        $acceptedReports = $this->countAcceptedReportsForUser($user_id);
+        if ($acceptedReports < 3) {
+            return;
+        }
+
+        $query = "SELECT is_banned
+                  FROM users
+                  WHERE user_id = :user_id
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id
+        ]);
+
+        $isAlreadyBanned = (int) ($stmt->fetchColumn() ?: 0) === 1;
+        if ($isAlreadyBanned) {
+            return;
+        }
+
+        $query = "UPDATE users
+                  SET is_banned = 1,
+                      ban_reason = :ban_reason
+                  WHERE user_id = :user_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':user_id' => $user_id,
+            ':ban_reason' => self::BAN_MESSAGE
+        ]);
+
+        $this->notifyBannedUser($user_id);
+    }
+
     // ενημερωνει την βαση για να εγκριθεί ένα report και να διαγραφεί το σχετικό post ή comment
     public function approveReport($report_id) {
 
@@ -634,54 +786,65 @@ class PostModel {
         $query = "SELECT content_type, content_id, status
                   FROM content_reports
                   WHERE report_id = :report_id";
+        $this->conn->beginTransaction();
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([":report_id"=>$report_id]);
+        try {
+            $report = $this->getReportTarget((int) $report_id);
 
-        $report = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$report) {
+                $this->conn->rollBack();
+                return false;
+            }
 
-        if(!$report){
-            return false;
+            if ((int) ($report['status'] ?? 0) !== 1) {
+                if ($report['content_type'] === 'post') {
+
+                    $query = "UPDATE posts
+                              SET deleted = 1
+                              WHERE post_id = :id";
+
+                    $stmt = $this->conn->prepare($query);
+                    $stmt->execute([
+                        ':id' => $report['content_id']
+                    ]);
+                }
+
+                if ($report['content_type'] === 'comment') {
+
+                    $query = "UPDATE comments
+                              SET comment_content = '[Removed by moderation]'
+                              WHERE comment_id = :id";
+
+                    $stmt = $this->conn->prepare($query);
+                    $stmt->execute([
+                        ':id' => $report['content_id']
+                    ]);
+                }
+
+                $query = "UPDATE content_reports
+                          SET status = 1
+                          WHERE report_id = :report_id";
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute([
+                    ':report_id' => $report_id
+                ]);
+            }
+
+            $reportedUserId = (int) ($report['reported_user_id'] ?? 0);
+            if ($reportedUserId > 0) {
+                $this->banUserIfThresholdReached($reportedUserId);
+            }
+
+            $this->conn->commit();
+            return true;
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
         }
-
-        if ((int)($report['status'] ?? 0) !== 0) {
-            return false;
-        }
-
-        if($report['content_type'] === 'post'){
-
-            $query = "UPDATE posts
-                      SET deleted = 1
-                      WHERE post_id = :id";
-
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute([
-                ":id"=>$report['content_id']
-            ]);
-        }
-
-        if($report['content_type'] === 'comment'){
-
-            $query = "DELETE FROM comments
-                      WHERE comment_id = :id";
-
-           $stmt = $this->conn->prepare($query);
-            $stmt->execute([
-                ":id"=>$report['content_id']
-            ]);
-        }
-  
-        $query = "UPDATE content_reports
-                  SET status = 1
-                  WHERE report_id = :report_id
-                  AND status = 0";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([
-            ":report_id"=>$report_id
-        ]);
-
-        return $stmt->rowCount() > 0;
     }
     // ενημερωνει την βαση για να απορριφθεί ένα report και να παραμείνει το σχετικό post 
     public function rejectReport($report_id){
@@ -777,25 +940,62 @@ public function approveCommentDelete($request_id) {
         return false;
     }
 
-    // delete comment
-    $query = "DELETE FROM comments
-              WHERE comment_id = :comment_id";
+    $query = "SELECT user_id
+              FROM comments
+              WHERE comment_id = :comment_id
+              LIMIT 1";
 
     $stmt = $this->conn->prepare($query);
     $stmt->execute([
-        ":comment_id"=>$request['comment_id']
+        ':comment_id' => $request['comment_id']
     ]);
 
-    // mark request approved
-    $query = "UPDATE comment_delete_requests
-              SET status = 1
-              WHERE request_id = :request_id";
+    $commentOwnerId = (int) ($stmt->fetchColumn() ?: 0);
 
-    $stmt = $this->conn->prepare($query);
+    $this->conn->beginTransaction();
 
-    return $stmt->execute([
-        ":request_id"=>$request_id
-    ]);
+    try {
+        $query = "UPDATE content_reports
+                  SET status = 1
+                  WHERE content_type = 'comment'
+                    AND content_id = :comment_id
+                    AND status = 0";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':comment_id' => $request['comment_id']
+        ]);
+
+        if ($commentOwnerId > 0) {
+            $this->banUserIfThresholdReached($commentOwnerId);
+        }
+
+        $query = "DELETE FROM comments
+                  WHERE comment_id = :comment_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ":comment_id"=>$request['comment_id']
+        ]);
+
+        $query = "UPDATE comment_delete_requests
+                  SET status = 1
+                  WHERE request_id = :request_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ":request_id"=>$request_id
+        ]);
+
+        $this->conn->commit();
+        return true;
+    } catch (Throwable $exception) {
+        if ($this->conn->inTransaction()) {
+            $this->conn->rollBack();
+        }
+
+        throw $exception;
+    }
 }
 // updates database για ενα rejected comment delete request
 public function rejectCommentDelete($request_id){

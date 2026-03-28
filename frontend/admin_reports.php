@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once "../backend/middleware/BanGuard.php";
+enforceFrontendUserNotBanned();
 // Έλεγχος αν ο χρήστης είναι admin
 if(!isset($_SESSION['user_id']) || $_SESSION['role']!=='admin'){
     header("Location: posts.php");

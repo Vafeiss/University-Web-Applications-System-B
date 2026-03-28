@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../middleware/BanGuard.php';
+
 class BaseController {
 
     protected function ensureSessionStarted(): void {
@@ -15,12 +17,31 @@ class BaseController {
             $this->jsonResponse(["message" => "User not logged in"], 401);
         }
 
-        return (int) $_SESSION['user_id'];
+        $userId = (int) $_SESSION['user_id'];
+
+        if (isUserBanned($userId)) {
+            clearAuthenticatedSession();
+            $this->jsonResponse(["message" => getUserBanMessage($userId)], 403);
+        }
+
+        return $userId;
     }
 
     protected function getCurrentUserId(): ?int {
         $this->ensureSessionStarted();
-        return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+
+        if (!isset($_SESSION['user_id'])) {
+            return null;
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+
+        if (isUserBanned($userId)) {
+            clearAuthenticatedSession();
+            $this->jsonResponse(["message" => getUserBanMessage($userId)], 403);
+        }
+
+        return $userId;
     }
 
     protected function isAdmin(): bool {

@@ -1434,6 +1434,8 @@ function setupSearchControls() {
     const form = document.getElementById("feedSearchForm");
     const clearButton = document.getElementById("feedSearchClear");
     const title = document.getElementById("feedTitle");
+    const filtersToggle = document.getElementById("feedSearchFiltersToggle");
+    const advancedFilters = document.getElementById("feedSearchAdvanced");
     const followersToggle = document.getElementById("feedSearchFollowersToggle");
     const followersMenu = document.getElementById("feedSearchFollowersMenu");
     const followersFilter = document.getElementById("feedSearchFollowersFilter");
@@ -1441,6 +1443,22 @@ function setupSearchControls() {
 
     if (!form || !clearButton || !title) {
         return;
+    }
+
+    if (filtersToggle && advancedFilters) {
+        filtersToggle.addEventListener("click", () => {
+            const shouldOpen = advancedFilters.hidden;
+            advancedFilters.hidden = !shouldOpen;
+            filtersToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+
+            if (!shouldOpen && followersMenu) {
+                followersMenu.hidden = true;
+            }
+
+            if (!shouldOpen && followersToggle) {
+                followersToggle.setAttribute("aria-expanded", "false");
+            }
+        });
     }
 
     form.addEventListener("submit", async (event) => {
@@ -1502,6 +1520,11 @@ function setupSearchControls() {
 
         if (followersToggle) {
             followersToggle.setAttribute("aria-expanded", "false");
+        }
+
+        if (filtersToggle && advancedFilters) {
+            advancedFilters.hidden = true;
+            filtersToggle.setAttribute("aria-expanded", "false");
         }
 
         updateFollowerFilterLabel();

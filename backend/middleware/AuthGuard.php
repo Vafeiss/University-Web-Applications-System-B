@@ -28,6 +28,8 @@
  * Date: 2026
  */
 
+require_once __DIR__ . '/BanGuard.php';
+
 // Ξεκινάμε session μόνο αν δεν έχει ήδη ξεκινήσει
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -43,6 +45,8 @@ function requireLogin(): void
         header("Location: /University-Web-Applications-System-B/frontend/login.php");
         exit;
     }
+
+    enforceFrontendUserNotBanned();
 }
 
 /**

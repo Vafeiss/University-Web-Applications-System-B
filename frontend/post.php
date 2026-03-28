@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once "../backend/middleware/BanGuard.php";
+enforceFrontendUserNotBanned();
 
 /* Έλεγχος αν ο χρήστης είναι συνδεδεμένος */
 if (!isset($_SESSION['user_id'])) {

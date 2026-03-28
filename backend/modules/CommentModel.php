@@ -45,6 +45,7 @@ class CommentModel {
                   FROM comments c
                   JOIN users u ON c.user_id = u.user_id
                   WHERE c.post_id = :post_id
+                    AND c.comment_content <> '[Removed by moderation]'
                   ORDER BY c.timestamp ASC";
 
         $stmt = $this->conn->prepare($query);

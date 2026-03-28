@@ -31,14 +31,20 @@
  */
 
 session_start();
+require_once "../backend/middleware/BanGuard.php";
 
 /* =========================
    REDIRECT IF ALREADY LOGGED IN
 ========================= */
 
 if (isset($_SESSION["user_id"])) {
+    if (isUserBanned((int) $_SESSION["user_id"])) {
+        clearAuthenticatedSession();
+        $_GET["ban_message"] = getBannedAccountMessage();
+    } else {
     header("Location: /University-Web-Applications-System-B/frontend/posts.php");
     exit;
+    }
 }
 
 /* =========================
@@ -47,7 +53,7 @@ if (isset($_SESSION["user_id"])) {
 
 require_once "../backend/controllers/AuthController.php";
 
-$message = "";
+$message = trim((string) ($_GET["ban_message"] ?? ""));
 
 /* =========================
    HANDLE LOGIN REQUEST
