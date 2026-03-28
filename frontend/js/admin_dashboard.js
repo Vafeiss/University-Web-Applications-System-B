@@ -10,6 +10,7 @@
     let activePendingStatus = 0;
     let dashboardAutoRefreshTimerId = null;
     let isDashboardAutoRefreshInFlight = false;
+    let rejectReasonDialogResolver = null;
     const SECTION_CONFIG = {
         posts: {
             load: loadPostsView
@@ -31,6 +32,8 @@
         }
     };
     document.addEventListener("DOMContentLoaded", function () {
+        ensureRejectReasonDialog();
+        setupAdminProfileDialog();
         bindTabs();
         bindActions();
         setupAdminPostsSearch();
@@ -58,6 +61,45 @@
         });
     }
 
+    function setupAdminProfileDialog() {
+        const openButton = document.getElementById("adminProfileOpen");
+        const closeButton = document.getElementById("adminProfileClose");
+        const dialog = document.getElementById("adminProfileDialog");
+        const menu = document.getElementById("adminMenu");
+
+        if (!openButton || !closeButton || !dialog) {
+            return;
+        }
+
+        const toggleDialog = (show) => {
+            dialog.hidden = !show;
+            document.body.classList.toggle("admin-dialog-open", show);
+            if (!show && menu) {
+                menu.open = false;
+            }
+        };
+
+        openButton.addEventListener("click", function () {
+            toggleDialog(true);
+        });
+
+        closeButton.addEventListener("click", function () {
+            toggleDialog(false);
+        });
+
+        dialog.addEventListener("click", function (event) {
+            if (event.target === dialog) {
+                toggleDialog(false);
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !dialog.hidden) {
+                toggleDialog(false);
+            }
+        });
+    }
+
     function bindActions() {
         document.addEventListener("click", async function (event) {
             const button = event.target.closest("button[data-action][data-id]");
@@ -67,6 +109,7 @@
 
             const action = button.dataset.action;
             const itemId = button.dataset.id;
+            let url = `${BASE_URL}?action=${encodeURIComponent(action)}&id=${encodeURIComponent(itemId)}`;
             if (!action || !itemId) {
                 return;
             }
@@ -75,10 +118,17 @@
             const feedbackTarget = button.dataset.feedbackTarget || "";
             const reloadSection = button.dataset.reloadSection || section;
 
+            if (action === "reject") {
+                const reason = await promptRejectReason();
+                if (!reason) {
+                    return;
+                }
+
+                url += `&reason=${encodeURIComponent(reason)}`;
+            }
+
             try {
-                const { response, data: result } = await fetchJSON(
-                    `${BASE_URL}?action=${encodeURIComponent(action)}&id=${encodeURIComponent(itemId)}`
-                );
+                const { response, data: result } = await fetchJSON(url);
 
                 if (!response.ok) {
                     throw new Error(result.message || "Action failed");
@@ -93,6 +143,146 @@
                 showFeedback(feedbackTarget, error.message || "Action failed.", "error");
             }
         });
+    }
+
+    function ensureRejectReasonDialog() {
+        if (document.getElementById("adminRejectReasonDialog")) {
+            return;
+        }
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <div id="adminRejectReasonDialog" class="admin-reject-dialog" hidden>
+                <form id="adminRejectReasonForm" class="admin-reject-card" role="dialog" aria-modal="true" aria-labelledby="adminRejectReasonTitle">
+                    <h4 id="adminRejectReasonTitle">Reject Post</h4>
+                    <p>Please explain why this post is being rejected.</p>
+                    <textarea id="adminRejectReasonInput" class="admin-reject-textarea" rows="1" placeholder="Write your reason..." required></textarea>
+                    <div id="adminRejectReasonError" class="admin-reject-error" hidden>Please enter a rejection reason.</div>
+                    <div class="admin-reject-actions">
+                        <button type="button" id="adminRejectReasonCancel" class="admin-reject-btn cancel">Cancel</button>
+                        <button type="submit" class="admin-reject-btn danger">Submit rejection</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(wrapper.firstElementChild);
+
+        const dialog = document.getElementById("adminRejectReasonDialog");
+        const form = document.getElementById("adminRejectReasonForm");
+        const cancelButton = document.getElementById("adminRejectReasonCancel");
+        const input = document.getElementById("adminRejectReasonInput");
+        const error = document.getElementById("adminRejectReasonError");
+
+        cancelButton?.addEventListener("click", function () {
+            closeRejectReasonDialog(null);
+        });
+
+        dialog?.addEventListener("click", function (event) {
+            if (event.target === dialog) {
+                closeRejectReasonDialog(null);
+            }
+        });
+
+        form?.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const reason = String(input?.value || "").trim();
+            if (reason === "") {
+                if (error) {
+                    error.hidden = false;
+                }
+                input?.focus();
+                return;
+            }
+
+            if (error) {
+                error.hidden = true;
+            }
+
+            closeRejectReasonDialog(reason);
+        });
+
+        input?.addEventListener("input", function () {
+            autoResizeRejectReasonTextarea(input);
+            if (error && String(input.value || "").trim() !== "") {
+                error.hidden = true;
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && rejectReasonDialogResolver && dialog && !dialog.hidden) {
+                closeRejectReasonDialog(null);
+            }
+        });
+    }
+
+    function promptRejectReason() {
+        ensureRejectReasonDialog();
+
+        const dialog = document.getElementById("adminRejectReasonDialog");
+        const input = document.getElementById("adminRejectReasonInput");
+        const error = document.getElementById("adminRejectReasonError");
+
+        if (!dialog || !input) {
+            return Promise.resolve(null);
+        }
+
+        input.value = "";
+        input.style.height = "auto";
+        if (error) {
+            error.hidden = true;
+        }
+
+        dialog.hidden = false;
+        document.body.classList.add("admin-dialog-open");
+
+        window.setTimeout(() => {
+            input.focus();
+        }, 0);
+
+        return new Promise((resolve) => {
+            rejectReasonDialogResolver = resolve;
+        });
+    }
+
+    function closeRejectReasonDialog(reason) {
+        const dialog = document.getElementById("adminRejectReasonDialog");
+        const input = document.getElementById("adminRejectReasonInput");
+        const error = document.getElementById("adminRejectReasonError");
+
+        if (dialog) {
+            dialog.hidden = true;
+        }
+
+        document.body.classList.remove("admin-dialog-open");
+
+        if (input) {
+            input.value = "";
+            input.style.height = "auto";
+        }
+
+        if (error) {
+            error.hidden = true;
+        }
+
+        if (rejectReasonDialogResolver) {
+            const resolve = rejectReasonDialogResolver;
+            rejectReasonDialogResolver = null;
+            resolve(reason);
+        }
+    }
+
+    function autoResizeRejectReasonTextarea(textarea) {
+        if (!textarea) {
+            return;
+        }
+
+        textarea.style.height = "auto";
+        const maxHeight = 180;
+        const nextHeight = Math.min(textarea.scrollHeight, maxHeight);
+        textarea.style.height = `${nextHeight}px`;
+        textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
     }
 
     function activateSection(section) {
@@ -524,6 +714,7 @@
             const status = statusLabel(post);
             const postId = post.post_id ?? post.id;
             const excerpt = String(post.content || "").trim().slice(0, 220);
+            const rejectionReason = String(post.rejection_reason || "").trim();
 
             card.className = "pending-card";
             card.innerHTML = `
@@ -535,6 +726,8 @@
                     <span>Submitted: ${escapeHtml(createdAt)}</span>
                 </div>
                 <div class="post-excerpt">${escapeHtml(excerpt || "No content preview available.")}</div>
+                ${Number(post.status) === 2 ? `
+                <div class="pending-content">rejection reason: ${escapeHtml(rejectionReason || "-")}</div>` : ""}
                 ${Number(post.status) === 0 ? `
                 <div class="pending-actions">
                     <button type="button" class="pending-btn approve" data-section="pending" data-feedback-target="pendingFeedback" data-reload-section="pending" data-action="approve" data-id="${escapeHtml(postId)}">Approve</button>
@@ -618,7 +811,7 @@
     }
 
     function updatePendingStatusButtons() {
-        if (activePendingStatus !== 0 && activePendingStatus !== 1) {
+        if (activePendingStatus !== 0 && activePendingStatus !== 1 && activePendingStatus !== 2) {
             activePendingStatus = 0;
         }
 
@@ -715,7 +908,8 @@
         }
 
         try {
-            const { response, data: requests } = await fetchJSON(`${BASE_URL}?action=deleteRequests`);
+            const url = `${BASE_URL}?action=deleteRequests`;
+            const { response, data: requests } = await fetchJSON(url);
 
             if (!response.ok) {
                 throw new Error(requests.message || "Failed to load delete requests");

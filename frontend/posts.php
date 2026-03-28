@@ -178,6 +178,17 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 
 </main>
 
+<div id="rejectedPostDeleteDialog" class="comment-policy-dialog" hidden>
+    <div class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="rejectedPostDeleteTitle">
+        <h4 id="rejectedPostDeleteTitle">Delete Rejected Post</h4>
+        <p>This will permanently remove the rejected post from your history. This action cannot be undone.</p>
+        <div class="comment-policy-actions">
+            <button type="button" id="rejectedPostDeleteCancel" class="policy-link cancel">Cancel</button>
+            <button type="button" id="rejectedPostDeleteConfirm" class="policy-link danger">Delete permanently</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
 const currentUserId = <?= (int)$_SESSION['user_id'] ?>;

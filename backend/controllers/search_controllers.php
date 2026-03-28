@@ -15,6 +15,7 @@ class SearchController extends BaseController {
         $sort = trim($_GET['sort'] ?? 'newest');
         $followedOnly = isset($_GET['followed_only']) && $_GET['followed_only'] === '1';
         $currentUserId = $this->getCurrentUserId();
+        $isAdmin = $this->isAdmin();
         $authorIds = [];
 
         if (isset($_GET['author_ids'])) {
@@ -38,7 +39,8 @@ class SearchController extends BaseController {
                 $sort,
                 $followedOnly,
                 $currentUserId,
-                $authorIds
+                $authorIds,
+                $isAdmin
             );
 
             $this->jsonResponse([

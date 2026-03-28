@@ -51,6 +51,7 @@ body {
 }
 
 .pending-card {
+    position: relative;
     background: #ffffff;
     border: 1px solid #dbe4f2;
     border-radius: 14px;
@@ -142,4 +143,107 @@ body {
     padding: 22px;
     text-align: center;
     font-weight: 600;
+}
+
+body.admin-dialog-open {
+    overflow: hidden;
+}
+
+.admin-reject-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.32);
+}
+
+.admin-reject-dialog[hidden] {
+    display: none !important;
+}
+
+.admin-reject-card {
+    width: min(420px, 100%);
+    background: #fff;
+    border: 1px solid #dbe4f3;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
+}
+
+.admin-reject-card h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #c12727;
+}
+
+.admin-reject-card p {
+    margin: 0;
+    color: #5d687b;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.admin-reject-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid #cfd9e8;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: none;
+    min-height: 44px;
+    max-height: 180px;
+    overflow: hidden;
+}
+
+.admin-reject-textarea:focus {
+    outline: none;
+    border-color: #89a8ee;
+    box-shadow: 0 0 0 3px rgba(137, 168, 238, 0.18);
+}
+
+.admin-reject-error {
+    margin-top: 8px;
+    color: #9c2f3b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-reject-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.admin-reject-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-reject-btn.cancel {
+    background: #eef2f8;
+    color: #4f5f78;
+}
+
+.admin-reject-btn.cancel:hover {
+    background: #e4e9f1;
+}
+
+.admin-reject-btn.danger {
+    background: #c12727;
+    color: #fff;
+}
+
+.admin-reject-btn.danger:hover {
+    background: #a61f1f;
 }

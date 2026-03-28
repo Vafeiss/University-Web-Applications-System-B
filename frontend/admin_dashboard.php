@@ -1,9 +1,26 @@
 <?php
 session_start();
 
+require_once "../backend/config/database.php";
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 	header("Location: posts.php");
 	exit();
+}
+
+$adminUsername = (string) ($_SESSION['username'] ?? 'Admin');
+$adminEmail = '';
+
+try {
+	$db = new Database();
+	$conn = $db->connect();
+	$stmt = $conn->prepare("SELECT email FROM users WHERE user_id = :user_id LIMIT 1");
+	$stmt->execute([
+		':user_id' => (int) $_SESSION['user_id']
+	]);
+	$adminEmail = (string) ($stmt->fetchColumn() ?: '');
+} catch (Throwable $exception) {
+	$adminEmail = '';
 }
 
 $adminDashboardCssVersion = filemtime(__DIR__ . '/css/admin_dashboard.css');
@@ -639,6 +656,94 @@ body {
 .feed-menu-item.danger:hover {
 	background: #fdeff0;
 }
+
+.admin-profile-dialog {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(15, 23, 42, 0.32);
+}
+
+.admin-profile-dialog[hidden] {
+	display: none !important;
+}
+
+.admin-profile-card {
+	width: min(360px, 100%);
+	background: #ffffff;
+	border: 1px solid #d7e1f0;
+	border-radius: 14px;
+	padding: 18px;
+	box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+}
+
+.admin-profile-card h3 {
+	margin: 0 0 6px;
+	font-size: 20px;
+	color: #142b53;
+	text-align: center;
+}
+
+.admin-profile-card p {
+	margin: 0 0 14px;
+	font-size: 14px;
+	color: #5f6f89;
+	text-align: center;
+}
+
+.admin-profile-list {
+	display: grid;
+	gap: 12px;
+}
+
+.admin-profile-item {
+	padding: 12px;
+	border: 1px solid #dbe4f2;
+	border-radius: 12px;
+	background: #f8fbff;
+}
+
+.admin-profile-label {
+	display: block;
+	margin-bottom: 4px;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: #6b7c99;
+}
+
+.admin-profile-value {
+	font-size: 15px;
+	font-weight: 600;
+	color: #1f3659;
+	word-break: break-word;
+}
+
+.admin-profile-actions {
+	margin-top: 14px;
+	display: flex;
+	justify-content: center;
+}
+
+.admin-profile-close {
+	border: none;
+	border-radius: 8px;
+	padding: 9px 14px;
+	background: #eef2f8;
+	color: #4f5f78;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.admin-profile-close:hover {
+	background: #e4e9f1;
+}
 </style>
 </head>
 
@@ -668,12 +773,13 @@ body {
 					</div>
 				</div>
 
-				<details class="feed-menu" id="adminMenu">
-					<summary class="feed-menu-trigger" aria-label="Open admin menu" title="Menu">&#8942;</summary>
-					<div class="feed-menu-dropdown" role="menu" aria-label="Admin quick actions">
-						<a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
-					</div>
-				</details>
+					<details class="feed-menu" id="adminMenu">
+						<summary class="feed-menu-trigger" aria-label="Open admin menu" title="Menu">&#8942;</summary>
+						<div class="feed-menu-dropdown" role="menu" aria-label="Admin quick actions">
+							<button type="button" id="adminProfileOpen" class="feed-menu-item" role="menuitem">View profile</button>
+							<a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
+						</div>
+					</details>
 			</div>
 		</div>
 
@@ -773,6 +879,7 @@ body {
 		<div class="dashboard-status-filters" aria-label="Pending posts status filters">
 			<button type="button" class="dashboard-status-filter is-active" data-pending-status="0">Pending</button>
 			<button type="button" class="dashboard-status-filter" data-pending-status="1">Approved</button>
+			<button type="button" class="dashboard-status-filter" data-pending-status="2">Rejected</button>
 		</div>
 		<div id="pendingFeedback" class="pending-feedback" hidden></div>
 		<div id="pendingPosts" class="pending-grid" aria-live="polite"></div>
@@ -814,6 +921,26 @@ body {
 		<div id="reports" class="pending-grid" aria-live="polite"></div>
 	</section>
 </main>
+
+<div id="adminProfileDialog" class="admin-profile-dialog" hidden>
+	<div class="admin-profile-card" role="dialog" aria-modal="true" aria-labelledby="adminProfileTitle">
+		<h3 id="adminProfileTitle">Admin Profile</h3>
+		<p>Account details for the current administrator.</p>
+		<div class="admin-profile-list">
+			<div class="admin-profile-item">
+				<span class="admin-profile-label">Username</span>
+				<div class="admin-profile-value"><?= htmlspecialchars($adminUsername, ENT_QUOTES, 'UTF-8') ?></div>
+			</div>
+			<div class="admin-profile-item">
+				<span class="admin-profile-label">Email</span>
+				<div class="admin-profile-value"><?= htmlspecialchars($adminEmail !== '' ? $adminEmail : '-', ENT_QUOTES, 'UTF-8') ?></div>
+			</div>
+		</div>
+		<div class="admin-profile-actions">
+			<button type="button" id="adminProfileClose" class="admin-profile-close">Close</button>
+		</div>
+	</div>
+</div>
 
 <script src="js/admin_dashboard.js?v=<?php echo $jsVersion; ?>"></script>
 

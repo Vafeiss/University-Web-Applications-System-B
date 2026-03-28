@@ -15,6 +15,7 @@ let initialFeedStatusFilter = null;
 let cachedPendingPosts = [];
 let cachedPendingDeleteRequests = [];
 let cachedReports = [];
+let rejectedPostDeleteId = null;
 
 function mapStatusParamToNumeric(status) {
     const normalized = String(status ?? "").toLowerCase();
@@ -649,7 +650,7 @@ function filterReportsData(reports, filters) {
     return filtered;
 }
 
-    function renderPendingPosts(posts) {
+function renderPendingPosts(posts) {
     const container = document.getElementById("postsList");
     if (!container) return;
 
@@ -666,8 +667,13 @@ function filterReportsData(reports, filters) {
 
         const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : "Unknown date";
         const status = getPostStatusInfo(post.status, post.deleted);
+        const rejectionReason = String(post.rejection_reason || "").trim();
+        const deleteButtonHtml = Number(post.status) === 2
+            ? `<button type="button" class="rejected-post-hard-delete-btn" data-hard-delete-rejected-post="1" data-post-id="${escapeHtml(post.post_id)}" aria-label="Delete rejected post" title="Delete permanently">x</button>`
+            : "";
 
         card.innerHTML = `
+            ${deleteButtonHtml}
             <h3>
                 <a class="feed-title-link" href="post.php?id=${encodeURIComponent(post.post_id)}">
                     ${escapeHtml(post.title || "Untitled post")}
@@ -678,9 +684,87 @@ function filterReportsData(reports, filters) {
                 <span class="status-chip ${status.className}">${escapeHtml(status.text)}</span>
                 <span>${escapeHtml(createdAt)}</span>
             </div>
+            ${Number(post.status) === 2 ? `<div class="pending-content">rejection reason: ${escapeHtml(rejectionReason || "-")}</div>` : ""}
         `;
 
         container.appendChild(card);
+    });
+}
+
+function toggleRejectedPostDeleteDialog(show) {
+    const dialog = document.getElementById("rejectedPostDeleteDialog");
+    if (!dialog) return;
+
+    dialog.hidden = !show;
+    document.body.classList.toggle("comment-dialog-open", show);
+
+    if (!show) {
+        rejectedPostDeleteId = null;
+    }
+}
+
+function setupRejectedPostDeleteDialog() {
+    const dialog = document.getElementById("rejectedPostDeleteDialog");
+    if (!dialog) return;
+
+    document.addEventListener("click", async (event) => {
+        const openButton = event.target.closest("[data-hard-delete-rejected-post][data-post-id]");
+        if (openButton) {
+            rejectedPostDeleteId = openButton.dataset.postId || null;
+            if (!rejectedPostDeleteId) {
+                return;
+            }
+
+            toggleRejectedPostDeleteDialog(true);
+            return;
+        }
+
+        if (event.target.id === "rejectedPostDeleteCancel") {
+            toggleRejectedPostDeleteDialog(false);
+            return;
+        }
+
+        if (event.target.id === "rejectedPostDeleteConfirm") {
+            if (!rejectedPostDeleteId) {
+                toggleRejectedPostDeleteDialog(false);
+                return;
+            }
+
+            const postIdToDelete = Number(rejectedPostDeleteId);
+
+            try {
+                const { ok, data } = await fetchJSON(`${BASE_URL}?action=hardDeleteRejected`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        post_id: postIdToDelete
+                    })
+                });
+
+                if (!ok) {
+                    throw new Error(data.message || "Could not delete rejected post.");
+                }
+
+                toggleRejectedPostDeleteDialog(false);
+                await loadPendingPostsFeed();
+            } catch (error) {
+                console.error("Rejected post hard delete failed:", error);
+                alert(error.message || "Could not delete rejected post.");
+            }
+            return;
+        }
+
+        if (event.target === dialog) {
+            toggleRejectedPostDeleteDialog(false);
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !dialog.hidden) {
+            toggleRejectedPostDeleteDialog(false);
+        }
     });
 }
 
@@ -1666,6 +1750,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupNotificationsUI();
     loadNotifications();
     setupFeedMenu();
+    setupRejectedPostDeleteDialog();
     setupFeedModeToggle();
     setupSearchControls();
     setupFollowActions();

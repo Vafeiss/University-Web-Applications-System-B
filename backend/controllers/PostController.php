@@ -222,6 +222,26 @@ class PostController extends BaseController {
         ]);
     }
 
+    public function hardDeleteRejected() {
+        $user_id = $this->requireLogin();
+        $input = $this->getJSONInput();
+        $post_id = $input['post_id'] ?? ($_GET['id'] ?? null);
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $deleted = $this->postModel->hardDeleteRejectedPostByOwner((int) $post_id, (int) $user_id);
+
+        if (!$deleted) {
+            $this->jsonResponse(["message" => "Rejected post not found or cannot be deleted"], 404);
+        }
+
+        $this->jsonResponse([
+            "message" => "Rejected post permanently deleted"
+        ]);
+    }
+
     // Get_Post()
     public function get() {
         // Επιστρέφει ένα post με βάση το ID, μαζί με τα attachments του
@@ -536,26 +556,36 @@ class PostController extends BaseController {
             "message" => "This action will cost 1 token. You will have {$remainingTokens} tokens left."
         ]);
     }
-
     // reject post by admin
     public function reject() {
 
-        $this->requireAdmin();
+      $this->requireAdmin();
 
-        if (!isset($_GET['id'])) {
+      if (!isset($_GET['id'])) {
             $this->jsonResponse(["message" => "Post ID required"], 400);
         }
 
         $post_id = $_GET['id'] ?? null;
-        // Έλεγχος αν υπάρχει το post
+
         if (!$post_id) {
             $this->jsonResponse(["message" => "Post ID required"], 400);
         }
 
-        // Φέρνουμε post data πριν την απόρριψη για να στείλουμε notification
+        //  NEW: παίρνουμε reason
+        $reason = $_GET['reason'] ?? null;
+
+        //  NEW: validation
+        if (!$reason || trim($reason) === '') {
+            $this->jsonResponse(["message" => "Rejection reason is required"], 400);
+        }
+
+        $reason = trim($reason);
+
+        // Φέρνουμε post data πριν την απόρριψη για notification
         $post = $this->postModel->getPostById($post_id);
 
-        $wasRejectedNow = $this->postModel->rejectPost($post_id);
+        //  CHANGE: περνάμε reason στο model
+        $wasRejectedNow = $this->postModel->rejectPost($post_id, $reason);
 
         // Ειδοποίηση μόνο όταν αλλάζει πραγματικά σε rejected
         if ($wasRejectedNow && $post) {
@@ -565,13 +595,16 @@ class PostController extends BaseController {
                 (int)$post['user_id'],
                 "post_rejected",
                 (int)$post_id,
+                // (προσωρινά χωρίς reason στο message — θα το βάλουμε μετά)
                 "Your post \"" . $post['title'] . "\" was rejected"
             );
         }
+
         $this->jsonResponse([
             "message" => "Post rejected"
         ]);
     }
+    
     // get delete requests for admin
     public function deleteRequests() {
 
@@ -795,6 +828,9 @@ if (isset($_GET['action'])) {
             break;
         case 'adminDelete':
             $controller->adminDelete();
+            break;
+        case 'hardDeleteRejected':
+            $controller->hardDeleteRejected();
             break;
         case 'get':  // Get_Post()
             $controller->get();

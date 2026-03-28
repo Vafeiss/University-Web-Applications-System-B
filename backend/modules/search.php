@@ -17,14 +17,19 @@ class Search {
         string $sort = 'newest',
         bool $followedOnly = false,
         ?int $currentUserId = null,
-        array $authorIds = []
+        array $authorIds = [],
+        bool $isAdmin = false
     ): array {
+
+        $includeRejectedDeleted = $isAdmin && $status === 2;
 
         $sql = "SELECT p.*, u.username, c.name AS category
                 FROM posts p
                 JOIN users u ON p.user_id = u.user_id
                 LEFT JOIN categories c ON p.category_id = c.category_id
-                WHERE p.deleted = 0";
+                WHERE " . ($includeRejectedDeleted
+                    ? "(p.deleted = 0 OR p.status = 2)"
+                    : "p.deleted = 0");
 
         $params = [];
 

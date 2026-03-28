@@ -342,6 +342,134 @@ class PostModel {
         }
     }
 
+    public function hardDeleteRejectedPostByOwner(int $post_id, int $user_id): bool {
+        $attachments = $this->getAttachmentsByPost($post_id);
+
+        $this->conn->beginTransaction();
+
+        try {
+            $query = "SELECT post_id
+                      FROM posts
+                      WHERE post_id = :post_id
+                      AND user_id = :user_id
+                      AND status = 2
+                      LIMIT 1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id,
+                ":user_id" => $user_id
+            ]);
+
+            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $query = "SELECT comment_id
+                      FROM comments
+                      WHERE post_id = :post_id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id
+            ]);
+            $commentIds = array_map("intval", $stmt->fetchAll(PDO::FETCH_COLUMN));
+
+            if (!empty($commentIds)) {
+                $placeholders = [];
+                $params = [];
+
+                foreach ($commentIds as $index => $commentId) {
+                    $placeholder = ":comment_id_" . $index;
+                    $placeholders[] = $placeholder;
+                    $params[$placeholder] = $commentId;
+                }
+
+                $query = "DELETE FROM comment_delete_requests
+                          WHERE comment_id IN (" . implode(", ", $placeholders) . ")";
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute($params);
+
+                $query = "DELETE FROM content_reports
+                          WHERE content_type = 'comment'
+                          AND content_id IN (" . implode(", ", $placeholders) . ")";
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute($params);
+
+                $query = "DELETE FROM notifications
+                          WHERE type = 'admin_comment_delete_request'
+                          AND reference_id IN (" . implode(", ", $placeholders) . ")";
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute($params);
+            }
+
+            $query = "DELETE FROM content_reports
+                      WHERE content_type = 'post'
+                      AND content_id = :post_id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id
+            ]);
+
+            $query = "DELETE FROM notifications
+                      WHERE reference_id = :post_id
+                      AND type IN (
+                          'admin_pending_post',
+                          'admin_post_delete_request',
+                          'admin_post_report',
+                          'post_approved',
+                          'post_rejected',
+                          'delete_approved',
+                          'delete_rejected',
+                          'report_approved',
+                          'report_rejected',
+                          'new_post_following',
+                          'new_post_interest',
+                          'comment'
+                      )";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id
+            ]);
+
+            $query = "DELETE FROM posts
+                      WHERE post_id = :post_id
+                      AND user_id = :user_id
+                      AND status = 2";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":post_id" => $post_id,
+                ":user_id" => $user_id
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $this->conn->commit();
+
+            foreach ($attachments as $attachment) {
+                $relativePath = ltrim((string) ($attachment["file_path"] ?? ""), "/");
+                if ($relativePath === "") {
+                    continue;
+                }
+
+                $fullPath = __DIR__ . "/../../frontend/" . $relativePath;
+                if (is_file($fullPath)) {
+                    @unlink($fullPath);
+                }
+            }
+
+            return true;
+        } catch (Throwable $exception) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
     // approve post by admin
     public function approvePost($post_id) {
         // Ενημέρωση της κατάστασης του post σε "approved" (status = 1)
@@ -359,17 +487,18 @@ class PostModel {
         return $stmt->rowCount() > 0;
     }
 
-    // reject post by admin
-    public function rejectPost($post_id) {
+    public function rejectPost($post_id, $reason) {
 
         $query = "UPDATE posts
-                  SET status = 2, deleted = 1
+                  SET status = 2, deleted = 1, rejection_reason = :reason
                   WHERE post_id = :post_id
                   AND status <> 2";
 
         $stmt = $this->conn->prepare($query);
+
         $stmt->execute([
-            ":post_id" => $post_id
+            ":post_id" => $post_id,
+            ":reason" => $reason
         ]);
 
         return $stmt->rowCount() > 0;
@@ -755,6 +884,7 @@ public function getPostsByUserWithStatus($user_id) {
                      p.title,
                      p.status,
                      p.deleted,
+                     p.rejection_reason,
                      p.timestamp,
                      c.name AS category
               FROM posts p

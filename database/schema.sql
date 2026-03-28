@@ -163,6 +163,7 @@ CREATE TABLE `posts` (
   `status` tinyint(4) DEFAULT 0,
   `category_id` int(11) DEFAULT NULL,
   `deleted` tinyint(4) DEFAULT 0,
+  `rejection_reason` text DEFAULT NULL,
   `is_anonymous` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
