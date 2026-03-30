@@ -16,6 +16,7 @@ let cachedPendingPosts = [];
 let cachedPendingDeleteRequests = [];
 let cachedReports = [];
 let rejectedPostDeleteId = null;
+const FEED_SIDEBAR_STORAGE_KEY = "feedSidebarCollapsed";
 
 function mapStatusParamToNumeric(status) {
     const normalized = String(status ?? "").toLowerCase();
@@ -1329,6 +1330,8 @@ function setupFeedMenu() {
 
 function setupFeedModeToggle() {
     const title = document.getElementById("feedTitle");
+    const createPostButton = document.getElementById("createPostBtn");
+    const tokenHistoryButton = document.getElementById("tokenHistoryBtn");
     const postsButton = document.getElementById("postsFeedBtn");
     const followersButton = document.getElementById("followersFeedBtn");
     const pendingPostsButton = document.getElementById("pendingPostsBtn");
@@ -1337,11 +1340,18 @@ function setupFeedModeToggle() {
     const searchPanel = document.getElementById("feedSearchForm");
     const statusFilters = document.getElementById("feedModerationStatusFilters");
     const followersFilter = document.getElementById("feedSearchFollowersFilter");
+    const createPostPanel = document.getElementById("createPostPanel");
+    const tokenHistoryPanel = document.getElementById("tokenHistoryPanel");
+    const postsList = document.getElementById("postsList");
+    const interestsBanner = document.getElementById("interestsBanner");
+    const siteFooter = document.querySelector(".site-footer");
 
-    if (!followersButton || !postsButton || !pendingPostsButton || !pendingDeleteRequestsButton || !reportsButton || !title) return;
+    if (!createPostButton || !tokenHistoryButton || !followersButton || !postsButton || !pendingPostsButton || !pendingDeleteRequestsButton || !reportsButton || !title) return;
 
     const setMode = (mode) => {
         activeFeedMode = mode;
+        createPostButton.classList.toggle("is-active", mode === "create-post");
+        tokenHistoryButton.classList.toggle("is-active", mode === "token-history");
         postsButton.classList.toggle("is-active", mode === "default" || mode === "search");
         followersButton.classList.toggle("is-active", mode === "followers");
         pendingPostsButton.classList.toggle("is-active", mode === "pending-posts");
@@ -1365,9 +1375,47 @@ function setupFeedModeToggle() {
             followersFilter.hidden = !showFollowersFilter;
             followersFilter.style.display = showFollowersFilter ? "block" : "none";
         }
+
+        if (createPostPanel) {
+            createPostPanel.hidden = mode !== "create-post";
+        }
+
+        if (tokenHistoryPanel) {
+            tokenHistoryPanel.hidden = mode !== "token-history";
+        }
+
+        if (postsList) {
+            postsList.hidden = mode === "create-post" || mode === "token-history";
+        }
+
+        if (interestsBanner) {
+            interestsBanner.hidden = mode === "create-post" || mode === "token-history";
+        }
+
+        if (siteFooter) {
+            siteFooter.hidden = mode === "create-post" || mode === "token-history";
+        }
     };
 
     setMode("default");
+
+    createPostButton.addEventListener("click", () => {
+        if (activeFeedMode === "create-post") {
+            return;
+        }
+
+        setMode("create-post");
+        title.textContent = "Create Post";
+    });
+
+    tokenHistoryButton.addEventListener("click", () => {
+        if (activeFeedMode === "token-history") {
+            return;
+        }
+
+        setMode("token-history");
+        title.textContent = "Token History";
+    });
 
     postsButton.addEventListener("click", async () => {
         if (activeFeedMode === "default") {
@@ -1761,6 +1809,64 @@ function setupFollowActions() {
     });
 }
 
+function setupSidebarToggle() {
+    const layout = document.querySelector(".feed-dashboard-layout");
+    const sidebar = document.getElementById("feedSidebar");
+    const toggle = document.getElementById("feedSidebarToggle");
+    const label = toggle?.querySelector(".feed-sidebar-toggle-label");
+
+    if (!layout || !sidebar || !toggle) {
+        return;
+    }
+
+    const applySidebarState = (collapsed) => {
+        layout.classList.toggle("sidebar-collapsed", collapsed);
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+        toggle.setAttribute("aria-label", collapsed ? "Show side menu" : "Hide side menu");
+        toggle.setAttribute("title", collapsed ? "Show side menu" : "Hide side menu");
+        if (label) {
+            label.textContent = collapsed ? "Show menu" : "Hide menu";
+        }
+    };
+
+    applySidebarState(window.localStorage.getItem(FEED_SIDEBAR_STORAGE_KEY) === "1");
+
+    toggle.addEventListener("click", () => {
+        const collapsed = !layout.classList.contains("sidebar-collapsed");
+        applySidebarState(collapsed);
+        window.localStorage.setItem(FEED_SIDEBAR_STORAGE_KEY, collapsed ? "1" : "0");
+    });
+}
+
+function setupTokenHistoryFilters() {
+    const filterButtons = document.querySelectorAll(".history-filter-btn");
+    const rows = document.querySelectorAll(".history-table tbody tr[data-filter-group]");
+    const emptyState = document.getElementById("historyEmptyFilter");
+
+    if (!filterButtons.length || !rows.length || !emptyState) {
+        return;
+    }
+
+    filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const filter = button.dataset.filter || "all";
+            let visibleCount = 0;
+
+            filterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+
+            rows.forEach((row) => {
+                const matches = filter === "all" || row.dataset.filterGroup === filter;
+                row.hidden = !matches;
+                if (matches) {
+                    visibleCount += 1;
+                }
+            });
+
+            emptyState.classList.toggle("is-visible", visibleCount === 0);
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const feedTargetFromUrl = getFeedTargetFromUrl();
 
@@ -1774,6 +1880,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadNotifications();
     setupFeedMenu();
     setupRejectedPostDeleteDialog();
+    setupSidebarToggle();
+    setupTokenHistoryFilters();
     setupFeedModeToggle();
     setupSearchControls();
     setupFollowActions();

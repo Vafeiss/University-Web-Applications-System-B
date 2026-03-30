@@ -14,11 +14,40 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
 $db = new Database();
 $conn = $db->connect();
 
+function describeTransaction(int $tokenCharge): string {
+    if ($tokenCharge === 10) {
+        return "Referral reward";
+    }
+
+    if ($tokenCharge === 1) {
+        return "Approved upload reward";
+    }
+
+    if ($tokenCharge === 0) {
+        return "Free daily download";
+    }
+
+    if ($tokenCharge === -1) {
+        return "Download charge";
+    }
+
+    return $tokenCharge > 0 ? "Token gain" : "Token usage";
+}
+
 $tokenBalanceStmt = $conn->prepare(
     "SELECT token_balance FROM users WHERE user_id = :id LIMIT 1"
 );
 $tokenBalanceStmt->execute([":id" => $_SESSION['user_id']]);
 $tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
+
+$transactionsStmt = $conn->prepare(
+    "SELECT transaction_id, token_charge, timestamp
+     FROM transactions
+     WHERE user_id = :id
+     ORDER BY timestamp DESC, transaction_id DESC"
+);
+$transactionsStmt->execute([":id" => $_SESSION['user_id']]);
+$transactions = $transactionsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $categoriesStmt = $conn->query(
     "SELECT category_id, name FROM categories ORDER BY name ASC"
@@ -33,6 +62,7 @@ unset($_SESSION['flash_success']);
 $postCssVersion = filemtime(__DIR__ . '/css/post.css');
 $adminDashboardCssVersion = filemtime(__DIR__ . '/css/admin_dashboard.css');
 $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
+$createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
 ?>
 
 <!DOCTYPE html>
@@ -51,7 +81,7 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
 <main class="pending-page feed-shell<?= !$isAdmin ? ' user-feed-shell' : '' ?>">
     <?php if (!$isAdmin): ?>
     <div class="feed-dashboard-layout app-shell">
-        <aside class="feed-sidebar" aria-label="User workspace navigation">
+        <aside id="feedSidebar" class="feed-sidebar" aria-label="User workspace navigation">
             <div class="feed-sidebar-brand">
                 <span class="feed-sidebar-brand-mark" aria-hidden="true">
                     <img src="imgs/unisupportlogo.png" alt="" class="feed-sidebar-brand-image">
@@ -70,26 +100,36 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
             </div>
 
             <div class="feed-sidebar-profile">
-                <span class="feed-sidebar-kicker">Signed in as</span>
-                <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
+                <div class="feed-sidebar-avatar" aria-hidden="true">
+                    <?= htmlspecialchars(function_exists('mb_substr') ? mb_strtoupper(mb_substr((string)$_SESSION['username'], 0, 1)) : strtoupper(substr((string)$_SESSION['username'], 0, 1))) ?>
+                </div>
+                <div class="feed-sidebar-profile-copy">
+                    <span class="feed-sidebar-kicker">Signed in as</span>
+                    <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
+                </div>
             </div>
 
             <nav class="feed-tabs feed-sidebar-tabs" aria-label="Feed navigation">
-                <a href="create_post.php" class="feed-tab">&#43; Create Post</a>
+                <button type="button" id="createPostBtn" class="feed-tab">&#43; Create Post</button>
                 <button type="button" id="postsFeedBtn" class="feed-tab is-active">Posts</button>
                 <button type="button" id="followersFeedBtn" class="feed-tab">Followers</button>
                 <button type="button" id="pendingPostsBtn" class="feed-tab">Pending Posts</button>
                 <button type="button" id="pendingDeleteRequestsBtn" class="feed-tab">Pending Delete Requests</button>
                 <button type="button" id="reportsBtn" class="feed-tab">Reports</button>
+                <button type="button" id="tokenHistoryBtn" class="feed-tab">Token history</button>
             </nav>
-
-            <div class="feed-sidebar-footer">
-                <a href="token_history.php" class="feed-sidebar-link">Token history</a>
-            </div>
         </aside>
 
         <div class="app-main-shell">
             <div class="feed-dashboard-topbar" aria-label="Workspace quick actions">
+                <button type="button" id="feedSidebarToggle" class="feed-sidebar-toggle" aria-controls="feedSidebar" aria-expanded="true" aria-label="Hide side menu" title="Hide side menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
+                        <path d="M4 7h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 17h16"></path>
+                    </svg>
+                    <span class="feed-sidebar-toggle-label">Hide menu</span>
+                </button>
                 <div class="feed-topbar-title" aria-hidden="true">Posts Feed</div>
                 <div class="feed-dashboard-toplinks">
                     <a href="profile_view.php" class="feed-dashboard-toplink">Profile settings</a>
@@ -299,6 +339,122 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
         <div id="interestsBanner"></div>
     </header>
 
+    <section id="createPostPanel" class="create-post-panel" hidden>
+        <div class="post-container create-post-card">
+            <h2>Create New Post</h2>
+
+            <form id="postForm" enctype="multipart/form-data">
+                <input
+                type="text"
+                name="title"
+                placeholder="Post title"
+                required
+                >
+
+                <textarea
+                name="content"
+                placeholder="Write your content..."
+                required
+                ></textarea>
+
+                <label>Category</label>
+                <select name="category_id" required>
+                    <option value="">Select Category</option>
+                    <?php foreach ($categories as $category): ?>
+                    <option value="<?= (int)$category['category_id'] ?>"><?= htmlspecialchars((string)$category['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <div class="anonymous-setting">
+                    <div class="anonymous-setting-text">
+                        <span class="anonymous-setting-title">Publish anonymously</span>
+                        <small class="anonymous-setting-hint">Your name will be hidden for users. Admins can still view the post owner.</small>
+                    </div>
+
+                    <label class="anonymous-switch" for="anonymousToggle">
+                        <input type="checkbox" id="anonymousToggle" name="is_anonymous" value="1">
+                        <span class="anonymous-slider" aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="attachments-upload">
+                    <div class="attachments-head">
+                        <div class="attachments-head-text">
+                            <span class="attachments-title">Attachments</span>
+                            <span class="attachments-hint">At least 1 file required, up to 5 files (jpg, png, pdf, doc, docx, txt, zip)</span>
+                        </div>
+
+                        <label for="attachmentsInput" class="attachments-choose-btn">Choose Files</label>
+                    </div>
+
+                    <input
+                    type="file"
+                    id="attachmentsInput"
+                    class="attachments-native-input"
+                    name="attachments[]"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt,.zip"
+                    >
+
+                    <small id="selectedFiles" class="selected-files"></small>
+                </div>
+
+                <button type="submit">Publish</button>
+            </form>
+
+            <p id="response" class="response-message" aria-live="polite"></p>
+        </div>
+    </section>
+
+    <section id="tokenHistoryPanel" class="token-history-panel" hidden>
+        <section class="balance-card">
+            <span class="balance-label">Current token balance</span>
+            <div class="balance-value"><?= $tokenBalance ?></div>
+        </section>
+
+        <section class="history-card">
+            <div class="history-head">
+                <h2>Token History</h2>
+                <p>See where you earned tokens and where you spent them.</p>
+            </div>
+
+            <?php if (!$transactions): ?>
+                <div class="empty-state">No token transactions found yet.</div>
+            <?php else: ?>
+                <div class="history-filters">
+                    <button type="button" class="history-filter-btn is-active" data-filter="all">All</button>
+                    <button type="button" class="history-filter-btn" data-filter="earned">Earned</button>
+                    <button type="button" class="history-filter-btn" data-filter="spent">Spent</button>
+                </div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($transactions as $transaction): ?>
+                            <?php
+                            $tokenCharge = (int) $transaction['token_charge'];
+                            $amountClass = $tokenCharge > 0 ? 'amount-gain' : ($tokenCharge < 0 ? 'amount-loss' : 'amount-free');
+                            $amountText = $tokenCharge > 0 ? '+' . $tokenCharge : (string) $tokenCharge;
+                            $filterGroup = $tokenCharge > 0 ? 'earned' : 'spent';
+                            ?>
+                            <tr data-filter-group="<?= htmlspecialchars($filterGroup) ?>">
+                                <td><?= htmlspecialchars(describeTransaction($tokenCharge)) ?></td>
+                                <td class="<?= $amountClass ?>"><?= htmlspecialchars($amountText) ?></td>
+                                <td><?= htmlspecialchars($transaction['timestamp']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <div id="historyEmptyFilter" class="history-empty-filter">No transactions in this category yet.</div>
+            <?php endif; ?>
+        </section>
+    </section>
+
     <div id="postsList" class="pending-grid" aria-live="polite"></div>
 
     <?php if (!$isAdmin): ?>
@@ -341,11 +497,23 @@ $postsJsVersion = filemtime(__DIR__ . '/js/posts.js');
     </div>
 </div>
 
+<div id="postPolicyDialog" class="comment-policy-dialog" hidden>
+    <div class="comment-policy-card" role="dialog" aria-modal="true" aria-labelledby="postPolicyTitle">
+        <h4 id="postPolicyTitle">Confirm Publication</h4>
+        <p>After publishing, this post cannot be deleted directly and requires a delete request.</p>
+        <div class="comment-policy-actions">
+            <button type="button" id="postPolicyCancel" class="policy-link cancel">Cancel</button>
+            <button type="button" id="postPolicyAccept" class="policy-link accept">Accept</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
 const currentUserId = <?= (int)$_SESSION['user_id'] ?>;
 </script>
 <script src="js/posts.js?v=<?php echo $postsJsVersion; ?>"></script>
+<script src="js/createPost.js?v=<?php echo $createPostJsVersion; ?>"></script>
 
 </body>
 

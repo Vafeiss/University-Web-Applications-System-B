@@ -130,13 +130,13 @@ body {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 6px;
+	gap: 8px;
 	margin: 16px 0 18px;
-	padding: 8px;
+	padding: 10px;
 	border: 1px solid #d7e1f0;
-	border-radius: 16px;
+	border-radius: 18px;
 	background: #ffffff;
-	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+	box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .dashboard-search-input,
@@ -144,12 +144,12 @@ body {
 .dashboard-search-date {
 	margin: 0;
 	border: 1px solid #d3ddeb;
-	border-radius: 9px;
+	border-radius: 12px;
 	background: #fbfcfe;
-	font-size: 11px;
-	padding: 0 9px;
-	height: 36px;
-	line-height: 36px;
+	font-size: 13px;
+	padding: 0 12px;
+	height: 44px;
+	line-height: 44px;
 	box-sizing: border-box;
 }
 
@@ -172,7 +172,7 @@ body {
 	position: relative;
 	flex: 1 1 122px;
 	min-width: 110px;
-	height: 36px;
+	height: 44px;
 	box-sizing: border-box;
 }
 
@@ -182,14 +182,14 @@ body {
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
-	padding: 0 9px;
-	height: 36px;
+	padding: 0 12px;
+	height: 44px;
 	box-sizing: border-box;
 	border: 1px solid #d7e1f0;
-	border-radius: 9px;
+	border-radius: 12px;
 	background: #fbfcfe;
 	color: #28405f;
-	font-size: 11px;
+	font-size: 13px;
 	font-weight: 600;
 	cursor: pointer;
 }
@@ -240,18 +240,19 @@ body {
 
 .dashboard-search-btn {
 	width: auto;
-	padding: 0 11px;
-	height: 36px;
+	padding: 0 18px;
+	height: 44px;
 	box-sizing: border-box;
-	border-radius: 9px;
-	font-size: 11px;
+	border-radius: 12px;
+	font-size: 13px;
 	font-weight: 700;
 	border: 0;
 	cursor: pointer;
+	box-shadow: 0 6px 16px rgba(74, 108, 247, 0.18);
 }
 
 .dashboard-search-btn.primary {
-	background: #214f95;
+	background: linear-gradient(135deg, #4a6cf7, #6a8dff);
 	color: #ffffff;
 }
 
@@ -261,7 +262,7 @@ body {
 }
 
 .dashboard-search-btn.primary:hover {
-	background: #183f79;
+	background: linear-gradient(135deg, #3f61ee, #5f84fb);
 }
 
 .dashboard-search-btn.secondary:hover {
@@ -317,7 +318,9 @@ body {
 
 .post-excerpt {
 	margin-top: 12px;
-	color: #334155;
+	color: #475569;
+	font-size: 14px;
+	font-weight: 500;
 	line-height: 1.5;
 	white-space: pre-wrap;
 }

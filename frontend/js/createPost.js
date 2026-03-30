@@ -18,6 +18,10 @@ function togglePostPolicyDialog(show) {
 }
 
 function showResponseMessage(message, type) {
+    if (!responseEl) {
+        return;
+    }
+
     responseEl.textContent = message;
     responseEl.className = `response-message ${type}`;
 
@@ -29,6 +33,10 @@ function showResponseMessage(message, type) {
 }
 
 function renderSelectedFiles() {
+    if (!selectedFilesEl) {
+        return;
+    }
+
     if (selectedFiles.length === 0) {
         selectedFilesEl.textContent = "";
         return;
@@ -37,97 +45,107 @@ function renderSelectedFiles() {
     selectedFilesEl.textContent = `Selected ${selectedFiles.length}/${MAX_ATTACHMENTS}: ${selectedFiles.map((f) => f.name).join(", ")}`;
 }
 
-attachmentsInput.addEventListener("change", function() {
-    const incomingFiles = Array.from(this.files);
+if (postForm && attachmentsInput) {
+    attachmentsInput.addEventListener("change", function() {
+        const incomingFiles = Array.from(this.files);
 
-    if (incomingFiles.length === 0) {
-        return;
-    }
-
-    const merged = [...selectedFiles];
-
-    incomingFiles.forEach((file) => {
-        const exists = merged.some(
-            (f) => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified
-        );
-
-        if (!exists) {
-            merged.push(file);
+        if (incomingFiles.length === 0) {
+            return;
         }
-    });
 
-    if (merged.length > MAX_ATTACHMENTS) {
-        showResponseMessage("Maximum 5 files allowed", "error");
-        selectedFiles = merged.slice(0, MAX_ATTACHMENTS);
-    } else {
-        selectedFiles = merged;
-    }
+        const merged = [...selectedFiles];
 
-    // Allow selecting files again in a new picker action.
-    this.value = "";
-    renderSelectedFiles();
-});
+        incomingFiles.forEach((file) => {
+            const exists = merged.some(
+                (f) => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified
+            );
 
-renderSelectedFiles();
-
-// Listen for form submission
-postForm.addEventListener("submit", async function(e){
-
-    // Prevent page reload
-    e.preventDefault();
-
-    if (selectedFiles.length === 0) {
-        showResponseMessage("No files selected. Please add at least one file before publishing.", "error");
-        return;
-    }
-
-    if (!postPolicyAccepted) {
-        togglePostPolicyDialog(true);
-        return;
-    }
-
-    postPolicyAccepted = false;
-    togglePostPolicyDialog(false);
-
-    // Build FormData manually to guarantee all selected files are appended.
-    const formData = new FormData();
-    formData.append("title", postForm.elements["title"].value);
-    formData.append("content", postForm.elements["content"].value);
-    formData.append("category_id", postForm.elements["category_id"].value);
-    formData.append("is_anonymous", postForm.elements["is_anonymous"].checked ? "1" : "0");
-
-    selectedFiles.forEach((file) => {
-        formData.append("attachments[]", file);
-    });
-
-    try {
-
-        const response = await fetch(
-            "/University-Web-Applications-System-B/backend/controllers/PostController.php?action=create",
-            {
-                method: "POST",
-                body: formData
+            if (!exists) {
+                merged.push(file);
             }
-        );
+        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+        if (merged.length > MAX_ATTACHMENTS) {
+            showResponseMessage("Maximum 5 files allowed", "error");
+            selectedFiles = merged.slice(0, MAX_ATTACHMENTS);
+        } else {
+            selectedFiles = merged;
         }
 
-        const result = await response.json();
+        this.value = "";
+        renderSelectedFiles();
+    });
 
-        showResponseMessage(result.message, "success");
-        const pendingUrl = "/University-Web-Applications-System-B/frontend/posts.php?mode=pending&status=0";
-        window.location.replace(pendingUrl);
+    renderSelectedFiles();
 
-    } catch(error) {
+    postForm.addEventListener("submit", async function(e){
 
-        console.error(error);
-        showResponseMessage("Error creating post", "error");
+        e.preventDefault();
 
-    }
+        if (selectedFiles.length === 0) {
+            showResponseMessage("No files selected. Please add at least one file before publishing.", "error");
+            return;
+        }
 
-});
+        if (!postPolicyAccepted) {
+            togglePostPolicyDialog(true);
+            return;
+        }
+
+        postPolicyAccepted = false;
+        togglePostPolicyDialog(false);
+
+        const formData = new FormData();
+        formData.append("title", postForm.elements["title"].value);
+        formData.append("content", postForm.elements["content"].value);
+        formData.append("category_id", postForm.elements["category_id"].value);
+        formData.append("is_anonymous", postForm.elements["is_anonymous"].checked ? "1" : "0");
+
+        selectedFiles.forEach((file) => {
+            formData.append("attachments[]", file);
+        });
+
+        try {
+
+            const response = await fetch(
+                "/University-Web-Applications-System-B/backend/controllers/PostController.php?action=create",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            showResponseMessage(result.message, "success");
+            postForm.reset();
+            selectedFiles = [];
+            renderSelectedFiles();
+
+            const pendingButton = document.getElementById("pendingPostsBtn");
+            if (pendingButton) {
+                window.setTimeout(() => {
+                    pendingButton.click();
+                }, 300);
+                return;
+            }
+
+            const pendingUrl = "/University-Web-Applications-System-B/frontend/posts.php?mode=pending&status=0";
+            window.location.replace(pendingUrl);
+
+        } catch(error) {
+
+            console.error(error);
+            showResponseMessage("Error creating post", "error");
+
+        }
+
+    });
+}
 
 document.addEventListener("click", function(event) {
     if (!postPolicyDialog) {
