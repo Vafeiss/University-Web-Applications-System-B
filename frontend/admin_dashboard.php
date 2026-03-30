@@ -26,6 +26,7 @@ try {
 }
 
 $adminDashboardCssVersion = filemtime(__DIR__ . '/css/admin_dashboard.css');
+$postsCssVersion = filemtime(__DIR__ . '/css/post.css');
 $jsVersion = filemtime(__DIR__ . '/js/admin_dashboard.js');
 ?>
 
@@ -36,6 +37,7 @@ $jsVersion = filemtime(__DIR__ . '/js/admin_dashboard.js');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Moderation Panel</title>
+<link rel="stylesheet" href="css/post.css?v=<?php echo $postsCssVersion; ?>">
 <link rel="stylesheet" href="css/admin_dashboard.css?v=<?php echo $adminDashboardCssVersion; ?>">
 <style>
 body {
@@ -754,29 +756,83 @@ body {
 
 <body>
 
-<main class="pending-page dashboard-shell">
-	<header class="dashboard-header">
-		<div class="dashboard-header-top">
-			<h1>Admin Moderation Panel</h1>
-			<div class="dashboard-header-actions">
-				<div class="notifications-wrap">
-					<button type="button" id="adminNotificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">
-						<svg class="notifications-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="20" height="20" aria-hidden="true" focusable="false">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082A23.848 23.848 0 0112 17.25c-1.013 0-2.006-.063-2.857-.168M12 3a6 6 0 00-6 6v3.586l-.707.707A1 1 0 006 15h12a1 1 0 00.707-1.707L18 12.586V9a6 6 0 00-6-6zM15 19a3 3 0 11-6 0"/>
-						</svg>
-						<span id="adminNotificationsCount" class="notifications-count" hidden>0</span>
-					</button>
+<main class="pending-page feed-shell user-feed-shell">
+	<div class="feed-dashboard-layout app-shell">
+		<aside id="feedSidebar" class="feed-sidebar" aria-label="Admin workspace navigation">
+			<div class="feed-sidebar-brand">
+				<span class="feed-sidebar-brand-mark" aria-hidden="true">
+					<img src="imgs/unisupportlogo.png" alt="" class="feed-sidebar-brand-image">
+				</span>
+				<div>
+					<strong>UniSupport</strong>
+					<span>Admin workspace</span>
+				</div>
+				<a href="logout.php" class="feed-sidebar-logout" aria-label="Logout" title="Logout">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+						<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+						<path d="M10 17l-5-5 5-5"/>
+						<path d="M5 12h12"/>
+					</svg>
+				</a>
+			</div>
 
-					<div id="adminNotificationsDropdown" class="notifications-dropdown" hidden>
-						<div class="notifications-header">
-							<span>Notifications</span>
-							<button type="button" id="adminDeleteReadNotifications" class="notifications-mark-all">Delete all read</button>
-						</div>
-						<div id="adminNotificationsList" class="notifications-list">
-							<div class="notifications-empty">No notifications yet.</div>
+			<div class="feed-sidebar-profile">
+				<div class="feed-sidebar-avatar" aria-hidden="true">
+					<?= htmlspecialchars(function_exists('mb_substr') ? mb_strtoupper(mb_substr($adminUsername, 0, 1)) : strtoupper(substr($adminUsername, 0, 1))) ?>
+				</div>
+				<div class="feed-sidebar-profile-copy">
+					<span class="feed-sidebar-kicker">Signed in as</span>
+					<strong><?= htmlspecialchars($adminUsername, ENT_QUOTES, 'UTF-8') ?></strong>
+				</div>
+			</div>
+
+			<nav class="feed-tabs feed-sidebar-tabs" aria-label="Admin moderation sections">
+				<button type="button" class="feed-tab is-active" data-section="posts">Posts</button>
+				<button type="button" class="feed-tab" data-section="pending">Pending Posts</button>
+				<button type="button" class="feed-tab" data-section="deleteRequests">Post Delete Requests</button>
+				<button type="button" class="feed-tab" data-section="commentDeleteRequests">Comment Delete Requests</button>
+				<button type="button" class="feed-tab" data-section="categoryRequests">Category Requests</button>
+				<button type="button" class="feed-tab" data-section="reports">Reports</button>
+			</nav>
+		</aside>
+
+		<div class="app-main-shell">
+			<div class="feed-dashboard-topbar" aria-label="Admin quick actions">
+				<button type="button" id="feedSidebarToggle" class="feed-sidebar-toggle" aria-controls="feedSidebar" aria-expanded="true" aria-label="Hide side menu" title="Hide side menu">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
+						<path d="M4 7h16"></path>
+						<path d="M4 12h16"></path>
+						<path d="M4 17h16"></path>
+					</svg>
+					<span class="feed-sidebar-toggle-label">Hide menu</span>
+				</button>
+				<div id="adminDashboardTitle" class="feed-topbar-title" aria-hidden="true">Admin Posts</div>
+				<div class="feed-dashboard-toplinks">
+					<button type="button" class="feed-dashboard-toplink is-active" data-section="posts">Posts</button>
+					<button type="button" class="feed-dashboard-toplink" data-section="pending">Pending Posts</button>
+					<button type="button" class="feed-dashboard-toplink" data-section="categoryRequests">Category Requests</button>
+					<button type="button" class="feed-dashboard-toplink" data-section="reports">Reports</button>
+				</div>
+
+				<div class="feed-header-actions app-topbar-actions">
+					<div class="notifications-wrap">
+						<button type="button" id="adminNotificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">
+							<svg class="notifications-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="20" height="20" aria-hidden="true" focusable="false">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082A23.848 23.848 0 0112 17.25c-1.013 0-2.006-.063-2.857-.168M12 3a6 6 0 00-6 6v3.586l-.707.707A1 1 0 006 15h12a1 1 0 00.707-1.707L18 12.586V9a6 6 0 00-6-6zM15 19a3 3 0 11-6 0"/>
+							</svg>
+							<span id="adminNotificationsCount" class="notifications-count" hidden>0</span>
+						</button>
+
+						<div id="adminNotificationsDropdown" class="notifications-dropdown" hidden>
+							<div class="notifications-header">
+								<span>Notifications</span>
+								<button type="button" id="adminDeleteReadNotifications" class="notifications-mark-all">Delete all read</button>
+							</div>
+							<div id="adminNotificationsList" class="notifications-list">
+								<div class="notifications-empty">No notifications yet.</div>
+							</div>
 						</div>
 					</div>
-				</div>
 
 					<details class="feed-menu" id="adminMenu">
 						<summary class="feed-menu-trigger" aria-label="Open admin menu" title="Menu">&#8942;</summary>
@@ -785,19 +841,10 @@ body {
 							<a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
 						</div>
 					</details>
+				</div>
 			</div>
-		</div>
 
-		<nav class="dashboard-tabs" aria-label="Admin moderation sections">
-			<button type="button" class="dashboard-tab is-active" data-section="posts">Posts</button>
-			<button type="button" class="dashboard-tab" data-section="pending">Pending Posts</button>
-			<button type="button" class="dashboard-tab" data-section="deleteRequests">Post Delete Requests</button>
-			<button type="button" class="dashboard-tab" data-section="commentDeleteRequests">Comment Delete Requests</button>
-			<button type="button" class="dashboard-tab" data-section="categoryRequests">Category Requests</button>
-			<button type="button" class="dashboard-tab" data-section="reports">Reports</button>
-		</nav>
-	</header>
-
+			<section class="feed-main-section">
 	<section id="dashboardSection-posts" class="dashboard-panel is-active" data-section-panel="posts">
 		<header class="dashboard-panel-header">
 			<h2>Posts</h2>
@@ -925,6 +972,9 @@ body {
 		<div id="reportsFeedback" class="pending-feedback" hidden></div>
 		<div id="reports" class="pending-grid" aria-live="polite"></div>
 	</section>
+			</section>
+		</div>
+	</div>
 </main>
 
 <div id="adminProfileDialog" class="admin-profile-dialog" hidden>

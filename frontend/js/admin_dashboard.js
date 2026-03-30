@@ -3,6 +3,7 @@
     const CATEGORY_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
     const SEARCH_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/search_controllers.php";
     const NOTIFICATION_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/NotificationController.php";
+    const ADMIN_SIDEBAR_STORAGE_KEY = "admin-feed-sidebar-collapsed";
     let selectedAdminAuthorFilters = ["__all__"];
     let publishedPostAuthors = [];
     let selectedPendingAuthorFilters = ["__all__"];
@@ -34,6 +35,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         ensureRejectReasonDialog();
         setupAdminProfileDialog();
+        setupSidebarToggle();
         bindTabs();
         bindActions();
         setupAdminPostsSearch();
@@ -54,7 +56,7 @@
     });
 
     function bindTabs() {
-        document.querySelectorAll(".dashboard-tab[data-section]").forEach((button) => {
+        document.querySelectorAll("[data-section]").forEach((button) => {
             button.addEventListener("click", function () {
                 activateSection(button.dataset.section || "posts");
             });
@@ -286,7 +288,7 @@
     }
 
     function activateSection(section) {
-        document.querySelectorAll(".dashboard-tab[data-section]").forEach((button) => {
+        document.querySelectorAll("[data-section]").forEach((button) => {
             button.classList.toggle("is-active", button.dataset.section === section);
         });
 
@@ -298,13 +300,56 @@
         url.searchParams.set("section", section);
         window.history.replaceState({}, "", url);
 
+        const title = document.getElementById("adminDashboardTitle");
+        const sectionTitles = {
+            posts: "Admin Posts",
+            pending: "Pending Posts",
+            deleteRequests: "Post Delete Requests",
+            commentDeleteRequests: "Comment Delete Requests",
+            categoryRequests: "Category Requests",
+            reports: "Reports"
+        };
+
+        if (title) {
+            title.textContent = sectionTitles[section] || "Admin Moderation Panel";
+        }
+
         if (SECTION_CONFIG[section]) {
             SECTION_CONFIG[section].load();
         }
     }
 
+    function setupSidebarToggle() {
+        const layout = document.querySelector(".feed-dashboard-layout");
+        const sidebar = document.getElementById("feedSidebar");
+        const toggle = document.getElementById("feedSidebarToggle");
+        const label = toggle?.querySelector(".feed-sidebar-toggle-label");
+
+        if (!layout || !sidebar || !toggle) {
+            return;
+        }
+
+        const applySidebarState = (collapsed) => {
+            layout.classList.toggle("sidebar-collapsed", collapsed);
+            toggle.setAttribute("aria-expanded", String(!collapsed));
+            toggle.setAttribute("aria-label", collapsed ? "Show side menu" : "Hide side menu");
+            toggle.setAttribute("title", collapsed ? "Show side menu" : "Hide side menu");
+            if (label) {
+                label.textContent = collapsed ? "Show menu" : "Hide menu";
+            }
+        };
+
+        applySidebarState(window.localStorage.getItem(ADMIN_SIDEBAR_STORAGE_KEY) === "1");
+
+        toggle.addEventListener("click", () => {
+            const collapsed = !layout.classList.contains("sidebar-collapsed");
+            applySidebarState(collapsed);
+            window.localStorage.setItem(ADMIN_SIDEBAR_STORAGE_KEY, collapsed ? "1" : "0");
+        });
+    }
+
     function getActiveSection() {
-        const activeTab = document.querySelector(".dashboard-tab.is-active[data-section]");
+        const activeTab = document.querySelector(".feed-sidebar .feed-tab.is-active[data-section], .feed-dashboard-toplinks .feed-dashboard-toplink.is-active[data-section]");
         return activeTab ? activeTab.dataset.section || "posts" : "posts";
     }
 
