@@ -752,6 +752,7 @@ body {
 	background: #e4e9f1;
 }
 </style>
+<link rel="stylesheet" href="css/admin_dashboard.css?v=<?php echo $adminDashboardCssVersion; ?>">
 </head>
 
 <body>
@@ -798,23 +799,11 @@ body {
 
 		<div class="app-main-shell">
 			<div class="feed-dashboard-topbar" aria-label="Admin quick actions">
-				<button type="button" id="feedSidebarToggle" class="feed-sidebar-toggle" aria-controls="feedSidebar" aria-expanded="true" aria-label="Hide side menu" title="Hide side menu">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
-						<path d="M4 7h16"></path>
-						<path d="M4 12h16"></path>
-						<path d="M4 17h16"></path>
-					</svg>
-					<span class="feed-sidebar-toggle-label">Hide menu</span>
-				</button>
 				<div id="adminDashboardTitle" class="feed-topbar-title" aria-hidden="true">Admin Posts</div>
-				<div class="feed-dashboard-toplinks">
-					<button type="button" class="feed-dashboard-toplink is-active" data-section="posts">Posts</button>
-					<button type="button" class="feed-dashboard-toplink" data-section="pending">Pending Posts</button>
-					<button type="button" class="feed-dashboard-toplink" data-section="categoryRequests">Category Requests</button>
-					<button type="button" class="feed-dashboard-toplink" data-section="reports">Reports</button>
-				</div>
 
 				<div class="feed-header-actions app-topbar-actions">
+					<button type="button" id="adminProfileOpenTop" class="feed-dashboard-toplink">View profile</button>
+
 					<div class="notifications-wrap">
 						<button type="button" id="adminNotificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false">
 							<svg class="notifications-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="20" height="20" aria-hidden="true" focusable="false">
@@ -833,14 +822,6 @@ body {
 							</div>
 						</div>
 					</div>
-
-					<details class="feed-menu" id="adminMenu">
-						<summary class="feed-menu-trigger" aria-label="Open admin menu" title="Menu">&#8942;</summary>
-						<div class="feed-menu-dropdown" role="menu" aria-label="Admin quick actions">
-							<button type="button" id="adminProfileOpen" class="feed-menu-item" role="menuitem">View profile</button>
-							<a href="logout.php" class="feed-menu-item danger" role="menuitem">Logout</a>
-						</div>
-					</details>
 				</div>
 			</div>
 
@@ -850,38 +831,55 @@ body {
 			<h2>Posts</h2>
 		</header>
 		<form id="adminPostsSearchForm" class="dashboard-search-panel">
-			<input type="text" id="adminSearchKeyword" class="dashboard-search-input" placeholder="Search posts by keyword">
+			<div class="dashboard-search-topbar">
+				<label for="adminSearchKeyword" class="dashboard-search-keyword-wrap">
+					<input type="text" id="adminSearchKeyword" class="dashboard-search-input" placeholder="Search posts by keyword">
+				</label>
 
-			<select id="adminSearchCategory" class="dashboard-search-select">
-				<option value="">All categories</option>
-			</select>
-
-			<select id="adminSearchSort" class="dashboard-search-select">
-				<option value="newest">Newest first</option>
-				<option value="oldest">Oldest first</option>
-				<option value="title_asc">Title A-Z</option>
-				<option value="title_desc">Title Z-A</option>
-			</select>
-
-			<input type="date" id="adminSearchFrom" class="dashboard-search-date" aria-label="Search from date">
-			<input type="date" id="adminSearchTo" class="dashboard-search-date" aria-label="Search to date">
-
-			<div class="dashboard-search-users" id="adminSearchUsersFilter">
-				<button type="button" id="adminSearchUsersToggle" class="dashboard-search-users-toggle" aria-haspopup="true" aria-expanded="false">
-					<span id="adminSearchUsersLabel">Users</span>
+				<button type="button" id="adminSearchFiltersToggle" class="dashboard-search-filters-toggle" aria-label="Toggle search filters" aria-expanded="false" aria-controls="adminSearchAdvanced">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M7 12h10M10 17h4"/>
+						<circle cx="9" cy="7" r="1.5" fill="currentColor" stroke="none"/>
+						<circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+						<circle cx="12" cy="17" r="1.5" fill="currentColor" stroke="none"/>
+					</svg>
 				</button>
-				<div id="adminSearchUsersMenu" class="dashboard-search-users-menu" hidden>
-					<label class="dashboard-search-users-option">
-						<input type="checkbox" value="__all__" checked>
-						<span>All users</span>
-					</label>
-					<div id="adminSearchUsersOptions"></div>
+
+				<div class="dashboard-search-actions">
+					<button type="submit" class="dashboard-search-btn primary">Search</button>
+					<button type="button" id="adminSearchClear" class="dashboard-search-btn secondary">Clear</button>
 				</div>
 			</div>
 
-			<div class="dashboard-search-actions">
-				<button type="submit" class="dashboard-search-btn primary">Search</button>
-				<button type="button" id="adminSearchClear" class="dashboard-search-btn secondary">Clear</button>
+			<div id="adminSearchAdvanced" class="dashboard-search-advanced" hidden>
+				<div class="dashboard-search-inline-filters">
+					<select id="adminSearchCategory" class="dashboard-search-select">
+						<option value="">All categories</option>
+					</select>
+
+					<select id="adminSearchSort" class="dashboard-search-select">
+						<option value="newest">Newest first</option>
+						<option value="oldest">Oldest first</option>
+						<option value="title_asc">Title A-Z</option>
+						<option value="title_desc">Title Z-A</option>
+					</select>
+
+					<input type="date" id="adminSearchFrom" class="dashboard-search-date" aria-label="Search from date">
+					<input type="date" id="adminSearchTo" class="dashboard-search-date" aria-label="Search to date">
+
+					<div class="dashboard-search-users" id="adminSearchUsersFilter">
+						<button type="button" id="adminSearchUsersToggle" class="dashboard-search-users-toggle" aria-haspopup="true" aria-expanded="false">
+							<span id="adminSearchUsersLabel">Users</span>
+						</button>
+						<div id="adminSearchUsersMenu" class="dashboard-search-users-menu" hidden>
+							<label class="dashboard-search-users-option">
+								<input type="checkbox" value="__all__" checked>
+								<span>All users</span>
+							</label>
+							<div id="adminSearchUsersOptions"></div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</form>
 		<div id="postsFeedback" class="pending-feedback" hidden></div>
@@ -894,38 +892,55 @@ body {
 			<p>Review submitted posts and decide whether they should be published.</p>
 		</header>
 		<form id="pendingPostsSearchForm" class="dashboard-search-panel">
-			<input type="text" id="pendingSearchKeyword" class="dashboard-search-input" placeholder="Search posts by keyword">
+			<div class="dashboard-search-topbar">
+				<label for="pendingSearchKeyword" class="dashboard-search-keyword-wrap">
+					<input type="text" id="pendingSearchKeyword" class="dashboard-search-input" placeholder="Search posts by keyword">
+				</label>
 
-			<select id="pendingSearchCategory" class="dashboard-search-select">
-				<option value="">All categories</option>
-			</select>
-
-			<select id="pendingSearchSort" class="dashboard-search-select">
-				<option value="newest">Newest first</option>
-				<option value="oldest">Oldest first</option>
-				<option value="title_asc">Title A-Z</option>
-				<option value="title_desc">Title Z-A</option>
-			</select>
-
-			<input type="date" id="pendingSearchFrom" class="dashboard-search-date" aria-label="Search from date">
-			<input type="date" id="pendingSearchTo" class="dashboard-search-date" aria-label="Search to date">
-
-			<div class="dashboard-search-users" id="pendingSearchUsersFilter">
-				<button type="button" id="pendingSearchUsersToggle" class="dashboard-search-users-toggle" aria-haspopup="true" aria-expanded="false">
-					<span id="pendingSearchUsersLabel">Users</span>
+				<button type="button" id="pendingSearchFiltersToggle" class="dashboard-search-filters-toggle" aria-label="Toggle search filters" aria-expanded="false" aria-controls="pendingSearchAdvanced">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M7 12h10M10 17h4"/>
+						<circle cx="9" cy="7" r="1.5" fill="currentColor" stroke="none"/>
+						<circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+						<circle cx="12" cy="17" r="1.5" fill="currentColor" stroke="none"/>
+					</svg>
 				</button>
-				<div id="pendingSearchUsersMenu" class="dashboard-search-users-menu" hidden>
-					<label class="dashboard-search-users-option">
-						<input type="checkbox" value="__all__" checked>
-						<span>All users</span>
-					</label>
-					<div id="pendingSearchUsersOptions"></div>
+
+				<div class="dashboard-search-actions">
+					<button type="submit" class="dashboard-search-btn primary">Search</button>
+					<button type="button" id="pendingSearchClear" class="dashboard-search-btn secondary">Clear</button>
 				</div>
 			</div>
 
-			<div class="dashboard-search-actions">
-				<button type="submit" class="dashboard-search-btn primary">Search</button>
-				<button type="button" id="pendingSearchClear" class="dashboard-search-btn secondary">Clear</button>
+			<div id="pendingSearchAdvanced" class="dashboard-search-advanced" hidden>
+				<div class="dashboard-search-inline-filters">
+					<select id="pendingSearchCategory" class="dashboard-search-select">
+						<option value="">All categories</option>
+					</select>
+
+					<select id="pendingSearchSort" class="dashboard-search-select">
+						<option value="newest">Newest first</option>
+						<option value="oldest">Oldest first</option>
+						<option value="title_asc">Title A-Z</option>
+						<option value="title_desc">Title Z-A</option>
+					</select>
+
+					<input type="date" id="pendingSearchFrom" class="dashboard-search-date" aria-label="Search from date">
+					<input type="date" id="pendingSearchTo" class="dashboard-search-date" aria-label="Search to date">
+
+					<div class="dashboard-search-users" id="pendingSearchUsersFilter">
+						<button type="button" id="pendingSearchUsersToggle" class="dashboard-search-users-toggle" aria-haspopup="true" aria-expanded="false">
+							<span id="pendingSearchUsersLabel">Users</span>
+						</button>
+						<div id="pendingSearchUsersMenu" class="dashboard-search-users-menu" hidden>
+							<label class="dashboard-search-users-option">
+								<input type="checkbox" value="__all__" checked>
+								<span>All users</span>
+							</label>
+							<div id="pendingSearchUsersOptions"></div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</form>
 		<div class="dashboard-status-filters" aria-label="Pending posts status filters">

@@ -417,6 +417,7 @@ body:has(.user-feed-shell) {
         radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 34%),
         linear-gradient(180deg, #214f95 0%, #173665 100%);
     box-shadow: 0 24px 48px rgba(23, 54, 101, 0.18);
+    overflow: visible;
     transition: padding 0.28s ease;
 }
 
@@ -475,7 +476,7 @@ body:has(.user-feed-shell) {
 
 .feed-topbar-title {
     position: absolute;
-    left: 164px;
+    left: 520px;
     top: 50%;
     transform: translateY(-50%);
     color: #ffffff;
@@ -483,6 +484,51 @@ body:has(.user-feed-shell) {
     font-weight: 800;
     line-height: 1;
     white-space: nowrap;
+}
+
+.user-feed-shell .feed-dashboard-topbar {
+    display: grid;
+    grid-template-columns: max-content 1fr auto;
+    align-items: center;
+    column-gap: 28px;
+}
+
+.user-feed-shell .feed-topbar-title {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    grid-column: 1;
+    margin-left: -52px;
+}
+
+.user-feed-shell .feed-dashboard-toplinks {
+    grid-column: 2;
+    margin-left: 0;
+    margin-right: 0;
+    justify-self: start;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.user-feed-shell .feed-dashboard-toplink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.user-feed-shell .app-topbar-actions {
+    grid-column: 3;
+    justify-self: end;
+    margin-right: 0;
+    transform: none;
+    overflow: visible;
+    gap: 4px;
 }
 
 .feed-dashboard-toplinks {
@@ -523,9 +569,11 @@ body:has(.user-feed-shell) {
     flex-direction: column;
     gap: 22px;
     width: var(--feed-sidebar-width);
-    min-height: calc(100vh - 60px);
+    min-height: 100vh;
+    height: 100vh;
     padding: 24px 22px;
     margin-top: 0;
+    margin-bottom: 0;
     border-radius: 0;
     box-sizing: border-box;
     overflow: hidden;
@@ -1406,6 +1454,7 @@ body:has(.user-feed-shell) {
 
 .notifications-wrap {
     position: relative;
+    overflow: visible;
 }
 
 .notifications-btn {
@@ -1413,8 +1462,8 @@ body:has(.user-feed-shell) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     border: 1px solid #d7e1f0;
     border-radius: 10px;
     background: #ffffff;
@@ -1423,13 +1472,14 @@ body:has(.user-feed-shell) {
     line-height: 1;
     cursor: pointer;
     user-select: none;
+    overflow: visible;
     transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .notifications-icon {
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
     stroke: currentColor;
     pointer-events: none;
@@ -1442,8 +1492,8 @@ body:has(.user-feed-shell) {
 
 .notifications-count {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -5px;
+    right: -5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1452,10 +1502,11 @@ body:has(.user-feed-shell) {
     padding: 0 4px;
     background: #ef4444;
     color: #ffffff;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     border-radius: 9px;
     border: 2px solid #ffffff;
+    z-index: 2;
 }
 
 .notifications-count[hidden] {

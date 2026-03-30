@@ -38,6 +38,7 @@
         setupSidebarToggle();
         bindTabs();
         bindActions();
+        setupSearchFilterPanels();
         setupAdminPostsSearch();
         setupPendingPostsSearch();
         setupNotificationsUI();
@@ -65,11 +66,12 @@
 
     function setupAdminProfileDialog() {
         const openButton = document.getElementById("adminProfileOpen");
+        const topOpenButton = document.getElementById("adminProfileOpenTop");
         const closeButton = document.getElementById("adminProfileClose");
         const dialog = document.getElementById("adminProfileDialog");
         const menu = document.getElementById("adminMenu");
 
-        if (!openButton || !closeButton || !dialog) {
+        if ((!openButton && !topOpenButton) || !closeButton || !dialog) {
             return;
         }
 
@@ -81,8 +83,10 @@
             }
         };
 
-        openButton.addEventListener("click", function () {
-            toggleDialog(true);
+        [openButton, topOpenButton].filter(Boolean).forEach((button) => {
+            button.addEventListener("click", function () {
+                toggleDialog(true);
+            });
         });
 
         closeButton.addEventListener("click", function () {
@@ -98,6 +102,33 @@
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape" && !dialog.hidden) {
                 toggleDialog(false);
+            }
+        });
+    }
+
+    function setupSearchFilterPanels() {
+        bindSearchFilterPanel("adminSearchFiltersToggle", "adminSearchAdvanced", "adminSearchUsersMenu", "adminSearchUsersToggle");
+        bindSearchFilterPanel("pendingSearchFiltersToggle", "pendingSearchAdvanced", "pendingSearchUsersMenu", "pendingSearchUsersToggle");
+    }
+
+    function bindSearchFilterPanel(toggleId, panelId, usersMenuId, usersToggleId) {
+        const toggle = document.getElementById(toggleId);
+        const panel = document.getElementById(panelId);
+        const usersMenu = document.getElementById(usersMenuId);
+        const usersToggle = document.getElementById(usersToggleId);
+
+        if (!toggle || !panel) {
+            return;
+        }
+
+        toggle.addEventListener("click", function () {
+            const willOpen = panel.hidden;
+            panel.hidden = !willOpen;
+            toggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+
+            if (!willOpen && usersMenu && usersToggle) {
+                usersMenu.hidden = true;
+                usersToggle.setAttribute("aria-expanded", "false");
             }
         });
     }
