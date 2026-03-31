@@ -799,6 +799,14 @@ body {
 
 		<div class="app-main-shell">
 			<div class="feed-dashboard-topbar" aria-label="Admin quick actions">
+				<button type="button" id="feedSidebarToggle" class="feed-sidebar-toggle" aria-controls="feedSidebar" aria-expanded="true" aria-label="Hide side menu" title="Hide side menu">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
+						<path d="M4 7h16"></path>
+						<path d="M4 12h16"></path>
+						<path d="M4 17h16"></path>
+					</svg>
+					<span class="feed-sidebar-toggle-label">Hide menu</span>
+				</button>
 				<div id="adminDashboardTitle" class="feed-topbar-title" aria-hidden="true">Admin Posts</div>
 
 				<div class="feed-header-actions app-topbar-actions">
@@ -987,6 +995,27 @@ body {
 		<div id="reportsFeedback" class="pending-feedback" hidden></div>
 		<div id="reports" class="pending-grid" aria-live="polite"></div>
 	</section>
+
+	<footer class="site-footer" aria-labelledby="adminSiteFooterTitle">
+		<div class="site-footer-inner">
+			<section class="site-footer-block" aria-labelledby="adminFooterAboutTitle">
+				<span class="site-footer-kicker" id="adminSiteFooterTitle">About UniSupport</span>
+				<p class="site-footer-text" id="adminFooterAboutTitle">
+					UniSupport is a student support platform for staying organized, sharing knowledge,
+					and connecting with others in one place.
+				</p>
+				<div class="site-footer-brandmark">
+					<img src="imgs/cut_logo.png" alt="Cyprus University of Technology" class="site-footer-brandmark-image">
+				</div>
+			</section>
+
+			<section class="site-footer-block" aria-labelledby="adminFooterProjectTitle">
+				<span class="site-footer-kicker" id="adminFooterProjectTitle">Project Information</span>
+				<p class="site-footer-text">This system was developed by Pelagia Koniotaki, Antriani Theofanous and Panagiotis Panagiwtou  third-year students of the Department of Electrical Engineering, Computer Engineering and Informatics at the Cyprus University of Technology, under the supervision of Professor Andreas S. Andreou, as part of the course “Software Technology Project and Professional Practice”.</p>
+				<p class="site-footer-text">Limassol, May 2026</p>
+			</section>
+		</div>
+	</footer>
 			</section>
 		</div>
 	</div>

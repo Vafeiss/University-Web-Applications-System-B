@@ -488,9 +488,9 @@ body:has(.user-feed-shell) {
 
 .user-feed-shell .feed-dashboard-topbar {
     display: grid;
-    grid-template-columns: max-content 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
-    column-gap: 28px;
+    column-gap: 14px;
 }
 
 .user-feed-shell .feed-topbar-title {
@@ -499,14 +499,15 @@ body:has(.user-feed-shell) {
     top: auto;
     transform: none;
     grid-column: 1;
-    margin-left: -52px;
+    margin-left: 138px;
+    justify-self: start;
 }
 
 .user-feed-shell .feed-dashboard-toplinks {
     grid-column: 2;
-    margin-left: 0;
+    margin-left: auto;
     margin-right: 0;
-    justify-self: start;
+    justify-self: end;
     display: inline-flex;
     flex-wrap: nowrap;
     align-items: center;
