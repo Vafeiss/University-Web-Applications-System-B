@@ -35,6 +35,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         ensureRejectReasonDialog();
         setupAdminProfileDialog();
+        setupInfoDialog();
         setupSidebarToggle();
         bindTabs();
         bindActions();
@@ -102,6 +103,53 @@
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape" && !dialog.hidden) {
                 toggleDialog(false);
+            }
+        });
+    }
+
+    function setupInfoDialog() {
+        const toggleButton = document.getElementById("infoToggleBtn");
+        const dialog = document.getElementById("infoDialog");
+        const closeButton = document.getElementById("infoDialogClose");
+
+        if (!toggleButton || !dialog || !closeButton) {
+            return;
+        }
+
+        const setOpen = (shouldOpen) => {
+            if (shouldOpen) {
+                dialog.hidden = false;
+                requestAnimationFrame(() => dialog.classList.add("is-open"));
+            } else {
+                dialog.classList.remove("is-open");
+                window.setTimeout(() => {
+                    if (!dialog.classList.contains("is-open")) {
+                        dialog.hidden = true;
+                    }
+                }, 220);
+            }
+
+            toggleButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+            document.body.classList.toggle("info-dialog-open", shouldOpen);
+        };
+
+        toggleButton.addEventListener("click", function () {
+            setOpen(dialog.hidden);
+        });
+
+        closeButton.addEventListener("click", function () {
+            setOpen(false);
+        });
+
+        dialog.addEventListener("click", function (event) {
+            if (event.target instanceof HTMLElement && event.target.hasAttribute("data-info-close")) {
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !dialog.hidden) {
+                setOpen(false);
             }
         });
     }

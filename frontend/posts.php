@@ -139,6 +139,10 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                 </div>
 
                 <div class="feed-header-actions app-topbar-actions">
+                    <button type="button" id="infoToggleBtn" class="info-fab" aria-label="Open project information" aria-expanded="false" aria-controls="infoDialog">
+                        <span aria-hidden="true">i</span>
+                    </button>
+
                     <div class="token-balance-badge">
                         <span class="token-balance-label">Tokens</span>
                         <strong><?= $tokenBalance ?></strong>
@@ -457,26 +461,7 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
 
     <div id="postsList" class="pending-grid" aria-live="polite"></div>
 
-    <?php if (!$isAdmin): ?>
-    <footer class="site-footer" aria-labelledby="siteFooterTitle">
-        <div class="site-footer-inner">
-        <section class="site-footer-block" aria-labelledby="footerAboutTitle">
-            <span class="site-footer-kicker" id="siteFooterTitle">About UniSupport</span>
-            <p class="site-footer-text" id="footerAboutTitle">
-                UniSupport is a student support platform for staying organized, sharing knowledge, and connecting with others in one place.
-            </p>
-            <div class="site-footer-brandmark">
-                <img src="imgs/cut_logo.png" alt="Cyprus University of Technology" class="site-footer-brandmark-image">
-            </div>
-        </section>
-
-            <section class="site-footer-block" aria-labelledby="footerProjectTitle">
-                <span class="site-footer-kicker" id="footerProjectTitle">Project Information</span>
-                <p class="site-footer-text">This system was developed by Pelagia Koniotaki, Antriani Theofanous and Panagiotis Panagiwtou  third-year students of the Department of Electrical Engineering, Computer Engineering and Informatics at the Cyprus University of Technology, under the supervision of Professor Andreas S. Andreou, as part of the course “Software Technology Project and Professional Practice”.</p>
-                <p class="site-footer-text">Limassol, May 2026</p>
-            </section>
-        </div>
-    </footer>
+    <?php if (!$isAdmin): ?>
     <?php endif; ?>
 
     <?php if (!$isAdmin): ?>
@@ -485,6 +470,32 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
     <?php endif; ?>
 
 </main>
+
+<?php if (!$isAdmin): ?>
+<div id="infoDialog" class="info-dialog" hidden>
+    <div class="info-dialog-backdrop" data-info-close></div>
+    <div class="info-dialog-card" role="dialog" aria-modal="true" aria-labelledby="infoDialogTitle">
+        <button type="button" id="infoDialogClose" class="info-dialog-close" aria-label="Close information panel">&times;</button>
+        <div class="info-dialog-grid">
+            <section class="info-dialog-block" aria-labelledby="infoDialogTitle">
+                <span class="info-dialog-kicker" id="infoDialogTitle">About UniSupport</span>
+                <p class="info-dialog-text">
+                    UniSupport is a student support platform for staying organized, sharing knowledge, and connecting with others in one place.
+                </p>
+                <div class="info-dialog-brandmark">
+                    <img src="imgs/cut_logo.png" alt="Cyprus University of Technology" class="info-dialog-brandmark-image">
+                </div>
+            </section>
+
+            <section class="info-dialog-block" aria-labelledby="infoDialogProjectTitle">
+                <span class="info-dialog-kicker" id="infoDialogProjectTitle">Project Information</span>
+                <p class="info-dialog-text">This system was developed by Pelagia Koniotaki, Antriani Theofanous, Panteleimoni Alexandrou, Paraskevas Vafeiadis and Panagiotis Panagiwtou, third-year students of the Department of Electrical Engineering, Computer Engineering and Informatics at the Cyprus University of Technology, under the supervision of Professor Andreas S. Andreou, as part of the course 'Software Technology Project and Professional Practice'.</p>
+                <p class="info-dialog-text">Limassol, May 2026</p>
+            </section>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div id="rejectedPostDeleteDialog" class="comment-policy-dialog" hidden>
     <div class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="rejectedPostDeleteTitle">
@@ -518,3 +529,4 @@ const currentUserId = <?= (int)$_SESSION['user_id'] ?>;
 </body>
 
 </html>
+
