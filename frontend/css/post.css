@@ -753,7 +753,7 @@ body:has(.user-feed-shell) {
 }
 
 .user-feed-shell .feed-main-section {
-    padding-left: 0;
+    padding-left: 24px;
     padding-right: 24px;
 }
 
