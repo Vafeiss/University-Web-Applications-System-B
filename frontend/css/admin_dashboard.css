@@ -306,6 +306,10 @@ body.admin-dialog-open {
     font-size: 15px;
 }
 
+.dashboard-panel-header p:first-child {
+    margin-top: 0;
+}
+
 .dashboard-search-panel {
     margin: 16px 0 22px;
     padding: 16px 18px 18px;

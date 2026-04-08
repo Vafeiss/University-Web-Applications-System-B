@@ -873,7 +873,7 @@ body {
 					</svg>
 					<span class="feed-sidebar-toggle-label">Hide menu</span>
 				</button>
-				<div id="adminDashboardTitle" class="feed-topbar-title" aria-hidden="true">Admin Posts</div>
+				<div id="adminDashboardTitle" class="feed-topbar-title">Admin Posts</div>
 
 				<div class="feed-header-actions app-topbar-actions">
 					<button type="button" id="infoToggleBtn" class="info-fab" aria-label="Open project information" aria-expanded="false" aria-controls="infoDialog">
@@ -905,9 +905,6 @@ body {
 
 			<section class="feed-main-section">
 	<section id="dashboardSection-posts" class="dashboard-panel is-active" data-section-panel="posts">
-		<header class="dashboard-panel-header">
-			<h2>Posts</h2>
-		</header>
 		<form id="adminPostsSearchForm" class="dashboard-search-panel">
 			<div class="dashboard-search-topbar">
 				<label for="adminSearchKeyword" class="dashboard-search-keyword-wrap">
@@ -966,7 +963,6 @@ body {
 
 	<section id="dashboardSection-pending" class="dashboard-panel" data-section-panel="pending">
 		<header class="dashboard-panel-header">
-			<h2>Pending Posts</h2>
 			<p>Review submitted posts and decide whether they should be published.</p>
 		</header>
 		<form id="pendingPostsSearchForm" class="dashboard-search-panel">
@@ -1032,7 +1028,6 @@ body {
 
 	<section id="dashboardSection-deleteRequests" class="dashboard-panel" data-section-panel="deleteRequests">
 		<header class="dashboard-panel-header">
-			<h2>Post Delete Requests</h2>
 			<p>Review user deletion requests and decide whether the related posts should be removed.</p>
 		</header>
 		<div id="deleteRequestsFeedback" class="pending-feedback" hidden></div>
@@ -1041,7 +1036,6 @@ body {
 
 	<section id="dashboardSection-commentDeleteRequests" class="dashboard-panel" data-section-panel="commentDeleteRequests">
 		<header class="dashboard-panel-header">
-			<h2>Comment Delete Requests</h2>
 			<p>Review user requests to remove comments and decide whether they should be deleted.</p>
 		</header>
 		<div id="commentDeleteFeedback" class="pending-feedback" hidden></div>
@@ -1050,7 +1044,6 @@ body {
 
 	<section id="dashboardSection-categoryRequests" class="dashboard-panel" data-section-panel="categoryRequests">
 		<header class="dashboard-panel-header">
-			<h2>Category Requests</h2>
 			<p>Review user suggestions for new categories and choose whether to create them.</p>
 		</header>
 		<div id="categoryRequestsFeedback" class="pending-feedback" hidden></div>
@@ -1059,7 +1052,6 @@ body {
 
 	<section id="dashboardSection-reports" class="dashboard-panel" data-section-panel="reports">
 		<header class="dashboard-panel-header">
-			<h2>Reports</h2>
 			<p>Review reported posts and decide whether the post should be removed.</p>
 		</header>
 		<div id="reportsFeedback" class="pending-feedback" hidden></div>

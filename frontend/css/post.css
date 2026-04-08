@@ -785,6 +785,10 @@ body:has(.user-feed-shell) {
     display: none;
 }
 
+.user-feed-shell .feed-header {
+    display: none;
+}
+
 .feed-hero-card {
     position: relative;
     padding: 24px 26px 20px;

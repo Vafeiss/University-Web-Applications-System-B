@@ -130,7 +130,7 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                     </svg>
                     <span class="feed-sidebar-toggle-label">Hide menu</span>
                 </button>
-                <div class="feed-topbar-title" aria-hidden="true">Posts Feed</div>
+                <div id="feedTitle" class="feed-topbar-title">Posts Feed</div>
                 <div class="feed-dashboard-toplinks">
                     <a href="profile_view.php" class="feed-dashboard-toplink">Profile settings</a>
                     <a href="profile_view.php" class="feed-dashboard-toplink">View &amp; Edit profile</a>
@@ -173,12 +173,8 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
             <section class="feed-main-section">
     <?php endif; ?>
 
-    <header class="feed-header<?= !$isAdmin ? ' user-feed-header' : '' ?>">
-        <?php if (!$isAdmin): ?>
-        <div class="feed-hero-copy">
-            <h1 id="feedTitle">Posts Feed</h1>
-        </div>
-        <?php else: ?>
+    <?php if ($isAdmin): ?>
+    <header class="feed-header">
         <div class="feed-header-row">
             <h1 id="feedTitle">Posts Feed</h1>
             <div class="feed-header-actions">
@@ -231,9 +227,6 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                 <?php endif; ?>
             </div>
         </div>
-        <?php if (!$isAdmin): ?>
-        </div>
-        <?php endif; ?>
 
         <?php if ($isAdmin): ?>
         <nav class="feed-tabs" aria-label="Feed navigation">
@@ -248,7 +241,8 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
             <?php endif; ?>
         </nav>
         <?php endif; ?>
-        <?php endif; ?>
+    </header>
+    <?php endif; ?>
 
         <form id="feedSearchForm" class="feed-search-panel<?= !$isAdmin ? ' user-search-panel' : '' ?>">
             <?php if (!$isAdmin): ?>

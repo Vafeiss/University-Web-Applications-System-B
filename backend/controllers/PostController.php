@@ -445,6 +445,7 @@ class PostController extends BaseController {
 
     public function downloadAttachment() {
         $userId = (int)$this->requireLogin();
+        $isAdmin = $this->isAdmin();
         $attachmentId = (int) ($_GET['attachment_id'] ?? 0);
 
         if ($attachmentId <= 0) {
@@ -454,7 +455,11 @@ class PostController extends BaseController {
 
         $attachment = $this->postModel->getAttachmentById($attachmentId);
 
-        if (!$attachment || (int) ($attachment['deleted'] ?? 0) === 1 || (int) ($attachment['status'] ?? 0) !== 1) {
+        if (
+            !$attachment ||
+            (int) ($attachment['deleted'] ?? 0) === 1 ||
+            (!$isAdmin && (int) ($attachment['status'] ?? 0) !== 1)
+        ) {
             http_response_code(404);
             exit("Attachment not found.");
         }
@@ -466,7 +471,7 @@ class PostController extends BaseController {
         }
 
         $postOwnerId = (int) ($attachment['post_owner_id'] ?? 0);
-        if ($postOwnerId !== $userId) {
+        if (!$isAdmin && $postOwnerId !== $userId) {
             $tokenCharge = 0;
 
             if ($this->postModel->hasUsedFreeDownloadToday($userId)) {
@@ -499,6 +504,7 @@ class PostController extends BaseController {
 
     public function previewDownload() {
         $userId = (int) $this->requireLogin();
+        $isAdmin = $this->isAdmin();
         $attachmentId = (int) ($_GET['attachment_id'] ?? 0);
 
         if ($attachmentId <= 0) {
@@ -510,7 +516,11 @@ class PostController extends BaseController {
 
         $attachment = $this->postModel->getAttachmentById($attachmentId);
 
-        if (!$attachment || (int) ($attachment['deleted'] ?? 0) === 1 || (int) ($attachment['status'] ?? 0) !== 1) {
+        if (
+            !$attachment ||
+            (int) ($attachment['deleted'] ?? 0) === 1 ||
+            (!$isAdmin && (int) ($attachment['status'] ?? 0) !== 1)
+        ) {
             $this->jsonResponse([
                 "message" => "Attachment not found.",
                 "can_download" => false
@@ -519,6 +529,15 @@ class PostController extends BaseController {
 
         $postOwnerId = (int) ($attachment['post_owner_id'] ?? 0);
         $currentBalance = $this->postModel->getTokenBalance($userId);
+
+        if ($isAdmin) {
+            $this->jsonResponse([
+                "can_download" => true,
+                "token_charge" => 0,
+                "remaining_tokens" => $this->postModel->getTokenBalance($userId),
+                "message" => "Admin access: you can download this file without using tokens."
+            ]);
+        }
 
         if ($postOwnerId === $userId) {
             $this->jsonResponse([
