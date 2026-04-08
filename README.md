@@ -167,7 +167,6 @@ frontend/
     profile_setup.php
     edit_profile_setup.php
     edit_interests.php
-    search.php
     token_history.php
     category_request.php
     admin_dashboard.php

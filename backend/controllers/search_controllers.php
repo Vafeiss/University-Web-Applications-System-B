@@ -7,7 +7,14 @@ require_once __DIR__ . '/../modules/search.php';
 class SearchController extends BaseController {
 
     public function search(): void {
-        $keyword = trim($_GET['keyword'] ?? '');
+        $keyword = trim((string) ($_GET['keyword'] ?? ''));
+
+        if ($keyword !== '') {
+            $keyword = function_exists('mb_strtolower')
+                ? mb_strtolower($keyword, 'UTF-8')
+                : strtolower($keyword);
+        }
+
         $category = (isset($_GET['category']) && $_GET['category'] !== '') ? (int) $_GET['category'] : null;
         $status = (isset($_GET['status']) && $_GET['status'] !== '') ? (int) $_GET['status'] : 1;
         $from = (isset($_GET['from']) && $_GET['from'] !== '') ? $_GET['from'] : null;

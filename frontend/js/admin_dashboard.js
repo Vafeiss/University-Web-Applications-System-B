@@ -9,6 +9,10 @@
     let selectedPendingAuthorFilters = ["__all__"];
     let pendingPostAuthors = [];
     let activePendingStatus = 0;
+    let adminSearchInputDebounceId = null;
+    let pendingSearchInputDebounceId = null;
+    let isAdminPostsSearchActive = false;
+    let isPendingPostsSearchActive = false;
     let dashboardAutoRefreshTimerId = null;
     let isDashboardAutoRefreshInFlight = false;
     let rejectReasonDialogResolver = null;
@@ -434,6 +438,14 @@
 
     function reloadActiveSection(options = {}) {
         const activeSection = getActiveSection();
+        if (activeSection === "posts" && isAdminPostsSearchActive) {
+            return loadAdminSearchResults(options);
+        }
+
+        if (activeSection === "pending" && isPendingPostsSearchActive) {
+            return loadPendingSearchResults(options);
+        }
+
         if (SECTION_CONFIG[activeSection]) {
             return SECTION_CONFIG[activeSection].load(options);
         }
@@ -1377,8 +1389,11 @@
         }
     }
 
-    async function loadAdminSearchResults() {
-        const container = setLoading("postsGrid", "Searching posts...");
+    async function loadAdminSearchResults(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("postsGrid")
+            : setLoading("postsGrid", "Searching posts...");
         const keywordInput = document.getElementById("adminSearchKeyword");
         const categoryInput = document.getElementById("adminSearchCategory");
         const sortInput = document.getElementById("adminSearchSort");
@@ -1388,6 +1403,15 @@
         if (!container || !keywordInput || !categoryInput || !sortInput || !fromInput || !toInput) {
             return;
         }
+
+        isAdminPostsSearchActive = Boolean(
+            keywordInput.value.trim() ||
+            categoryInput.value ||
+            sortInput.value !== "newest" ||
+            fromInput.value ||
+            toInput.value ||
+            selectedAdminAuthorFilters.some((value) => value !== "__all__")
+        );
 
         const params = new URLSearchParams({
             keyword: keywordInput.value.trim(),
@@ -1429,6 +1453,7 @@
     function setupAdminPostsSearch() {
         const form = document.getElementById("adminPostsSearchForm");
         const clearButton = document.getElementById("adminSearchClear");
+        const keywordInput = document.getElementById("adminSearchKeyword");
         const usersToggle = document.getElementById("adminSearchUsersToggle");
         const usersMenu = document.getElementById("adminSearchUsersMenu");
         const usersFilter = document.getElementById("adminSearchUsersFilter");
@@ -1442,8 +1467,19 @@
             await loadAdminSearchResults();
         });
 
+        if (keywordInput) {
+            keywordInput.addEventListener("input", () => {
+                clearTimeout(adminSearchInputDebounceId);
+                adminSearchInputDebounceId = window.setTimeout(async () => {
+                    await loadAdminSearchResults();
+                }, 250);
+            });
+        }
+
         clearButton.addEventListener("click", async () => {
+            clearTimeout(adminSearchInputDebounceId);
             form.reset();
+            isAdminPostsSearchActive = false;
             selectedAdminAuthorFilters = ["__all__"];
 
             const allOption = usersMenu?.querySelector('input[value="__all__"]');
@@ -1522,8 +1558,11 @@
         }
     }
 
-    async function loadPendingSearchResults() {
-        const container = setLoading("pendingPosts", "Searching posts...");
+    async function loadPendingSearchResults(options = {}) {
+        const silent = Boolean(options.silent);
+        const container = silent
+            ? document.getElementById("pendingPosts")
+            : setLoading("pendingPosts", "Searching posts...");
         const keywordInput = document.getElementById("pendingSearchKeyword");
         const categoryInput = document.getElementById("pendingSearchCategory");
         const sortInput = document.getElementById("pendingSearchSort");
@@ -1533,6 +1572,15 @@
         if (!container || !keywordInput || !categoryInput || !sortInput || !fromInput || !toInput) {
             return;
         }
+
+        isPendingPostsSearchActive = Boolean(
+            keywordInput.value.trim() ||
+            categoryInput.value ||
+            sortInput.value !== "newest" ||
+            fromInput.value ||
+            toInput.value ||
+            selectedPendingAuthorFilters.some((value) => value !== "__all__")
+        );
 
         const params = new URLSearchParams({
             keyword: keywordInput.value.trim(),
@@ -1574,6 +1622,7 @@
     function setupPendingPostsSearch() {
         const form = document.getElementById("pendingPostsSearchForm");
         const clearButton = document.getElementById("pendingSearchClear");
+        const keywordInput = document.getElementById("pendingSearchKeyword");
         const usersToggle = document.getElementById("pendingSearchUsersToggle");
         const usersMenu = document.getElementById("pendingSearchUsersMenu");
         const usersFilter = document.getElementById("pendingSearchUsersFilter");
@@ -1587,8 +1636,19 @@
             await loadPendingSearchResults();
         });
 
+        if (keywordInput) {
+            keywordInput.addEventListener("input", () => {
+                clearTimeout(pendingSearchInputDebounceId);
+                pendingSearchInputDebounceId = window.setTimeout(async () => {
+                    await loadPendingSearchResults();
+                }, 250);
+            });
+        }
+
         clearButton.addEventListener("click", async () => {
+            clearTimeout(pendingSearchInputDebounceId);
             form.reset();
+            isPendingPostsSearchActive = false;
             selectedPendingAuthorFilters = ["__all__"];
 
             const allOption = usersMenu?.querySelector('input[value="__all__"]');

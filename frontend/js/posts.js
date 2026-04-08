@@ -9,6 +9,7 @@ const followedUserIds = new Set();
 let selectedFollowerFilters = ["__all__"];
 let feedAutoRefreshTimerId = null;
 let isFeedAutoRefreshInFlight = false;
+let feedSearchInputDebounceId = null;
 let activeFeedStatusFilter = 0;
 let initialFeedTargetMode = null;
 let initialFeedStatusFilter = null;
@@ -92,11 +93,13 @@ function escapeHtml(value) {
 }
 
 function matchesStartsWithKeyword(keyword, values) {
-    if (!keyword) {
+    const normalizedKeyword = String(keyword ?? "").toLowerCase().trim();
+
+    if (!normalizedKeyword) {
         return true;
     }
 
-    return values.some((value) => String(value ?? "").toLowerCase().startsWith(keyword));
+    return values.some((value) => String(value ?? "").toLowerCase().startsWith(normalizedKeyword));
 }
 
 function replaceOwnerTriggersWithPlainName(userId) {
@@ -524,6 +527,16 @@ function renderSimpleBanner(label, text, isWarning = false) {
 function parseDateValue(value) {
     const timestamp = value ? new Date(value).getTime() : NaN;
     return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function getCurrentFeedSearchFilters() {
+    return {
+        keyword: document.getElementById("feedSearchKeyword")?.value.trim() || "",
+        category: document.getElementById("feedSearchCategory")?.value || "",
+        from: document.getElementById("feedSearchFrom")?.value || "",
+        to: document.getElementById("feedSearchTo")?.value || "",
+        sort: document.getElementById("feedSearchSort")?.value || "newest"
+    };
 }
 
 function updateFeedStatusButtons() {
@@ -1168,6 +1181,13 @@ async function loadPendingPostsFeed(options = {}) {
     if (!container) return;
 
     const silent = Boolean(options.silent);
+    const filters = options.filters || {
+        keyword: "",
+        category: "",
+        from: "",
+        to: "",
+        sort: "newest"
+    };
 
     if (!silent) {
         container.innerHTML = '<div class="pending-state">Loading your posts...</div>';
@@ -1183,13 +1203,7 @@ async function loadPendingPostsFeed(options = {}) {
 
         cachedPendingPosts = Array.isArray(posts) ? posts : [];
         renderSimpleBanner("", "");
-        renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
-            keyword: "",
-            category: "",
-            from: "",
-            to: "",
-            sort: "newest"
-        }));
+        renderPendingPosts(filterPendingPostsData(cachedPendingPosts, filters));
     } catch (error) {
         console.error("Error loading pending posts:", error);
         container.innerHTML = '<div class="pending-state">Failed to load your posts.</div>';
@@ -1201,6 +1215,12 @@ async function loadPendingDeleteRequestsFeed(options = {}) {
     if (!container) return;
 
     const silent = Boolean(options.silent);
+    const filters = options.filters || {
+        keyword: "",
+        from: "",
+        to: "",
+        sort: "newest"
+    };
 
     if (!silent) {
         container.innerHTML = '<div class="pending-state">Loading delete requests...</div>';
@@ -1216,12 +1236,7 @@ async function loadPendingDeleteRequestsFeed(options = {}) {
 
         cachedPendingDeleteRequests = Array.isArray(requests) ? requests : [];
         renderSimpleBanner("", "");
-        renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
-            keyword: "",
-            from: "",
-            to: "",
-            sort: "newest"
-        }));
+        renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, filters));
     } catch (error) {
         console.error("Error loading pending delete requests:", error);
         container.innerHTML = '<div class="pending-state">Failed to load delete requests.</div>';
@@ -1233,6 +1248,12 @@ async function loadReportsFeed(options = {}) {
     if (!container) return;
 
     const silent = Boolean(options.silent);
+    const filters = options.filters || {
+        keyword: "",
+        from: "",
+        to: "",
+        sort: "newest"
+    };
 
     if (!silent) {
         container.innerHTML = '<div class="pending-state">Loading reports...</div>';
@@ -1248,12 +1269,7 @@ async function loadReportsFeed(options = {}) {
 
         cachedReports = Array.isArray(reports) ? reports : [];
         renderSimpleBanner("", "");
-        renderReports(filterReportsData(cachedReports, {
-            keyword: "",
-            from: "",
-            to: "",
-            sort: "newest"
-        }));
+        renderReports(filterReportsData(cachedReports, filters));
     } catch (error) {
         console.error("Error loading reports:", error);
         container.innerHTML = '<div class="pending-state">Failed to load reports.</div>';
@@ -1261,19 +1277,21 @@ async function loadReportsFeed(options = {}) {
 }
 
 async function refreshActiveFeedWithoutRefresh() {
+    const filters = getCurrentFeedSearchFilters();
+
     switch (activeFeedMode) {
         case "followers":
             await loadFollowersBanner();
             await loadFollowersFeed({ silent: true });
             break;
         case "pending-posts":
-            await loadPendingPostsFeed({ silent: true });
+            await loadPendingPostsFeed({ silent: true, filters });
             break;
         case "pending-delete-requests":
-            await loadPendingDeleteRequestsFeed({ silent: true });
+            await loadPendingDeleteRequestsFeed({ silent: true, filters });
             break;
         case "reports":
-            await loadReportsFeed({ silent: true });
+            await loadReportsFeed({ silent: true, filters });
             break;
         case "search":
             await loadSearchResults({ silent: true });
@@ -1481,6 +1499,7 @@ function setupFeedModeToggle() {
 function setupSearchControls() {
     const form = document.getElementById("feedSearchForm");
     const clearButton = document.getElementById("feedSearchClear");
+    const keywordInput = document.getElementById("feedSearchKeyword");
     const title = document.getElementById("feedTitle");
     const filtersToggle = document.getElementById("feedSearchFiltersToggle");
     const advancedFilters = document.getElementById("feedSearchAdvanced");
@@ -1549,7 +1568,52 @@ function setupSearchControls() {
         await loadSearchResults();
     });
 
+    if (keywordInput) {
+        keywordInput.addEventListener("input", () => {
+            clearTimeout(feedSearchInputDebounceId);
+            feedSearchInputDebounceId = window.setTimeout(async () => {
+                const keyword = keywordInput.value.trim();
+
+                if (activeFeedMode === "pending-posts") {
+                    renderPendingPosts(filterPendingPostsData(cachedPendingPosts, {
+                        keyword,
+                        category: document.getElementById("feedSearchCategory")?.value || "",
+                        from: document.getElementById("feedSearchFrom")?.value || "",
+                        to: document.getElementById("feedSearchTo")?.value || "",
+                        sort: document.getElementById("feedSearchSort")?.value || "newest"
+                    }));
+                    return;
+                }
+
+                if (activeFeedMode === "pending-delete-requests") {
+                    renderPendingDeleteRequests(filterPendingDeleteRequestsData(cachedPendingDeleteRequests, {
+                        keyword,
+                        from: document.getElementById("feedSearchFrom")?.value || "",
+                        to: document.getElementById("feedSearchTo")?.value || "",
+                        sort: document.getElementById("feedSearchSort")?.value || "newest"
+                    }));
+                    return;
+                }
+
+                if (activeFeedMode === "reports") {
+                    renderReports(filterReportsData(cachedReports, {
+                        keyword,
+                        from: document.getElementById("feedSearchFrom")?.value || "",
+                        to: document.getElementById("feedSearchTo")?.value || "",
+                        sort: document.getElementById("feedSearchSort")?.value || "newest"
+                    }));
+                    return;
+                }
+
+                previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
+                title.textContent = "Search Results";
+                await loadSearchResults({ silent: true });
+            }, 250);
+        });
+    }
+
     clearButton.addEventListener("click", async () => {
+        clearTimeout(feedSearchInputDebounceId);
         form.reset();
         selectedFollowerFilters = ["__all__"];
 

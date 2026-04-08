@@ -34,7 +34,7 @@ class Search {
         $params = [];
 
         if ($keyword !== '') {
-            $sql .= " AND (p.title LIKE :keyword OR p.content LIKE :keyword)";
+            $sql .= " AND (LOWER(p.title) LIKE :keyword OR LOWER(p.content) LIKE :keyword)";
             $params[':keyword'] = $keyword . '%';
         }
 

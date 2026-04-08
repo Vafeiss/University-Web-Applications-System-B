@@ -129,35 +129,40 @@ body {
 }
 
 .dashboard-search-panel {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 8px;
-	margin: 16px 0 18px;
-	padding: 10px;
-	border: 1px solid #d7e1f0;
-	border-radius: 18px;
-	background: #ffffff;
-	box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+	margin: 16px 0 22px;
+	padding: 16px 18px 18px;
+	border: 1px solid rgba(214, 225, 242, 0.9);
+	border-radius: 24px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 251, 255, 0.86) 100%);
+	box-shadow:
+		0 14px 32px rgba(15, 23, 42, 0.06),
+		inset 0 1px 0 rgba(255, 255, 255, 0.65);
+	backdrop-filter: blur(10px);
 }
 
 .dashboard-search-input,
 .dashboard-search-select,
 .dashboard-search-date {
 	margin: 0;
-	border: 1px solid #d3ddeb;
-	border-radius: 12px;
-	background: #fbfcfe;
-	font-size: 13px;
-	padding: 0 12px;
-	height: 44px;
-	line-height: 44px;
+	border: 1px solid #d9e2ef;
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.94);
+	font-size: 14px;
+	padding: 0 14px;
+	height: 46px;
+	line-height: 46px;
 	box-sizing: border-box;
+	transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, transform 0.22s ease;
 }
 
 .dashboard-search-input {
 	flex: 1 1 165px;
 	min-width: 138px;
+	padding-left: 54px;
+	border: 1px solid #d9e2ef;
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.95);
+	transition: all 0.25s ease;
 }
 
 .dashboard-search-date {
@@ -174,7 +179,7 @@ body {
 	position: relative;
 	flex: 1 1 122px;
 	min-width: 110px;
-	height: 44px;
+	height: 46px;
 	box-sizing: border-box;
 }
 
@@ -184,16 +189,17 @@ body {
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
-	padding: 0 12px;
-	height: 44px;
+	padding: 0 14px;
+	height: 46px;
 	box-sizing: border-box;
-	border: 1px solid #d7e1f0;
-	border-radius: 12px;
-	background: #fbfcfe;
+	border: 1px solid #d9e2ef;
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.94);
 	color: #28405f;
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: 600;
 	cursor: pointer;
+	transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, transform 0.22s ease;
 }
 
 .dashboard-search-users-toggle::after {
@@ -204,16 +210,17 @@ body {
 
 .dashboard-search-users-menu {
 	position: absolute;
-	top: calc(100% + 8px);
+	top: calc(100% + 12px);
 	left: 0;
 	min-width: 220px;
 	max-height: 240px;
 	overflow-y: auto;
-	padding: 8px;
-	border: 1px solid #d7e1f0;
-	border-radius: 12px;
-	background: #ffffff;
-	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+	padding: 10px;
+	border: 1px solid rgba(214, 225, 242, 0.95);
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.96);
+	box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+	backdrop-filter: blur(10px);
 	z-index: 40;
 }
 
@@ -235,40 +242,99 @@ body {
 .dashboard-search-actions {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 	margin-left: auto;
 	flex-shrink: 0;
 }
 
 .dashboard-search-btn {
 	width: auto;
-	padding: 0 18px;
-	height: 44px;
+	padding: 0 20px;
+	height: 46px;
 	box-sizing: border-box;
-	border-radius: 12px;
-	font-size: 13px;
-	font-weight: 700;
-	border: 0;
+	border-radius: 14px;
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.3px;
+	border: 1px solid transparent;
 	cursor: pointer;
-	box-shadow: 0 6px 16px rgba(74, 108, 247, 0.18);
+	transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .dashboard-search-btn.primary {
-	background: linear-gradient(135deg, #4a6cf7, #6a8dff);
+	background: linear-gradient(180deg, #355aa8 0%, #234784 100%);
 	color: #ffffff;
+	box-shadow: 0 10px 22px rgba(35, 71, 132, 0.18);
 }
 
 .dashboard-search-btn.secondary {
-	background: #eef2f8;
+	background: rgba(241, 245, 250, 0.95);
 	color: #4f5f78;
+	border-color: #e1e8f2;
 }
 
 .dashboard-search-btn.primary:hover {
-	background: linear-gradient(135deg, #3f61ee, #5f84fb);
+	background: linear-gradient(180deg, #2f529b 0%, #1f3e73 100%);
+	transform: translateY(-1px);
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .dashboard-search-btn.secondary:hover {
-	background: #e4e9f1;
+	background: #e8eef6;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-search-topbar {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	min-width: 0;
+}
+
+.dashboard-search-keyword-wrap {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 260px;
+}
+
+.dashboard-search-keyword-wrap::before {
+	content: "";
+	position: absolute;
+	left: 20px;
+	top: 50%;
+	width: 20px;
+	height: 20px;
+	transform: translateY(-50%);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2350679d' stroke-width='2.2'%3E%3Ccircle cx='11' cy='11' r='7.25'/%3E%3Cpath stroke-linecap='round' d='m20 20-4.2-4.2'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	pointer-events: none;
+}
+
+.dashboard-search-topbar .dashboard-search-keyword-wrap:focus-within {
+	transform: translateY(-1px);
+}
+
+.dashboard-search-keyword-wrap:hover {
+	transform: translateY(-1px);
+}
+
+.dashboard-search-select:hover,
+.dashboard-search-date:hover {
+	border-color: #b7cae8;
+}
+
+.dashboard-search-select:focus,
+.dashboard-search-date:focus {
+	border-color: #4c5bd4;
+	box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.12);
+}
+
+.dashboard-search-input:focus {
+	border-color: #4c5bd4;
+	box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.15);
 }
 
 .dashboard-status-filters {
@@ -845,7 +911,7 @@ body {
 		<form id="adminPostsSearchForm" class="dashboard-search-panel">
 			<div class="dashboard-search-topbar">
 				<label for="adminSearchKeyword" class="dashboard-search-keyword-wrap">
-					<input type="text" id="adminSearchKeyword" class="dashboard-search-input" placeholder="Search posts by keyword">
+					<input type="text" id="adminSearchKeyword" class="dashboard-search-input" placeholder="Search by title, category, or author">
 				</label>
 
 				<button type="button" id="adminSearchFiltersToggle" class="dashboard-search-filters-toggle" aria-label="Toggle search filters" aria-expanded="false" aria-controls="adminSearchAdvanced">
@@ -906,7 +972,7 @@ body {
 		<form id="pendingPostsSearchForm" class="dashboard-search-panel">
 			<div class="dashboard-search-topbar">
 				<label for="pendingSearchKeyword" class="dashboard-search-keyword-wrap">
-					<input type="text" id="pendingSearchKeyword" class="dashboard-search-input" placeholder="Search posts by keyword">
+					<input type="text" id="pendingSearchKeyword" class="dashboard-search-input" placeholder="Search by title, category, or author">
 				</label>
 
 				<button type="button" id="pendingSearchFiltersToggle" class="dashboard-search-filters-toggle" aria-label="Toggle search filters" aria-expanded="false" aria-controls="pendingSearchAdvanced">
