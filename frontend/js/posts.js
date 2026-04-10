@@ -1978,6 +1978,10 @@ function setupInfoDialog() {
     });
 }
 
+function setupDailyDownloadNotice() {
+    return;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const feedTargetFromUrl = getFeedTargetFromUrl();
 
@@ -1996,6 +2000,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupFeedModeToggle();
     setupSearchControls();
     setupInfoDialog();
+    setupDailyDownloadNotice();
     setupFollowActions();
     setupFollowersBannerActions();
     startFeedAutoRefresh();
