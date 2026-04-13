@@ -49,6 +49,22 @@ $transactionsStmt = $conn->prepare(
 $transactionsStmt->execute([":id" => $_SESSION['user_id']]);
 $transactions = $transactionsStmt->fetchAll(PDO::FETCH_ASSOC);
 
+$hasUsedFreeDownloadTodayStmt = $conn->prepare(
+    "SELECT transaction_id
+     FROM transactions
+     WHERE user_id = :id
+     AND token_charge = 0
+     AND DATE(timestamp) = CURDATE()
+     LIMIT 1"
+);
+$hasUsedFreeDownloadTodayStmt->execute([":id" => $_SESSION['user_id']]);
+$hasUsedFreeDownloadToday = (bool) $hasUsedFreeDownloadTodayStmt->fetch(PDO::FETCH_ASSOC);
+
+$showDailyDownloadNotice = !$isAdmin
+    && !empty($_SESSION['show_daily_download_notice'])
+    && !$hasUsedFreeDownloadToday;
+unset($_SESSION['show_daily_download_notice']);
+
 $categoriesStmt = $conn->query(
     "SELECT category_id, name FROM categories ORDER BY name ASC"
 );
@@ -243,6 +259,15 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
         <?php endif; ?>
     </header>
     <?php endif; ?>
+
+        <?php if ($showDailyDownloadNotice): ?>
+        <div id="dailyDownloadNotice" class="daily-download-notice" role="status" aria-live="polite">
+            <div class="daily-download-notice-copy">
+                <strong>Free daily download available</strong>
+                <span>You still have one free daily download available today.</span>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <form id="feedSearchForm" class="feed-search-panel<?= !$isAdmin ? ' user-search-panel' : '' ?>">
             <?php if (!$isAdmin): ?>

@@ -78,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION["user_id"] = $res["user"]["user_id"];
         $_SESSION["username"] = $res["user"]["username"];
         $_SESSION["role"] = $res["user"]["role"];
+        $_SESSION["show_daily_download_notice"] = true;
         header("Location: " . $res["redirect"]);
         exit;
     }
