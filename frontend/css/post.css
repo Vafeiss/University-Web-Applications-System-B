@@ -426,13 +426,13 @@ body:has(.user-feed-shell) {
     left: 24px;
     top: 50%;
     transform: translateY(-50%);
-    width: 118px;
-    height: 48px;
+    width: 94px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 0 16px;
+    gap: 6px;
+    padding: 0 12px;
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 999px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
@@ -454,13 +454,13 @@ body:has(.user-feed-shell) {
 }
 
 .feed-sidebar-toggle svg {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
 }
 
 .feed-sidebar-toggle-label {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -499,8 +499,23 @@ body:has(.user-feed-shell) {
     top: auto;
     transform: none;
     grid-column: 1;
-    margin-left: 92px;
+    margin-left: 78px;
     justify-self: start;
+}
+
+.user-feed-shell .feed-topbar-title.feed-topbar-title-compact {
+    font-size: 22px;
+    letter-spacing: -0.01em;
+}
+
+.user-feed-shell .feed-topbar-title.feed-topbar-title-xcompact {
+    margin-left: 60px;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+}
+
+.user-feed-shell .feed-topbar-title.feed-topbar-title-xcompact + .feed-dashboard-toplinks {
+    gap: 6px;
 }
 
 .user-feed-shell .feed-dashboard-toplinks {
@@ -511,7 +526,7 @@ body:has(.user-feed-shell) {
     display: inline-flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     white-space: nowrap;
 }
 
@@ -2129,6 +2144,12 @@ body.info-dialog-open {
     color: rgba(255, 255, 255, 0.9);
     box-sizing: border-box;
     transition: all 0.2s ease;
+}
+
+.feed-sidebar .feed-tab.feed-tab-compact {
+    font-size: 13px;
+    line-height: 1.15;
+    padding: 11px 14px;
 }
 
 .feed-sidebar .feed-tab:hover {

@@ -113,10 +113,10 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                 <button type="button" id="createPostBtn" class="feed-tab">&#43; Create Post</button>
                 <button type="button" id="postsFeedBtn" class="feed-tab is-active">Posts</button>
                 <button type="button" id="followersFeedBtn" class="feed-tab">Followers</button>
-                <button type="button" id="pendingPostsBtn" class="feed-tab">Pending Posts</button>
-                <button type="button" id="pendingDeleteRequestsBtn" class="feed-tab">Pending Delete Requests</button>
+                <button type="button" id="pendingPostsBtn" class="feed-tab feed-tab-compact">Pending Posts</button>
+                <button type="button" id="pendingDeleteRequestsBtn" class="feed-tab feed-tab-compact">Pending Delete Requests</button>
                 <button type="button" id="reportsBtn" class="feed-tab">Reports</button>
-                <button type="button" id="tokenHistoryBtn" class="feed-tab">Token history</button>
+                <button type="button" id="tokenHistoryBtn" class="feed-tab feed-tab-compact">Token history</button>
             </nav>
         </aside>
 

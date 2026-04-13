@@ -1346,6 +1346,22 @@ function setupFeedMenu() {
     });
 }
 
+function setFeedTitle(titleElement, text) {
+    if (!titleElement) {
+        return;
+    }
+
+    const compactTitles = new Set([
+        "Token History",
+        "Pending Posts",
+        "Pending Delete Requests"
+    ]);
+
+    titleElement.textContent = text;
+    titleElement.classList.toggle("feed-topbar-title-compact", compactTitles.has(text));
+    titleElement.classList.toggle("feed-topbar-title-xcompact", text === "Pending Delete Requests");
+}
+
 function setupFeedModeToggle() {
     const title = document.getElementById("feedTitle");
     const createPostButton = document.getElementById("createPostBtn");
@@ -1423,7 +1439,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("create-post");
-        title.textContent = "Create Post";
+        setFeedTitle(title, "Create Post");
     });
 
     tokenHistoryButton.addEventListener("click", () => {
@@ -1432,7 +1448,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("token-history");
-        title.textContent = "Token History";
+        setFeedTitle(title, "Token History");
     });
 
     postsButton.addEventListener("click", async () => {
@@ -1441,7 +1457,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("default");
-        title.textContent = "Posts Feed";
+        setFeedTitle(title, "Posts Feed");
 
         await loadInterestsBanner();
         await loadDefaultFeed();
@@ -1453,7 +1469,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("followers");
-        title.textContent = "Following";
+        setFeedTitle(title, "Following");
 
         await loadFollowersBanner();
         await loadFollowersFeed();
@@ -1467,7 +1483,7 @@ function setupFeedModeToggle() {
         consumeInitialStatusForMode("pending-posts");
         updateFeedStatusButtons();
         setMode("pending-posts");
-        title.textContent = "Pending Posts";
+        setFeedTitle(title, "Pending Posts");
         await loadPendingPostsFeed();
     });
 
@@ -1479,7 +1495,7 @@ function setupFeedModeToggle() {
         consumeInitialStatusForMode("pending-delete-requests");
         updateFeedStatusButtons();
         setMode("pending-delete-requests");
-        title.textContent = "Pending Delete Requests";
+        setFeedTitle(title, "Pending Delete Requests");
         await loadPendingDeleteRequestsFeed();
     });
 
@@ -1491,7 +1507,7 @@ function setupFeedModeToggle() {
         consumeInitialStatusForMode("reports");
         updateFeedStatusButtons();
         setMode("reports");
-        title.textContent = "Reports";
+        setFeedTitle(title, "Reports");
         await loadReportsFeed();
     });
 }
@@ -1564,7 +1580,7 @@ function setupSearchControls() {
         }
 
         previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
-        title.textContent = "Search Results";
+        setFeedTitle(title, "Search Results");
         await loadSearchResults();
     });
 
@@ -1606,7 +1622,7 @@ function setupSearchControls() {
                 }
 
                 previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
-                title.textContent = "Search Results";
+                setFeedTitle(title, "Search Results");
                 await loadSearchResults({ silent: true });
             }, 250);
         });
@@ -1642,7 +1658,7 @@ function setupSearchControls() {
         updateFollowerFilterLabel();
 
         if (previousSearchMode === "followers") {
-            title.textContent = "Following";
+            setFeedTitle(title, "Following");
             await loadFollowersBanner();
             await loadFollowersFeed();
             return;
@@ -1651,7 +1667,7 @@ function setupSearchControls() {
         if (activeFeedMode === "pending-posts") {
             activeFeedStatusFilter = 0;
             updateFeedStatusButtons();
-            title.textContent = "Pending Posts";
+            setFeedTitle(title, "Pending Posts");
             await loadPendingPostsFeed();
             return;
         }
@@ -1659,7 +1675,7 @@ function setupSearchControls() {
         if (activeFeedMode === "pending-delete-requests") {
             activeFeedStatusFilter = 0;
             updateFeedStatusButtons();
-            title.textContent = "Pending Delete Requests";
+            setFeedTitle(title, "Pending Delete Requests");
             await loadPendingDeleteRequestsFeed();
             return;
         }
@@ -1667,12 +1683,12 @@ function setupSearchControls() {
         if (activeFeedMode === "reports") {
             activeFeedStatusFilter = 0;
             updateFeedStatusButtons();
-            title.textContent = "Reports";
+            setFeedTitle(title, "Reports");
             await loadReportsFeed();
             return;
         }
 
-        title.textContent = "Posts Feed";
+        setFeedTitle(title, "Posts Feed");
         await loadInterestsBanner();
         await loadDefaultFeed();
     });

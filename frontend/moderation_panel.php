@@ -6,9 +6,7 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$dbname = "moderation_control";
 
-$conn = new mysqli($host, $user, $pass, $dbname);
 
 if ($conn->connect_error) {
     die("Σφάλμα σύνδεσης: " . $conn->connect_error);
@@ -79,12 +77,43 @@ $history_result = $conn->query($sql_history);
         .badge-approved { background-color: #42b72a; }
         .badge-rejected { background-color: #f02849; }
         .empty-msg { text-align: center; color: #8d949e; padding: 20px; font-style: italic; }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 48px;
+            margin-bottom: 24px;
+        }
+        .header-title {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .tabs {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        /* Responsive: όταν το body έχει κλάση minimized, ο τίτλος πάει από κάτω */
+        body.minimized .header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        body.minimized .header-title {
+            margin-left: 0;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Moderation Control Center</h1>
+    <div class="header-row">
+      <div class="header-title">Moderation Control Center</div>
+      <div class="tabs">
+        <button class="btn">Profile settings</button>
+        <!-- Μπορείς να προσθέσεις και άλλα tabs εδώ -->
+      </div>
+    </div>
 
     <div class="section">
         <h2> Δημοσιεύσεις προς Έλεγχο</h2>

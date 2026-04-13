@@ -54,6 +54,11 @@ if (isset($_SESSION["user_id"])) {
 require_once "../backend/controllers/AuthController.php";
 
 $message = trim((string) ($_GET["ban_message"] ?? ""));
+$isSuccessMessage = false;
+if (isset($_GET["registered"])) {
+    $message = "Registration successful. Please login.";
+    $isSuccessMessage = true;
+}
 
 /* =========================
    HANDLE LOGIN REQUEST
@@ -195,6 +200,12 @@ body {
     font-weight: 600;
 }
 
+.login-alert.success {
+    border-color: #b9e2cd;
+    background: #f0fbf5;
+    color: #1f7a49;
+}
+
 .login-field {
     margin-bottom: 14px;
 }
@@ -314,7 +325,7 @@ body {
             <h2>Login</h2>
 
             <?php if (!empty($message)): ?>
-            <div class="login-alert">
+            <div class="login-alert <?= $isSuccessMessage ? 'success' : '' ?>">
                 <?= htmlspecialchars($message) ?>
             </div>
             <?php endif; ?>

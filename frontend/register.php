@@ -70,6 +70,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_POST["referral_code"] ?? null
         );
 
+        if (!empty($res["ok"])) {
+            header("Location: /University-Web-Applications-System-B/frontend/login.php?registered=1");
+            exit;
+        }
+
         /* Store result message */
         $message = $res["message"];
     }
