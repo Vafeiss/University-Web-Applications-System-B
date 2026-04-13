@@ -148,7 +148,6 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                 </button>
                 <div id="feedTitle" class="feed-topbar-title">Posts Feed</div>
                 <div class="feed-dashboard-toplinks">
-                    <a href="profile_view.php" class="feed-dashboard-toplink">Profile settings</a>
                     <a href="profile_view.php" class="feed-dashboard-toplink">View &amp; Edit profile</a>
                     <a href="edit_interests.php" class="feed-dashboard-toplink">Edit interests</a>
                     <a href="category_request.php" class="feed-dashboard-toplink">Request category</a>
