@@ -151,6 +151,7 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                     <a href="profile_view.php" class="feed-dashboard-toplink">View &amp; Edit profile</a>
                     <a href="edit_interests.php" class="feed-dashboard-toplink">Edit interests</a>
                     <a href="category_request.php" class="feed-dashboard-toplink">Request category</a>
+                    <a href="ads_user.php" class="feed-dashboard-toplink">Watch Ads</a>
                 </div>
 
                 <div class="feed-header-actions app-topbar-actions">
@@ -479,7 +480,8 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
 
     <div id="postsList" class="pending-grid" aria-live="polite"></div>
 
-    <?php if (!$isAdmin): ?>
+    <?php if (!$isAdmin): ?>
+
     <?php endif; ?>
 
     <?php if (!$isAdmin): ?>

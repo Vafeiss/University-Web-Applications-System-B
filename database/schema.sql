@@ -23,14 +23,25 @@ SET time_zone = "+00:00";
 
 -- --------------------------------------------------------
 
---
--- Δομή πίνακα για τον πίνακα `advertisements`
---
 
 CREATE TABLE `advertisements` (
   `advertise_id` int(11) NOT NULL,
   `time_duration` double DEFAULT NULL,
-  `last_time_used` datetime DEFAULT NULL
+  `last_time_used` datetime DEFAULT NULL,
+  `cooldown_hours` int(11) DEFAULT 0,
+  `title` varchar(255) DEFAULT NULL,
+  `image_url` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+-- Δομή πίνακα για τον πίνακα `ad_views`
+
+CREATE TABLE `ad_views` (
+  `view_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `advertise_id` int(11) NOT NULL,
+  `viewed_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

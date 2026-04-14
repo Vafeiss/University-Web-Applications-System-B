@@ -77,16 +77,14 @@ $tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
 <body>
 
-<?php if ($_SESSION["role"] !== "admin"): ?>
-<div class="position-fixed top-0 end-0 m-4">
-<div class="card shadow-sm">
-<div class="card-body py-2 px-3">
-<span class="text-muted">Token Balance:</span>
-<strong><?= $tokenBalance ?></strong>
+<!-- Top Menu Bar -->
+<div class="d-flex justify-content-end align-items-center gap-2 pt-4 pe-4" style="position: absolute; right: 0; top: 0; z-index: 10;">
+     <a href="/University-Web-Applications-System-B/frontend/profile_view.php" class="btn btn-link">View &amp; Edit profile</a>
+     <a href="/University-Web-Applications-System-B/frontend/edit_interests.php" class="btn btn-link">Edit interests</a>
+     <a href="/University-Web-Applications-System-B/frontend/category_request.php" class="btn btn-link">Request category</a>
+     <a href="/University-Web-Applications-System-B/frontend/ads_user.php" class="btn btn-warning fw-bold">Watch Ads</a>
+     <span class="btn btn-outline-secondary disabled" style="pointer-events:none;">Tokens <strong><?= $tokenBalance ?></strong></span>
 </div>
-</div>
-</div>
-<?php endif; ?>
 
 <div class="container auth-container">
 
