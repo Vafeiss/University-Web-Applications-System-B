@@ -14,7 +14,11 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
 $db = new Database();
 $conn = $db->connect();
 
-function describeTransaction(int $tokenCharge): string {
+function describeTransaction(int $tokenCharge, ?string $source = null): string {
+    if ($source === 'advertisement_reward') {
+        return "Advertisement reward";
+    }
+
     if ($tokenCharge === 10) {
         return "Referral reward";
     }
@@ -41,10 +45,40 @@ $tokenBalanceStmt->execute([":id" => $_SESSION['user_id']]);
 $tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
 $transactionsStmt = $conn->prepare(
-    "SELECT transaction_id, token_charge, timestamp
-     FROM transactions
-     WHERE user_id = :id
-     ORDER BY timestamp DESC, transaction_id DESC"
+    "SELECT *
+     FROM (
+        SELECT CONCAT('tx-', t.transaction_id) AS history_id,
+               t.token_charge,
+               t.timestamp,
+               CASE
+                   WHEN EXISTS (
+                       SELECT 1
+                       FROM ad_views av
+                       WHERE av.user_id = t.user_id
+                         AND av.viewed_at = t.timestamp
+                   ) THEN 'advertisement_reward'
+                   ELSE NULL
+               END AS transaction_source
+        FROM transactions t
+        WHERE t.user_id = :id
+
+        UNION ALL
+
+        SELECT CONCAT('ad-', av.view_id) AS history_id,
+               1 AS token_charge,
+               av.viewed_at AS timestamp,
+               'advertisement_reward' AS transaction_source
+        FROM ad_views av
+        WHERE av.user_id = :id
+          AND NOT EXISTS (
+              SELECT 1
+              FROM transactions t
+              WHERE t.user_id = av.user_id
+                AND t.timestamp = av.viewed_at
+                AND t.token_charge = 1
+          )
+     ) history_rows
+     ORDER BY timestamp DESC, history_id DESC"
 );
 $transactionsStmt->execute([":id" => $_SESSION['user_id']]);
 $transactions = $transactionsStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -466,7 +500,7 @@ $createPostJsVersion = filemtime(__DIR__ . '/js/createPost.js');
                             $filterGroup = $tokenCharge > 0 ? 'earned' : 'spent';
                             ?>
                             <tr data-filter-group="<?= htmlspecialchars($filterGroup) ?>">
-                                <td><?= htmlspecialchars(describeTransaction($tokenCharge)) ?></td>
+                                <td><?= htmlspecialchars(describeTransaction($tokenCharge, $transaction['transaction_source'] ?? null)) ?></td>
                                 <td class="<?= $amountClass ?>"><?= htmlspecialchars($amountText) ?></td>
                                 <td><?= htmlspecialchars($transaction['timestamp']) ?></td>
                             </tr>
