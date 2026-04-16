@@ -19,6 +19,10 @@ let cachedReports = [];
 let rejectedPostDeleteId = null;
 const FEED_SIDEBAR_STORAGE_KEY = "feedSidebarCollapsed";
 
+function translate(key, fallback) {
+    return window.UniSupportI18n?.t(key, fallback) ?? fallback;
+}
+
 function mapStatusParamToNumeric(status) {
     const normalized = String(status ?? "").toLowerCase();
     if (normalized === "approved" || normalized === "1") {
@@ -73,11 +77,11 @@ function consumeInitialStatusForMode(mode) {
 
 function getAuthorName(post) {
     if (post.is_anonymous == 1 && !isAdmin) {
-        return "Anonymous";
+        return translate("posts.anonymous", "Anonymous");
     }
 
     if (post.is_anonymous == 1 && isAdmin) {
-        return `Anonymous (${escapeHtml(post.username)})`;
+        return `${translate("posts.anonymous", "Anonymous")} (${escapeHtml(post.username)})`;
     }
 
     return escapeHtml(post.username);
@@ -157,7 +161,7 @@ function renderPosts(posts) {
     container.innerHTML = "";
 
     if (!Array.isArray(posts) || posts.length === 0) {
-        container.innerHTML = '<div class="pending-state">No posts available yet.</div>';
+        container.innerHTML = `<div class="pending-state">${escapeHtml(translate("posts.no_posts_available", "No posts available yet."))}</div>`;
         return;
     }
 
@@ -174,10 +178,10 @@ function renderPosts(posts) {
             && !isAnonymousPost;
         const authorName = getAuthorName(post);
         const authorBlock = showFollowButton
-            ? `<button type="button" class="post-owner-trigger" data-follow-id="${postOwnerId}" title="Click to follow user"><span class="owner-name">${authorName}</span><span class="owner-follow-hint">+ Follow</span></button>`
+            ? `<button type="button" class="post-owner-trigger" data-follow-id="${postOwnerId}" title="${escapeHtml(translate("posts.follow_title", "Click to follow user"))}"><span class="owner-name">${authorName}</span><span class="owner-follow-hint">${escapeHtml(translate("posts.follow_action", "+ Follow"))}</span></button>`
             : `<span>${authorName}</span>`;
 
-        const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : "Unknown date";
+        const createdAt = post.timestamp ? new Date(post.timestamp).toLocaleString() : translate("posts.unknown_date", "Unknown date");
         const excerpt = String(post.content || "").trim().slice(0, 220);
 
         card.innerHTML = `
@@ -208,7 +212,7 @@ function renderNotifications(notifications) {
     }
 
     if (!Array.isArray(notifications) || notifications.length === 0) {
-        list.innerHTML = '<div class="notifications-empty">No notifications yet.</div>';
+        list.innerHTML = `<div class="notifications-empty">${escapeHtml(translate("common.no_notifications", "No notifications yet."))}</div>`;
         count.hidden = true;
         return;
     }
@@ -671,7 +675,7 @@ function renderPendingPosts(posts) {
     container.innerHTML = "";
 
     if (!Array.isArray(posts) || posts.length === 0) {
-        container.innerHTML = '<div class="pending-state">No posts found.</div>';
+        container.innerHTML = `<div class="pending-state">${escapeHtml(translate("posts.no_posts_found", "No posts found."))}</div>`;
         return;
     }
 
@@ -882,7 +886,7 @@ async function loadInterestsBanner() {
 
         banner.innerHTML = `
             <div class="interests-banner">
-                <div class="interests-label">Your interests</div>
+                <div class="interests-label">${escapeHtml(translate("posts.your_interests", "Your interests"))}</div>
                 <div class="interests-chips">${chips}</div>
             </div>`;
     } catch (error) {
@@ -929,14 +933,14 @@ async function loadFollowersBanner() {
         banner.innerHTML = `
             <div class="followers-banners-grid">
                 <div class="interests-banner${followingUsers.length === 0 ? " no-interests" : ""}">
-                    <div class="interests-label">Following</div>
+                <div class="interests-label">${escapeHtml(translate("posts.following", "Following"))}</div>
                     ${followingUsers.length === 0
                         ? `<div class="no-interests-text">You are not following anyone yet.</div>
                            <div class="no-interests-sub">Follow users to see their posts here.</div>`
                         : `<div class="interests-chips">${followingChips}</div>`}
                 </div>
                 <div class="interests-banner${followersUsers.length === 0 ? " no-interests" : ""}">
-                    <div class="interests-label">Following you</div>
+                    <div class="interests-label">${escapeHtml(translate("posts.following_you", "Following you"))}</div>
                     ${followersUsers.length === 0
                         ? `<div class="no-interests-text">No one is following you yet.</div>
                            <div class="no-interests-sub">Your followers will appear here.</div>`
@@ -1086,9 +1090,9 @@ async function loadSearchResults(options = {}) {
         if (banner) {
             banner.innerHTML = `
                 <div class="interests-banner">
-                    <div class="interests-label">Search results</div>
+                    <div class="interests-label">${escapeHtml(translate("posts.search_results", "Search Results"))}</div>
                     <div class="interests-chips">
-                        <span class="pending-chip">${escapeHtml(`${data.count ?? 0} posts found`)}</span>
+                        <span class="pending-chip">${escapeHtml(`${data.count ?? 0} ${translate("posts.posts", "Posts").toLowerCase()} found`)}</span>
                     </div>
                 </div>`;
         }
@@ -1096,7 +1100,7 @@ async function loadSearchResults(options = {}) {
         renderPosts(Array.isArray(data.data) ? data.data : []);
     } catch (error) {
         console.error("Error loading search results:", error);
-        container.innerHTML = '<div class="pending-state">Failed to load search results.</div>';
+        container.innerHTML = `<div class="pending-state">${escapeHtml(translate("posts.failed_search_results", "Failed to load search results."))}</div>`;
     }
 }
 
@@ -1105,16 +1109,16 @@ function updateFollowerFilterLabel() {
     if (!label) return;
 
     if (selectedFollowerFilters.includes("__all__")) {
-        label.textContent = "All followers";
+        label.textContent = translate("posts.all_followers", "All followers");
         return;
     }
 
     if (selectedFollowerFilters.length === 0) {
-        label.textContent = "Followers";
+        label.textContent = translate("posts.followers_short", "Followers");
         return;
     }
 
-    label.textContent = "Selected followers";
+    label.textContent = translate("posts.followers", "Followers");
 }
 
 async function loadFollowerFilterOptions() {
@@ -1346,20 +1350,22 @@ function setupFeedMenu() {
     });
 }
 
-function setFeedTitle(titleElement, text) {
+function setFeedTitle(titleElement, key, fallback) {
     if (!titleElement) {
         return;
     }
 
+    const text = translate(key, fallback);
     const compactTitles = new Set([
-        "Token History",
-        "Pending Posts",
-        "Pending Delete Requests"
+        "posts.token_history",
+        "posts.pending_posts",
+        "posts.pending_delete_requests"
     ]);
 
+    titleElement.dataset.i18n = key;
     titleElement.textContent = text;
-    titleElement.classList.toggle("feed-topbar-title-compact", compactTitles.has(text));
-    titleElement.classList.toggle("feed-topbar-title-xcompact", text === "Pending Delete Requests");
+    titleElement.classList.toggle("feed-topbar-title-compact", compactTitles.has(key));
+    titleElement.classList.toggle("feed-topbar-title-xcompact", key === "posts.pending_delete_requests");
 }
 
 function setupFeedModeToggle() {
@@ -1439,7 +1445,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("create-post");
-        setFeedTitle(title, "Create Post");
+        setFeedTitle(title, "posts.create_post", "Create Post");
     });
 
     tokenHistoryButton.addEventListener("click", () => {
@@ -1448,7 +1454,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("token-history");
-        setFeedTitle(title, "Token History");
+        setFeedTitle(title, "posts.token_history", "Token History");
     });
 
     postsButton.addEventListener("click", async () => {
@@ -1457,7 +1463,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("default");
-        setFeedTitle(title, "Posts Feed");
+        setFeedTitle(title, "posts.posts_feed", "Posts Feed");
 
         await loadInterestsBanner();
         await loadDefaultFeed();
@@ -1469,7 +1475,7 @@ function setupFeedModeToggle() {
         }
 
         setMode("followers");
-        setFeedTitle(title, "Following");
+        setFeedTitle(title, "posts.following", "Following");
 
         await loadFollowersBanner();
         await loadFollowersFeed();
@@ -1483,7 +1489,7 @@ function setupFeedModeToggle() {
         consumeInitialStatusForMode("pending-posts");
         updateFeedStatusButtons();
         setMode("pending-posts");
-        setFeedTitle(title, "Pending Posts");
+        setFeedTitle(title, "posts.pending_posts", "Pending Posts");
         await loadPendingPostsFeed();
     });
 
@@ -1495,7 +1501,7 @@ function setupFeedModeToggle() {
         consumeInitialStatusForMode("pending-delete-requests");
         updateFeedStatusButtons();
         setMode("pending-delete-requests");
-        setFeedTitle(title, "Pending Delete Requests");
+        setFeedTitle(title, "posts.pending_delete_requests", "Pending Delete Requests");
         await loadPendingDeleteRequestsFeed();
     });
 
@@ -1507,7 +1513,7 @@ function setupFeedModeToggle() {
         consumeInitialStatusForMode("reports");
         updateFeedStatusButtons();
         setMode("reports");
-        setFeedTitle(title, "Reports");
+        setFeedTitle(title, "posts.reports", "Reports");
         await loadReportsFeed();
     });
 }
@@ -1580,7 +1586,7 @@ function setupSearchControls() {
         }
 
         previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
-        setFeedTitle(title, "Search Results");
+        setFeedTitle(title, "posts.search_results", "Search Results");
         await loadSearchResults();
     });
 
@@ -1622,7 +1628,7 @@ function setupSearchControls() {
                 }
 
                 previousSearchMode = activeFeedMode === "search" ? previousSearchMode : activeFeedMode;
-                setFeedTitle(title, "Search Results");
+                setFeedTitle(title, "posts.search_results", "Search Results");
                 await loadSearchResults({ silent: true });
             }, 250);
         });
@@ -1658,7 +1664,7 @@ function setupSearchControls() {
         updateFollowerFilterLabel();
 
         if (previousSearchMode === "followers") {
-            setFeedTitle(title, "Following");
+            setFeedTitle(title, "posts.following", "Following");
             await loadFollowersBanner();
             await loadFollowersFeed();
             return;
@@ -1667,7 +1673,7 @@ function setupSearchControls() {
         if (activeFeedMode === "pending-posts") {
             activeFeedStatusFilter = 0;
             updateFeedStatusButtons();
-            setFeedTitle(title, "Pending Posts");
+            setFeedTitle(title, "posts.pending_posts", "Pending Posts");
             await loadPendingPostsFeed();
             return;
         }
@@ -1675,7 +1681,7 @@ function setupSearchControls() {
         if (activeFeedMode === "pending-delete-requests") {
             activeFeedStatusFilter = 0;
             updateFeedStatusButtons();
-            setFeedTitle(title, "Pending Delete Requests");
+            setFeedTitle(title, "posts.pending_delete_requests", "Pending Delete Requests");
             await loadPendingDeleteRequestsFeed();
             return;
         }
@@ -1683,12 +1689,12 @@ function setupSearchControls() {
         if (activeFeedMode === "reports") {
             activeFeedStatusFilter = 0;
             updateFeedStatusButtons();
-            setFeedTitle(title, "Reports");
+            setFeedTitle(title, "posts.reports", "Reports");
             await loadReportsFeed();
             return;
         }
 
-        setFeedTitle(title, "Posts Feed");
+        setFeedTitle(title, "posts.posts_feed", "Posts Feed");
         await loadInterestsBanner();
         await loadDefaultFeed();
     });
@@ -1902,10 +1908,10 @@ function setupSidebarToggle() {
     const applySidebarState = (collapsed) => {
         layout.classList.toggle("sidebar-collapsed", collapsed);
         toggle.setAttribute("aria-expanded", String(!collapsed));
-        toggle.setAttribute("aria-label", collapsed ? "Show side menu" : "Hide side menu");
-        toggle.setAttribute("title", collapsed ? "Show side menu" : "Hide side menu");
+        toggle.setAttribute("aria-label", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
+        toggle.setAttribute("title", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
         if (label) {
-            label.textContent = collapsed ? "Show menu" : "Hide menu";
+            label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
         }
     };
 
@@ -1917,6 +1923,28 @@ function setupSidebarToggle() {
         window.localStorage.setItem(FEED_SIDEBAR_STORAGE_KEY, collapsed ? "1" : "0");
     });
 }
+
+window.addEventListener("unisupport:languagechange", () => {
+    const title = document.getElementById("feedTitle");
+    const key = title?.dataset?.i18n;
+    if (title && key) {
+        setFeedTitle(title, key, title.textContent || "");
+    }
+
+    updateFollowerFilterLabel();
+
+    const toggle = document.getElementById("feedSidebarToggle");
+    if (toggle) {
+        const layout = document.querySelector(".feed-dashboard-layout");
+        const collapsed = layout?.classList.contains("sidebar-collapsed") ?? false;
+        toggle.setAttribute("aria-label", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
+        toggle.setAttribute("title", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
+        const label = toggle.querySelector(".feed-sidebar-toggle-label");
+        if (label) {
+            label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
+        }
+    }
+});
 
 function setupTokenHistoryFilters() {
     const filterButtons = document.querySelectorAll(".history-filter-btn");

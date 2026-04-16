@@ -16,6 +16,9 @@
     let dashboardAutoRefreshTimerId = null;
     let isDashboardAutoRefreshInFlight = false;
     let rejectReasonDialogResolver = null;
+    function translate(key, fallback) {
+        return window.UniSupportI18n?.t(key, fallback) ?? fallback;
+    }
     const SECTION_CONFIG = {
         posts: {
             load: loadPostsView
@@ -58,6 +61,21 @@
     window.addEventListener("pageshow", function (event) {
         if (event.persisted) {
             reloadActiveSection();
+        }
+    });
+
+    window.addEventListener("unisupport:languagechange", function () {
+        activateSection(getActiveSection());
+        const toggle = document.getElementById("feedSidebarToggle");
+        const layout = document.querySelector(".feed-dashboard-layout");
+        const collapsed = layout?.classList.contains("sidebar-collapsed") ?? false;
+        const label = toggle?.querySelector(".feed-sidebar-toggle-label");
+        if (toggle) {
+            toggle.setAttribute("aria-label", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
+            toggle.setAttribute("title", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
+        }
+        if (label) {
+            label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
         }
     });
 
@@ -239,13 +257,13 @@
         wrapper.innerHTML = `
             <div id="adminRejectReasonDialog" class="admin-reject-dialog" hidden>
                 <form id="adminRejectReasonForm" class="admin-reject-card" role="dialog" aria-modal="true" aria-labelledby="adminRejectReasonTitle">
-                    <h4 id="adminRejectReasonTitle">Reject Post</h4>
-                    <p>Please explain why this post is being rejected.</p>
-                    <textarea id="adminRejectReasonInput" class="admin-reject-textarea" rows="1" placeholder="Write your reason..." required></textarea>
-                    <div id="adminRejectReasonError" class="admin-reject-error" hidden>Please enter a rejection reason.</div>
+                    <h4 id="adminRejectReasonTitle">${escapeHtml(translate("admin.reject_post", "Reject Post"))}</h4>
+                    <p>${escapeHtml(translate("admin.reject_post_desc", "Please explain why this post is being rejected."))}</p>
+                    <textarea id="adminRejectReasonInput" class="admin-reject-textarea" rows="1" placeholder="${escapeHtml(translate("admin.reject_reason_placeholder", "Write your reason..."))}" required></textarea>
+                    <div id="adminRejectReasonError" class="admin-reject-error" hidden>${escapeHtml(translate("admin.rejection_reason_required", "Please enter a rejection reason."))}</div>
                     <div class="admin-reject-actions">
-                        <button type="button" id="adminRejectReasonCancel" class="admin-reject-btn cancel">Cancel</button>
-                        <button type="submit" class="admin-reject-btn danger">Submit rejection</button>
+                        <button type="button" id="adminRejectReasonCancel" class="admin-reject-btn cancel">${escapeHtml(translate("common.cancel", "Cancel"))}</button>
+                        <button type="submit" class="admin-reject-btn danger">${escapeHtml(translate("admin.submit_rejection", "Submit rejection"))}</button>
                     </div>
                 </form>
             </div>
@@ -385,16 +403,18 @@
 
         const title = document.getElementById("adminDashboardTitle");
         const sectionTitles = {
-            posts: "Admin Posts",
-            pending: "Pending Posts",
-            deleteRequests: "Post Delete Requests",
-            commentDeleteRequests: "Comment Delete Requests",
-            categoryRequests: "Category Requests",
-            reports: "Reports"
+            posts: ["admin.posts_title", "Admin Posts"],
+            pending: ["admin.pending_title", "Pending Posts"],
+            deleteRequests: ["admin.delete_requests_title", "Post Delete Requests"],
+            commentDeleteRequests: ["admin.comment_delete_title", "Comment Delete Requests"],
+            categoryRequests: ["admin.category_requests_title", "Category Requests"],
+            reports: ["admin.reports_title", "Reports"]
         };
 
         if (title) {
-            title.textContent = sectionTitles[section] || "Admin Moderation Panel";
+            const [key, fallback] = sectionTitles[section] || ["admin.posts_title", "Admin Moderation Panel"];
+            title.dataset.i18n = key;
+            title.textContent = translate(key, fallback);
         }
 
         if (SECTION_CONFIG[section]) {
@@ -415,10 +435,10 @@
         const applySidebarState = (collapsed) => {
             layout.classList.toggle("sidebar-collapsed", collapsed);
             toggle.setAttribute("aria-expanded", String(!collapsed));
-            toggle.setAttribute("aria-label", collapsed ? "Show side menu" : "Hide side menu");
-            toggle.setAttribute("title", collapsed ? "Show side menu" : "Hide side menu");
+            toggle.setAttribute("aria-label", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
+            toggle.setAttribute("title", collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu"));
             if (label) {
-                label.textContent = collapsed ? "Show menu" : "Hide menu";
+                label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
             }
         };
 
@@ -481,7 +501,7 @@
         }
 
         if (!Array.isArray(notifications) || notifications.length === 0) {
-            list.innerHTML = '<div class="notifications-empty">No notifications yet.</div>';
+            list.innerHTML = `<div class="notifications-empty">${escapeHtml(translate("common.no_notifications", "No notifications yet."))}</div>`;
             count.hidden = true;
             return;
         }
@@ -772,12 +792,12 @@
         }
 
         if (selectedAdminAuthorFilters.includes("__all__")) {
-            label.textContent = "All users";
+            label.textContent = translate("admin.all_users", "All users");
             return;
         }
 
         if (selectedAdminAuthorFilters.length === 0) {
-            label.textContent = "Users";
+            label.textContent = translate("admin.users", "Users");
             return;
         }
 
@@ -840,7 +860,7 @@
         container.innerHTML = "";
 
         if (!Array.isArray(posts) || posts.length === 0) {
-            container.innerHTML = '<div class="pending-state">No posts found for this status.</div>';
+            container.innerHTML = `<div class="pending-state">${escapeHtml(translate("admin.no_posts_for_status", "No posts found for this status."))}</div>`;
             return;
         }
 
@@ -882,12 +902,12 @@
         }
 
         if (selectedPendingAuthorFilters.includes("__all__")) {
-            label.textContent = "All users";
+            label.textContent = translate("admin.all_users", "All users");
             return;
         }
 
         if (selectedPendingAuthorFilters.length === 0) {
-            label.textContent = "Users";
+            label.textContent = translate("admin.users", "Users");
             return;
         }
 
@@ -1295,13 +1315,13 @@
             const pendingTitle = document.createElement("h3");
             pendingTitle.className = "dashboard-subtitle";
             pendingTitle.style.marginTop = "14px";
-            pendingTitle.textContent = "Pending Category Requests";
+            pendingTitle.textContent = translate("admin.pending_category_requests", "Pending Category Requests");
             container.appendChild(pendingTitle);
 
             if (requests.length === 0) {
                 const emptyPending = document.createElement("div");
                 emptyPending.className = "pending-state";
-                emptyPending.textContent = "No pending category requests.";
+                emptyPending.textContent = translate("admin.no_pending_category_requests", "No pending category requests.");
                 container.appendChild(emptyPending);
                 return;
             }
@@ -1445,7 +1465,7 @@
             renderPublishedPosts(container, Array.isArray(result.data) ? result.data : []);
         } catch (error) {
             console.error("Admin search error:", error);
-            container.innerHTML = '<div class="pending-state">Failed to load search results.</div>';
+            container.innerHTML = `<div class="pending-state">${escapeHtml(translate("admin.failed_search_results", "Failed to load search results."))}</div>`;
             showFeedback("postsFeedback", error.message || "Could not search posts.", "error");
         }
     }
@@ -1614,7 +1634,7 @@
             renderPendingModerationPosts(container, Array.isArray(result.data) ? result.data : []);
         } catch (error) {
             console.error("Pending search error:", error);
-            container.innerHTML = '<div class="pending-state">Failed to load search results.</div>';
+            container.innerHTML = `<div class="pending-state">${escapeHtml(translate("admin.failed_search_results", "Failed to load search results."))}</div>`;
             showFeedback("pendingFeedback", error.message || "Could not search pending posts.", "error");
         }
     }
