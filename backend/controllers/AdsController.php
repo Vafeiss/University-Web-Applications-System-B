@@ -13,14 +13,17 @@ class AdsController extends BaseController {
         }
 
         $ad_id = (int) $_POST['ad_id'];
+        if ($ad_id <= 0) {
+            $this->jsonResponse(["message" => "Invalid advertisement id"], 400);
+        }
 
         $db = new Database();
         $pdo = $db->connect();
         $awardedAt = date('Y-m-d H:i:s');
 
-        $pdo->beginTransaction();
-
         try {
+            $pdo->beginTransaction();
+
             $stmt = $pdo->prepare("UPDATE users SET token_balance = token_balance + 1 WHERE user_id = ?");
             $stmt->execute([$user_id]);
 
@@ -43,8 +46,10 @@ class AdsController extends BaseController {
             $this->jsonResponse(["message" => "Could not reward advertisement view"], 500);
         }
 
-        echo "Success";
-        exit;
+        $this->jsonResponse([
+            "ok" => true,
+            "message" => "Advertisement view rewarded successfully"
+        ]);
     }
 }
 

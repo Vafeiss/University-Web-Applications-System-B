@@ -50,6 +50,8 @@ $stmt3->execute([$user_id]);
 $current_ad = $stmt3->fetch(PDO::FETCH_ASSOC);
 $can_watch = $current_ad ? true : false;
 
+$adsCssVersion = filemtime(__DIR__ . '/css/ads_user.css');
+
 // 5. ΕΛΕΓΧΟΣ ΑΝ ΕΙΝΑΙ ΒΙΝΤΕΟ Ή ΕΙΚΟΝΑ
 $is_video = false;
 if ($current_ad) {
@@ -69,27 +71,17 @@ if ($current_ad) {
     <title>Get Your Tokens!</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <style>
-        body { background: #232a4d; min-height: 100vh; display: flex; align-items: center; font-family: 'Segoe UI', sans-serif; }
-        .ad-card { border-radius: 24px; border: none; background: white; overflow: hidden; min-height: 400px; display: flex; flex-direction: column; padding: 25px; }
-        .media-container { width: 100%; height: 240px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .ad-media { width: 100%; height: 100%; object-fit: cover; border-radius: 15px; }
-        .progress { height: 12px; border-radius: 20px; background-color: #eee; }
-        .token-badge { background: #ffd700; color: #333; font-weight: bold; padding: 6px 15px; border-radius: 50px; }
-        .wallet-badge { background: #f8f9fa; color: #667eea; font-weight: bold; padding: 6px 15px; border-radius: 50px; border: 1px solid #eee; }
-        .btn-start { background: #667eea; color: white; font-weight: bold; padding: 16px; border-radius: 50px; border: none; transition: 0.3s; font-size: 1.1rem; }
-        .btn-start:hover { background: #764ba2; transform: scale(1.02); }
-    </style>
+    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/ads_user.css?v=<?php echo $adsCssVersion; ?>">
 </head>
-<body>
+<body class="ads-page">
 
-<a href="posts.php" class="btn btn-light position-absolute top-0 start-0 m-4 d-flex align-items-center" style="z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.07); font-weight:bold;">
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+<a href="posts.php" class="btn btn-light position-absolute top-0 start-0 m-4 d-flex align-items-center ads-back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="ads-back-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
     Back to Posts
 </a>
 
 <div class="container d-flex justify-content-center">
-    <div class="card ad-card shadow-lg animate__animated animate__zoomIn" style="max-width: 420px; width: 100%;">
+    <div class="card ad-card shadow-lg animate__animated animate__zoomIn ads-card-shell">
         <div class="d-flex flex-column h-100">
             <div class="d-flex justify-content-between align-items-center mb-auto">
                 <span class="token-badge shadow-sm">💰 +1 Token</span>
@@ -98,11 +90,11 @@ if ($current_ad) {
             
             <?php if ($can_watch && $current_ad): ?>
                 <div id="setup_box" class="text-center py-5 my-auto">
-                    <p class="fw-bold mb-4" style="color: #000000; font-size: 1.2rem;">Δες διαφημίσεις για να κερδίσεις tokens...</p>
+                    <p class="fw-bold mb-4 ads-setup-copy">Δες διαφημίσεις για να κερδίσεις tokens...</p>
                     <button class="btn btn-start w-100 shadow-sm" onclick="startPremiumAd()">Κέρδισε Tokens 🚀</button>
                 </div>
 
-                <div id="ad_box" style="display:none;">
+                <div id="ad_box" hidden>
                     <div class="media-container mb-3 shadow-sm">
                         <?php if ($is_video): ?>
                             <video id="adMedia" class="ad-media" muted playsinline>
@@ -113,7 +105,7 @@ if ($current_ad) {
                         <?php endif; ?>
                     </div>
                     <div class="progress mb-2 shadow-sm">
-                        <div id="pgBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 100%"></div>
+                        <div id="pgBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success ads-progress-bar"></div>
                     </div>
                     <p class="small text-muted text-end">Τέλος σε: <span id="timerText" class="fw-bold text-danger"><?php echo $current_ad['time_duration']; ?></span>s</p>
                 </div>
@@ -138,7 +130,7 @@ if ($current_ad) {
                         const remaining = (lastTime + cooldownMs) - now;
                         if (remaining <= 0) {
                             document.getElementById("countdownBox").innerHTML = `
-                                <h5 style=\"color:green;\">✔ Μπορείς να δεις νέα διαφήμιση!</h5>
+                                <h5 class=\"ads-success-title\">✔ Μπορείς να δεις νέα διαφήμιση!</h5>
                                 <button onclick=\"location.reload()\" class=\"btn btn-primary mt-3\">Δες διαφήμιση</button>
                             `;
                             return;
@@ -160,8 +152,8 @@ if ($current_ad) {
 
 <script>
 function startPremiumAd() {
-    document.getElementById('setup_box').style.display = 'none';
-    document.getElementById('ad_box').style.display = 'block';
+    document.getElementById('setup_box').hidden = true;
+    document.getElementById('ad_box').hidden = false;
     
     const media = document.getElementById('adMedia');
     const totalTime = <?php echo $current_ad['time_duration'] ?? 10; ?>;
@@ -199,26 +191,33 @@ function finishAd(id) {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'ad_id=' + id
     })
-    .then(r => r.text())
-    .then(data => {
+    .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        return {
+            ok: response.ok,
+            data
+        };
+    })
+    .then(({ ok, data }) => {
         console.log("Response:", data);
 
-        if (data.trim() === "Success") {
+        if (ok && data && data.ok) {
 
             const cooldownHours = <?php echo $current_ad['cooldown_hours'] ?? 1; ?>;
 
             document.getElementById('ad_box').innerHTML = `
                 <div class="text-center py-5">
-                    <h5 style="color:green;">✔ Κέρδισες 1 token!</h5>
+                    <h5 class="ads-success-title">✔ Κέρδισες 1 token!</h5>
                     <p>Μπορείς να ξαναδείς διαφήμιση μετά από <b>${cooldownHours} ώρα${cooldownHours > 1 ? 'ς' : ''}</b>.</p>
                     <button class="btn btn-secondary mt-3" disabled>Περίμενε ${cooldownHours} ώρα${cooldownHours > 1 ? 'ς' : ''}</button>
                 </div>
             `;
 
         } else {
+            const errorMessage = data && data.message ? data.message : 'Κάτι πήγε στραβά.';
             document.getElementById('ad_box').innerHTML = `
                 <div class="text-center py-5 text-danger">
-                    <p>❌ Σφάλμα: ${data}</p>
+                    <p>❌ Σφάλμα: ${errorMessage}</p>
                     <button onclick="location.reload()" class="btn btn-secondary mt-3">Δοκίμασε ξανά</button>
                 </div>
             `;

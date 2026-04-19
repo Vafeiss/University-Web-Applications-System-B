@@ -1,0 +1,14 @@
+.dashboard-top-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.dashboard-token-badge {
+    pointer-events: none;
+}
+
+.dashboard-card {
+    width: 500px;
+}

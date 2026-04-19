@@ -400,7 +400,6 @@ $i18nJsVersion = filemtime(__DIR__ . '/js/i18n.js');
         </div>
 
         <div id="interestsBanner"></div>
-    </header>
 
     <section id="createPostPanel" class="create-post-panel" hidden>
         <div class="post-container create-post-card">
@@ -521,10 +520,6 @@ $i18nJsVersion = filemtime(__DIR__ . '/js/i18n.js');
     </section>
 
     <div id="postsList" class="pending-grid" aria-live="polite"></div>
-
-    <?php if (!$isAdmin): ?>
-
-    <?php endif; ?>
 
     <?php if (!$isAdmin): ?>
         </section>

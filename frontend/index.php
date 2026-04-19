@@ -56,6 +56,8 @@ $tokenBalanceStmt = $conn->prepare(
 $tokenBalanceStmt->execute([":id" => $_SESSION["user_id"]]);
 $tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
+$indexCssVersion = filemtime(__DIR__ . '/css/index.css');
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -72,23 +74,24 @@ $tokenBalance = (int) ($tokenBalanceStmt->fetchColumn() ?: 0);
 
 <!-- Custom CSS -->
 <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
+<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/index.css?v=<?php echo $indexCssVersion; ?>">
 
 </head>
 
 <body>
 
 <!-- Top Menu Bar -->
-<div class="d-flex justify-content-end align-items-center gap-2 pt-4 pe-4" style="position: absolute; right: 0; top: 0; z-index: 10;">
+<div class="d-flex justify-content-end align-items-center gap-2 pt-4 pe-4 dashboard-top-menu">
      <a href="/University-Web-Applications-System-B/frontend/profile_view.php" class="btn btn-link">View &amp; Edit profile</a>
      <a href="/University-Web-Applications-System-B/frontend/edit_interests.php" class="btn btn-link">Edit interests</a>
      <a href="/University-Web-Applications-System-B/frontend/category_request.php" class="btn btn-link">Request category</a>
      <a href="/University-Web-Applications-System-B/frontend/ads_user.php" class="btn btn-warning fw-bold">Watch Ads</a>
-     <span class="btn btn-outline-secondary disabled" style="pointer-events:none;">Tokens <strong><?= $tokenBalance ?></strong></span>
+     <span class="btn btn-outline-secondary disabled dashboard-token-badge">Tokens <strong><?= $tokenBalance ?></strong></span>
 </div>
 
 <div class="container auth-container">
 
-<div class="card shadow-sm" style="width:500px">
+<div class="card shadow-sm dashboard-card">
 
 <div class="card-body p-4 text-center">
 

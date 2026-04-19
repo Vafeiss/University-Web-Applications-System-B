@@ -736,14 +736,14 @@
 
     function statusLabel(post) {
         if (Number(post.status) === 1) {
-            return { text: "Published", className: "approved" };
+            return { text: translate("admin.published", "Published"), className: "approved" };
         }
 
         if (Number(post.status) === 2) {
-            return { text: "Rejected", className: "rejected" };
+            return { text: translate("admin.rejected", "Rejected"), className: "rejected" };
         }
 
-        return { text: "Pending", className: "pending" };
+        return { text: translate("admin.pending", "Pending"), className: "pending" };
     }
 
     function buildPostLink(postId, label, source) {
@@ -801,7 +801,7 @@
             return;
         }
 
-        label.textContent = "Selected users";
+        label.textContent = translate("common.selected_users", "Selected users");
     }
 
     function renderAdminUserOptions() {
@@ -845,7 +845,7 @@
             }
         });
 
-        select.innerHTML = '<option value="">All categories</option>' +
+        select.innerHTML = `<option value="">${escapeHtml(translate("common.all_categories", "All categories"))}</option>` +
             Array.from(categoryMap.entries())
                 .sort((a, b) => a[1].localeCompare(b[1]))
                 .map(([id, name]) => `<option value="${id}">${escapeHtml(name)}</option>`)
@@ -911,7 +911,7 @@
             return;
         }
 
-        label.textContent = "Selected users";
+        label.textContent = translate("common.selected_users", "Selected users");
     }
 
     function renderPendingUserOptions() {
@@ -955,7 +955,7 @@
             }
         });
 
-        select.innerHTML = '<option value="">All categories</option>' +
+        select.innerHTML = `<option value="">${escapeHtml(translate("common.all_categories", "All categories"))}</option>` +
             Array.from(categoryMap.entries())
                 .sort((a, b) => a[1].localeCompare(b[1]))
                 .map(([id, name]) => `<option value="${id}">${escapeHtml(name)}</option>`)

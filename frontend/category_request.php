@@ -133,6 +133,8 @@ $requestsStmt->execute([
 
 $recentRequests = $requestsStmt->fetchAll(PDO::FETCH_ASSOC);
 
+$categoryRequestCssVersion = filemtime(__DIR__ . '/css/category_request.css');
+
 function statusLabel(int $status): string {
     if ($status === 1) {
         return "Approved";
@@ -165,42 +167,7 @@ function statusClass(int $status): string {
 <title>Request Category</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
-<style>
-.request-history-item {
-    position: relative;
-    padding-right: 34px;
-}
-
-.request-history-delete {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    background: none;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    appearance: none;
-    color: #b6bcc8;
-    opacity: 0.55;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1;
-    padding: 0;
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    transition: color 0.2s ease, opacity 0.2s ease, font-weight 0.2s ease;
-}
-
-.request-history-delete:hover,
-.request-history-delete:focus,
-.request-history-delete:focus-visible {
-    outline: none;
-    color: #dc2626;
-    opacity: 1;
-    font-weight: 700;
-}
-</style>
+<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/category_request.css?v=<?php echo $categoryRequestCssVersion; ?>">
 </head>
 <body>
 <div class="container auth-container">

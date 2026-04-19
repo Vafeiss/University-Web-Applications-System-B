@@ -46,6 +46,8 @@ if ($success === "" && isset($_SESSION["flash_success"])) {
 }
 unset($_SESSION["flash_success"]);
 
+$profileViewCssVersion = filemtime(__DIR__ . '/css/profile_view.css');
+
 function displayValue($value): string {
     $normalized = trim((string)$value);
     if ($normalized === "") {
@@ -63,116 +65,7 @@ function displayValue($value): string {
 <title>My Profile</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
-<style>
-body {
-    background: linear-gradient(180deg, #f3f6fb 0%, #eef2f8 100%);
-}
-
-.profile-shell {
-    max-width: 1100px;
-    margin: 18px auto;
-}
-
-.profile-card {
-    border: 1px solid #d9e2ef;
-    border-radius: 14px;
-    box-shadow: 0 8px 28px rgba(24, 42, 74, 0.08);
-}
-
-.profile-title {
-    margin-bottom: 2px;
-    text-align: center;
-    font-size: 30px;
-    font-weight: 800;
-    color: #1f2d45;
-}
-
-.profile-subtitle {
-    margin-bottom: 14px;
-    text-align: center;
-    color: #60708c;
-    font-size: 11px;
-}
-
-.profile-info-item {
-    border: 1px solid #d6dfec;
-    border-radius: 12px;
-    background: #f8fbff;
-    padding: 9px 11px;
-    height: 100%;
-}
-
-.profile-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #5f6f89;
-}
-
-.profile-value {
-    margin-top: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1f2d45;
-    line-height: 1.35;
-}
-
-.profile-section-title {
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #1f2d45;
-}
-
-.profile-interests {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.profile-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 999px;
-    border: 1px solid #c9d8f3;
-    background: #eaf1ff;
-    color: #214e9d;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.profile-actions {
-    margin-top: 18px;
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.profile-btn {
-    min-width: 150px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    font-size: 13px;
-}
-
-@media (max-width: 768px) {
-    .profile-title {
-        font-size: 24px;
-    }
-
-    .profile-value {
-        font-size: 13px;
-    }
-
-    .profile-btn {
-        width: 100%;
-    }
-}
-</style>
+<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/profile_view.css?v=<?php echo $profileViewCssVersion; ?>">
 </head>
 <body>
 <div class="container profile-shell">
@@ -182,11 +75,11 @@ body {
                 <div class="alert alert-success mb-3">Profile updated successfully.</div>
             <?php endif; ?>
 
-            <div class="page-top" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px;">
+            <div class="page-top profile-page-top">
                 <a class="back-link" href="posts.php">&larr; Back to posts</a>
                 <a href="edit_profile_setup.php" class="back-link">Edit profile setup</a>
             </div>
-            <h1 class="profile-title" style="margin-bottom: 2px;">My Profile</h1>
+            <h1 class="profile-title">My Profile</h1>
             <p class="profile-subtitle">Overview of your account details and registered interests.</p>
 
             <div class="row g-3 mb-4">

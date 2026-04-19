@@ -448,28 +448,28 @@ function getPostStatusInfo(status, deleted) {
     const numericStatus = Number(status);
 
     if (numericStatus === 0) {
-        return { text: "Pending", className: "pending" };
+        return { text: translate("admin.pending", "Pending"), className: "pending" };
     }
 
     if (numericStatus === 2) {
-        return { text: "Rejected", className: "rejected" };
+        return { text: translate("admin.rejected", "Rejected"), className: "rejected" };
     }
 
-    return { text: "Approved", className: "approved" };
+    return { text: translate("admin.approved", "Approved"), className: "approved" };
 }
 
 function getRequestStatusInfo(status) {
     const numericStatus = Number(status);
 
     if (numericStatus === 0) {
-        return { text: "Pending", className: "pending" };
+        return { text: translate("admin.pending", "Pending"), className: "pending" };
     }
 
     if (numericStatus === 1) {
-        return { text: "Approved", className: "approved" };
+        return { text: translate("admin.approved", "Approved"), className: "approved" };
     }
 
-    return { text: "Rejected", className: "rejected" };
+    return { text: translate("admin.rejected", "Rejected"), className: "rejected" };
 }
 
 function confirmUnfollowAction() {
@@ -478,11 +478,11 @@ function confirmUnfollowAction() {
         dialog.className = "comment-policy-dialog";
         dialog.innerHTML = `
             <div class="comment-policy-card" role="dialog" aria-modal="true" aria-labelledby="unfollowConfirmTitle">
-                <h4 id="unfollowConfirmTitle">Confirm Unfollow</h4>
-                <p>Are you sure you want to unfollow this user?</p>
+                <h4 id="unfollowConfirmTitle">${escapeHtml(translate("posts.confirm_unfollow_title", "Confirm Unfollow"))}</h4>
+                <p>${escapeHtml(translate("posts.confirm_unfollow_desc", "Are you sure you want to unfollow this user?"))}</p>
                 <div class="comment-policy-actions">
-                    <button type="button" class="policy-link cancel" data-unfollow-confirm="cancel">Cancel</button>
-                    <button type="button" class="policy-link danger" data-unfollow-confirm="accept">Unfollow</button>
+                    <button type="button" class="policy-link cancel" data-unfollow-confirm="cancel">${escapeHtml(translate("common.cancel", "Cancel"))}</button>
+                    <button type="button" class="policy-link danger" data-unfollow-confirm="accept">${escapeHtml(translate("posts.unfollow", "Unfollow"))}</button>
                 </div>
             </div>
         `;
@@ -687,7 +687,7 @@ function renderPendingPosts(posts) {
         const status = getPostStatusInfo(post.status, post.deleted);
         const rejectionReason = String(post.rejection_reason || "").trim();
         const deleteButtonHtml = Number(post.status) === 2
-            ? `<button type="button" class="rejected-post-hard-delete-btn" data-hard-delete-rejected-post="1" data-post-id="${escapeHtml(post.post_id)}" aria-label="Delete rejected post" title="Delete permanently">x</button>`
+            ? `<button type="button" class="rejected-post-hard-delete-btn" data-hard-delete-rejected-post="1" data-post-id="${escapeHtml(post.post_id)}" aria-label="${escapeHtml(translate("posts.delete_rejected_post", "Delete Rejected Post"))}" title="${escapeHtml(translate("posts.delete_permanently", "Delete permanently"))}">x</button>`
             : "";
 
         card.innerHTML = `
@@ -793,7 +793,7 @@ function renderPendingDeleteRequests(requests) {
     container.innerHTML = "";
 
     if (!Array.isArray(requests) || requests.length === 0) {
-        container.innerHTML = '<div class="pending-state">No delete requests found.</div>';
+        container.innerHTML = `<div class="pending-state">${escapeHtml(translate("posts.no_delete_requests", "No delete requests found."))}</div>`;
         return;
     }
 
@@ -830,7 +830,7 @@ function renderReports(reports) {
     container.innerHTML = "";
 
     if (!Array.isArray(reports) || reports.length === 0) {
-        container.innerHTML = '<div class="pending-state">No reports found.</div>';
+        container.innerHTML = `<div class="pending-state">${escapeHtml(translate("posts.no_reports", "No reports found."))}</div>`;
         return;
     }
 
@@ -843,8 +843,8 @@ function renderReports(reports) {
         const postDeleted = Number(report.deleted) === 1;
         const showPostStatus = Number(report.status) !== 2;
         const postStatus = postDeleted
-            ? { text: "Removed", className: "rejected" }
-            : { text: "Visible", className: "approved" };
+            ? { text: translate("posts.removed", "Removed"), className: "rejected" }
+            : { text: translate("posts.visible", "Visible"), className: "approved" };
         const title = report.post_title || (report.post_id ? `Post #${report.post_id}` : "Post unavailable");
         const link = report.post_id
             ? `<a class="feed-title-link" href="post.php?id=${encodeURIComponent(report.post_id)}">${escapeHtml(title)}</a>`

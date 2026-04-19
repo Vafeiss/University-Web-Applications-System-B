@@ -33,6 +33,38 @@ body {
     text-align: center;
 }
 
+.login-language-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.44);
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: 0 10px 22px rgba(23, 54, 101, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.login-language-switcher .language-switcher-btn {
+    min-width: 42px;
+    height: 34px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #3f5a85;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-language-switcher .language-switcher-btn.is-active {
+    background: linear-gradient(180deg, #214f95 0%, #173665 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(23, 54, 101, 0.18);
+}
+
 .login-brand-mark {
     width: 78px;
     height: 78px;
