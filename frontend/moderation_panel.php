@@ -93,15 +93,6 @@ $history_result = $conn->query($sql_history);
             align-items: center;
             gap: 12px;
         }
-        /* Responsive: όταν το body έχει κλάση minimized, ο τίτλος πάει από κάτω */
-        body.minimized .header-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        body.minimized .header-title {
-            margin-left: 0;
-        }
     </style>
 </head>
 <body>

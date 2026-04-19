@@ -1,48 +1,13 @@
 <?php
-/**
- * File: logout.php
- * Layer: Frontend
- * Module: Session Management
- * System: University Web Applications System B
- *
- * Description:
- * Terminates the current user session and logs the user out
- * of the application.
- *
- * The script performs a complete session cleanup by:
- * - Removing all session variables
- * - Deleting the session cookie
- * - Destroying the session
- *
- * After the logout process is completed, the user is redirected
- * to the login page.
- *
- * Security Measures:
- * - Prevents session reuse
- * - Removes session cookie from the browser
- * - Destroys session data stored on the server
- *
- * Access Level:
- * - Authenticated users
- *
- * Author: Pela Koniotaki
- * Date: 2026
- */
+// logout - κανει clear session και redirect στο login
 
 session_start();
 
-/* =========================
-   CLEAR SESSION VARIABLES
-========================= */
-
+// αδειαζουμε session
 $_SESSION = [];
 
-/* =========================
-   DELETE SESSION COOKIE
-========================= */
-
+// σβηνουμε το cookie
 if (ini_get("session.use_cookies")) {
-
     $params = session_get_cookie_params();
 
     setcookie(
@@ -56,15 +21,8 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-/* =========================
-   DESTROY SESSION
-========================= */
-
+// destroy
 session_destroy();
-
-/* =========================
-   REDIRECT USER
-========================= */
 
 header("Location: /University-Web-Applications-System-B/frontend/login.php");
 exit;
