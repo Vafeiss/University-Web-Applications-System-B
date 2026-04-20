@@ -2279,18 +2279,21 @@ body.info-dialog-open {
     gap: 6px;
 }
 
-html[lang="el"] .feed-dashboard-toplink {
+html[lang="el"] .feed-dashboard-toplink,
+html[lang="en"] .feed-dashboard-toplink {
     min-height: 42px;
     padding: 0 8px;
     font-size: 11.5px;
     border-radius: 20px;
 }
 
-html[lang="el"] .feed-dashboard-toplinks {
+html[lang="el"] .feed-dashboard-toplinks,
+html[lang="en"] .feed-dashboard-toplinks {
     gap: 4px;
 }
 
-html[lang="el"] .feed-tab {
+html[lang="el"] .feed-tab,
+html[lang="en"] .feed-tab {
     min-height: 48px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -2298,7 +2301,8 @@ html[lang="el"] .feed-tab {
     line-height: 1.2;
 }
 
-html[lang="el"] .feed-sidebar-toggle {
+html[lang="el"] .feed-sidebar-toggle,
+html[lang="en"] .feed-sidebar-toggle {
     min-width: auto;
     width: 36px;
     min-width: 36px;
@@ -2306,46 +2310,56 @@ html[lang="el"] .feed-sidebar-toggle {
     justify-content: center;
 }
 
-html[lang="el"] .user-feed-shell .feed-sidebar-toggle-label {
+html[lang="el"] .user-feed-shell .feed-sidebar-toggle-label,
+html[lang="en"] .user-feed-shell .feed-sidebar-toggle-label {
     display: none;
 }
 
-html[lang="el"] .user-feed-shell .feed-dashboard-topbar {
+html[lang="el"] .user-feed-shell .feed-dashboard-topbar,
+html[lang="en"] .user-feed-shell .feed-dashboard-topbar {
     grid-template-columns: auto auto 1fr auto auto;
     column-gap: 4px;
     padding-left: 10px;
     padding-right: 10px;
 }
 
-html[lang="el"] .user-feed-shell .feed-topbar-title {
+html[lang="el"] .user-feed-shell .feed-topbar-title,
+html[lang="en"] .user-feed-shell .feed-topbar-title {
     margin-left: 4px;
     font-size: 20px;
 }
 
-html[lang="el"] .user-feed-shell .feed-dashboard-toplinks {
+html[lang="el"] .user-feed-shell .feed-dashboard-toplinks,
+html[lang="en"] .user-feed-shell .feed-dashboard-toplinks {
     gap: 4px;
 }
 
-html[lang="el"] .user-feed-shell .language-switcher {
+html[lang="el"] .user-feed-shell .language-switcher,
+html[lang="en"] .user-feed-shell .language-switcher {
     transform: scale(0.94);
     transform-origin: center;
 }
 
-html[lang="el"] .user-feed-shell .app-topbar-actions {
+html[lang="el"] .user-feed-shell .app-topbar-actions,
+html[lang="en"] .user-feed-shell .app-topbar-actions {
     gap: 4px;
 }
 
-html[lang="el"] .user-feed-shell .token-balance-badge {
+html[lang="el"] .user-feed-shell .token-balance-badge,
+html[lang="en"] .user-feed-shell .token-balance-badge {
     padding: 7px 8px;
     gap: 5px;
 }
 
-html[lang="el"] .user-feed-shell .token-balance-label {
+html[lang="el"] .user-feed-shell .token-balance-label,
+html[lang="en"] .user-feed-shell .token-balance-label {
     font-size: 11px;
 }
 
 html[lang="el"] .user-feed-shell .info-fab,
-html[lang="el"] .user-feed-shell .notifications-btn {
+html[lang="el"] .user-feed-shell .notifications-btn,
+html[lang="en"] .user-feed-shell .info-fab,
+html[lang="en"] .user-feed-shell .notifications-btn {
     width: 38px;
     height: 38px;
 }
