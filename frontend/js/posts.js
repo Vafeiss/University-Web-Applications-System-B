@@ -886,9 +886,10 @@ async function loadInterestsBanner() {
 
         banner.innerHTML = `
             <div class="interests-banner">
-                <div class="interests-label">${escapeHtml(translate("posts.your_interests", "Your interests"))}</div>
+                <div class="interests-label" data-i18n="posts.your_interests">Your interests</div>
                 <div class="interests-chips">${chips}</div>
             </div>`;
+        window.UniSupportI18n?.applyTranslations?.(banner);
     } catch (error) {
         console.error("Could not load interests:", error);
     }
