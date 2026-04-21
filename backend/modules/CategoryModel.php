@@ -27,7 +27,7 @@
  * Used By:
  * - CategoryController
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

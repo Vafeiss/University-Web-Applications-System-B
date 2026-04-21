@@ -26,7 +26,7 @@
  * - frontend/category_request.php
  * - frontend/admin_dashboard.php
  *
- * Author:
+ * Author:Pelagia Koniotaki
  * Date: 2026
  */
 

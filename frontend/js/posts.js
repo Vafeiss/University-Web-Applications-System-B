@@ -23,7 +23,7 @@
  * Used By:
  * - frontend/posts.php
  *
- * Author:
+ * Author: Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

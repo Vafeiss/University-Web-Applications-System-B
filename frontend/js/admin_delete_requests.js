@@ -18,7 +18,7 @@
  * - frontend/admin_delete_requests.php
  * - frontend/admin_dashboard.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

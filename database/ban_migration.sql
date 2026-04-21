@@ -16,7 +16,7 @@
  * - BanGuard middleware
  * - PostModel (automatic banning on high reports)
  *
- * Author:
+ * Author: Antriani Theofanous
  * Date: 2026
  */
 

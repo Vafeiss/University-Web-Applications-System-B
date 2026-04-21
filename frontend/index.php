@@ -28,7 +28,7 @@
  * - Initial redirect after login
  * - Main app entry point
  *
- * Author: Pelagia Koniotaki
+ * Author: Pelagia Koniotaki & Antriani Theofanous
  * Date: 2026
  */
 

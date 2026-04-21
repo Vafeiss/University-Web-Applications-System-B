@@ -30,7 +30,7 @@
  * - All protected frontend pages
  * - BaseController
  *
- * Author:
+ * Author: Antriani Theofanous
  * Date: 2026
  */
 

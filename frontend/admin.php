@@ -20,7 +20,7 @@
  * Used By:
  * - Navigation links from index.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

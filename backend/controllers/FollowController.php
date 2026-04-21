@@ -21,7 +21,7 @@
  * - Duplicate follow prevention
  * - Idempotent unfollow operations
  *
- * Used By:
+ * Used By:Pelagia Koniotaki
  * - frontend/profile_view.php (AJAX follow/unfollow)
  *
  * Author:

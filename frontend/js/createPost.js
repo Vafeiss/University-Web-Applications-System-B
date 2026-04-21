@@ -17,7 +17,7 @@
  * Used By:
  * - frontend/create_post.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

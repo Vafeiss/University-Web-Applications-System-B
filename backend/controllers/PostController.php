@@ -34,7 +34,7 @@
  * - frontend/post.php
  * - frontend/admin_dashboard.php
  *
- * Author:
+ * Author:Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

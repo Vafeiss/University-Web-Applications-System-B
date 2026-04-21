@@ -24,7 +24,7 @@
  * Used By:
  * - Linked from profile_view.php and profile_setup.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

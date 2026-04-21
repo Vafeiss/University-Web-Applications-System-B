@@ -25,7 +25,7 @@
  * Used By:
  * - frontend notifications panel (AJAX calls)
  *
- * Author:
+ * Author:Pelagia Koniotaki
  * Date: 2026
  */
 

@@ -28,7 +28,7 @@
  * - Initial page for unauthenticated users
  * - Post-logout destination
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

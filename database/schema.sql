@@ -27,7 +27,7 @@
  * Used By:
  * - All models and controllers
  *
- * Author:
+ * Author: Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

@@ -24,10 +24,10 @@
  * - Admin override: admins see rejected/deleted posts when status=2
  * - Role-based result filtering
  *
- * Used By:
+ * Used By: 
  * - SearchController
  *
- * Author:
+ * Author: Antriani Theofanous
  * Date: 2026
  */
 

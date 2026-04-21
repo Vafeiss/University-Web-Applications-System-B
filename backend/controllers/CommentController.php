@@ -27,7 +27,7 @@
  * - frontend/post.php (comment submission via AJAX)
  * - frontend/admin_comment_delete_requests.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 
