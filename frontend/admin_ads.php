@@ -17,7 +17,7 @@
  * Used By:
  * - frontend/admin_dashboard.php
  *
- * Author: Adapted for current branch
+ * Author: Panagiwtis Panagiwtou
  * Date: 2026
  */
 
