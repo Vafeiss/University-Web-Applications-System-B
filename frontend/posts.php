@@ -456,13 +456,25 @@ $i18nJsVersion = filemtime(__DIR__ . '/js/i18n.js');
                 required
                 ></textarea>
 
-                <label data-i18n="posts.category_label">Category</label>
-                <select name="category_id" required>
-                    <option value="" data-i18n="posts.select_category">Select Category</option>
-                    <?php foreach ($categories as $category): ?>
-                    <option value="<?= (int)$category['category_id'] ?>"><?= htmlspecialchars((string)$category['name'], ENT_QUOTES, 'UTF-8') ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="inlineCategoryTrigger" data-i18n="posts.category_label">Category</label>
+                <div class="post-category-field">
+                    <div class="post-category-dropdown" id="inlineCategoryDropdown">
+                        <button type="button" class="post-category-trigger" id="inlineCategoryTrigger" aria-haspopup="true" aria-expanded="false">
+                            <span class="post-category-label" id="inlineCategoryLabel" data-i18n="posts.select_category">Select Category</span>
+                        </button>
+                        <div class="post-category-menu" id="inlineCategoryMenu" hidden>
+                            <div class="post-category-options">
+                                <?php foreach ($categories as $category): ?>
+                                    <?php $catId = (int)$category['category_id']; ?>
+                                    <label class="post-category-option" for="inlinePostCat<?= $catId ?>">
+                                        <input type="radio" class="post-category-radio" name="category_id" value="<?= $catId ?>" id="inlinePostCat<?= $catId ?>" required>
+                                        <span><?= htmlspecialchars((string)$category['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="anonymous-setting">
                     <div class="anonymous-setting-text">

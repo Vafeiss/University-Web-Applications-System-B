@@ -1313,10 +1313,10 @@
             container.innerHTML = "";
 
             const existingWrap = document.createElement("div");
-            existingWrap.className = "pending-card";
+            existingWrap.className = "admin-existing-categories";
 
             const existingTitle = document.createElement("h3");
-            existingTitle.className = "dashboard-subtitle";
+            existingTitle.className = "admin-existing-categories-label";
             existingTitle.textContent = "Existing Categories";
             existingWrap.appendChild(existingTitle);
 

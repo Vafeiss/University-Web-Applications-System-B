@@ -277,8 +277,30 @@ body {
 .setup-options {
     display: grid;
     gap: 8px;
-    max-height: 220px;
+    /* δειχνει ~2 options, τα υπολοιπα με scroll (οπως notifications/comments) */
+    max-height: 104px;
     overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #c3d1ea #eef3fb;
+}
+
+.setup-options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.setup-options::-webkit-scrollbar-track {
+    background: #eef3fb;
+    border-radius: 999px;
+}
+
+.setup-options::-webkit-scrollbar-thumb {
+    background: #c3d1ea;
+    border-radius: 999px;
+}
+
+.setup-options::-webkit-scrollbar-thumb:hover {
+    background: #aebfdd;
 }
 
 .setup-option {

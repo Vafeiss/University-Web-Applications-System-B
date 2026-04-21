@@ -134,20 +134,36 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
 
             <form method="POST" action="../backend/controllers/ProfileController.php">
                 <div class="setup-field">
-                    <label for="setupUniversity">University</label>
-                    <div class="setup-input-wrap">
-                        <span class="setup-input-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 10 12 4l9 6-9 6-9-6Z"></path>
-                                <path d="M7 12v5c0 .7 2.2 3 5 3s5-2.3 5-3v-5"></path>
-                            </svg>
-                        </span>
-                        <select name="university" id="setupUniversity" class="setup-input" required>
-                            <option value="">Select University</option>
-                            <option value="TEPAK">TEPAK</option>
-                            <option value="UCY">University of Cyprus</option>
-                            <option value="CUT">Cyprus University of Technology</option>
-                        </select>
+                    <label for="universityTrigger">University</label>
+                    <div class="setup-dropdown" id="universityDropdown">
+                        <div class="setup-input-wrap">
+                            <span class="setup-input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 10 12 4l9 6-9 6-9-6Z"></path>
+                                    <path d="M7 12v5c0 .7 2.2 3 5 3s5-2.3 5-3v-5"></path>
+                                </svg>
+                            </span>
+                            <button type="button" class="setup-select-trigger" id="universityTrigger" aria-haspopup="true" aria-expanded="false">
+                                <span class="setup-select-text" id="universityLabel">Select University</span>
+                            </button>
+                        </div>
+
+                        <div class="setup-dropdown-menu" id="universityMenu">
+                            <div class="setup-options">
+                                <label class="setup-option" for="setupUniTEPAK">
+                                    <input type="radio" class="setup-university-radio" name="university" value="TEPAK" id="setupUniTEPAK" required>
+                                    <span>TEPAK</span>
+                                </label>
+                                <label class="setup-option" for="setupUniUCY">
+                                    <input type="radio" class="setup-university-radio" name="university" value="UCY" id="setupUniUCY">
+                                    <span>University of Cyprus</span>
+                                </label>
+                                <label class="setup-option" for="setupUniCUT">
+                                    <input type="radio" class="setup-university-radio" name="university" value="CUT" id="setupUniCUT">
+                                    <span>Cyprus University of Technology</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -215,49 +231,89 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
 </div>
 
 <script>
-const dropdown = document.getElementById("interestsDropdown");
-const trigger = document.getElementById("interestsTrigger");
-const label = document.getElementById("interestsLabel");
-const checkboxes = Array.from(document.querySelectorAll(".setup-interest-checkbox"));
+/* Interests — multi-select dropdown */
+(function initInterestsDropdown() {
+    const dropdown = document.getElementById("interestsDropdown");
+    const trigger = document.getElementById("interestsTrigger");
+    const label = document.getElementById("interestsLabel");
+    const checkboxes = Array.from(document.querySelectorAll(".setup-interest-checkbox"));
 
-function updateInterestLabel() {
-    const selected = checkboxes
-        .filter((checkbox) => checkbox.checked)
-        .map((checkbox) => checkbox.parentElement.textContent.trim());
+    if (!dropdown || !trigger || !label) return;
 
-    if (selected.length === 0) {
-        label.textContent = "Choose interests";
-        return;
+    function updateInterestLabel() {
+        const selected = checkboxes
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.parentElement.textContent.trim());
+
+        if (selected.length === 0) {
+            label.textContent = "Choose interests";
+            return;
+        }
+
+        if (selected.length <= 2) {
+            label.textContent = selected.join(", ");
+            return;
+        }
+
+        label.textContent = selected.length + " interests selected";
     }
 
-    if (selected.length <= 2) {
-        label.textContent = selected.join(", ");
-        return;
+    function setOpen(isOpen) {
+        dropdown.classList.toggle("is-open", isOpen);
+        trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
 
-    label.textContent = selected.length + " interests selected";
-}
+    trigger.addEventListener("click", function () {
+        setOpen(!dropdown.classList.contains("is-open"));
+    });
 
-function setDropdownState(isOpen) {
-    dropdown.classList.toggle("is-open", isOpen);
-    trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
-}
+    document.addEventListener("click", function (event) {
+        if (!dropdown.contains(event.target)) {
+            setOpen(false);
+        }
+    });
 
-trigger.addEventListener("click", function () {
-    setDropdownState(!dropdown.classList.contains("is-open"));
-});
+    checkboxes.forEach(function (checkbox) {
+        checkbox.addEventListener("change", updateInterestLabel);
+    });
 
-document.addEventListener("click", function (event) {
-    if (!dropdown.contains(event.target)) {
-        setDropdownState(false);
+    updateInterestLabel();
+})();
+
+/* University — single-select dropdown */
+(function initUniversityDropdown() {
+    const dropdown = document.getElementById("universityDropdown");
+    const trigger = document.getElementById("universityTrigger");
+    const label = document.getElementById("universityLabel");
+    const radios = Array.from(document.querySelectorAll(".setup-university-radio"));
+
+    if (!dropdown || !trigger || !label) return;
+
+    function setOpen(isOpen) {
+        dropdown.classList.toggle("is-open", isOpen);
+        trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
-});
 
-checkboxes.forEach(function (checkbox) {
-    checkbox.addEventListener("change", updateInterestLabel);
-});
+    trigger.addEventListener("click", function () {
+        setOpen(!dropdown.classList.contains("is-open"));
+    });
 
-updateInterestLabel();
+    document.addEventListener("click", function (event) {
+        if (!dropdown.contains(event.target)) {
+            setOpen(false);
+        }
+    });
+
+    radios.forEach(function (radio) {
+        radio.addEventListener("change", function () {
+            if (radio.checked) {
+                label.textContent = radio.parentElement.textContent.trim();
+                label.classList.add("has-value");
+                setOpen(false);
+            }
+        });
+    });
+})();
 </script>
 
 </body>

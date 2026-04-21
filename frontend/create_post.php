@@ -89,15 +89,25 @@ $createPostJsVersion = filemtime(__DIR__ . "/js/createPost.js");
         required
         ></textarea>
 
-        <label>Category</label>
-        <select name="category_id" required>
-
-        <option value="">Select Category</option>
-        <?php foreach ($categories as $category): ?>
-        <option value="<?= (int)$category['category_id'] ?>"><?= htmlspecialchars((string)$category['name'], ENT_QUOTES, 'UTF-8') ?></option>
-        <?php endforeach; ?>
-
-        </select>
+        <label for="categoryTrigger">Category</label>
+        <div class="post-category-field">
+            <div class="post-category-dropdown" id="categoryDropdown">
+                <button type="button" class="post-category-trigger" id="categoryTrigger" aria-haspopup="true" aria-expanded="false">
+                    <span class="post-category-label" id="categoryLabel">Select Category</span>
+                </button>
+                <div class="post-category-menu" id="categoryMenu">
+                    <div class="post-category-options">
+                        <?php foreach ($categories as $category): ?>
+                            <?php $catId = (int)$category['category_id']; ?>
+                            <label class="post-category-option" for="postCat<?= $catId ?>">
+                                <input type="radio" class="post-category-radio" name="category_id" value="<?= $catId ?>" id="postCat<?= $catId ?>" required>
+                                <span><?= htmlspecialchars((string)$category['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="anonymous-setting">
             <div class="anonymous-setting-text">

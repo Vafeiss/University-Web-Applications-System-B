@@ -2175,3 +2175,43 @@ document.addEventListener("DOMContentLoaded", () => {
         loadDefaultFeed();
     });
 });
+
+/* custom category dropdown για το inline create-post form */
+(function initInlinePostCategoryDropdown() {
+    const dropdown = document.getElementById("inlineCategoryDropdown");
+    if (!dropdown) return;
+
+    const trigger = dropdown.querySelector(".post-category-trigger");
+    const menu = dropdown.querySelector(".post-category-menu");
+    const label = dropdown.querySelector(".post-category-label");
+    const radios = Array.from(dropdown.querySelectorAll(".post-category-radio"));
+
+    function setOpen(isOpen) {
+        dropdown.classList.toggle("is-open", isOpen);
+        trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        if (menu) menu.hidden = !isOpen;
+    }
+
+    trigger.addEventListener("click", function() {
+        setOpen(!dropdown.classList.contains("is-open"));
+    });
+
+    document.addEventListener("click", function(event) {
+        if (!dropdown.contains(event.target)) {
+            setOpen(false);
+        }
+    });
+
+    radios.forEach(function(radio) {
+        radio.addEventListener("change", function() {
+            if (radio.checked) {
+                const name = radio.parentElement.textContent.trim();
+                label.textContent = name;
+                label.classList.add("has-value");
+                setOpen(false);
+            }
+        });
+    });
+
+    setOpen(false);
+})();

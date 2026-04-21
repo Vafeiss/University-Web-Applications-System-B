@@ -318,6 +318,20 @@ body.admin-dialog-open {
     margin-left: auto;
 }
 
+/* Παραπανω κενο μεταξυ tabs στο admin side menu */
+.feed-sidebar-tabs[aria-label="Admin moderation sections"] {
+    gap: 20px;
+}
+
+/* default: κρυμμενα panels — μονο το .is-active φαινεται */
+.dashboard-panel {
+    display: none;
+}
+
+.dashboard-panel.is-active {
+    display: block;
+}
+
 .dashboard-panel-header {
     margin-bottom: 14px;
 }
@@ -336,6 +350,121 @@ body.admin-dialog-open {
 
 .dashboard-panel-header p:first-child {
     margin-top: 0;
+}
+
+/* Pending / Approved / Rejected — ξεχωριστα pill tabs */
+.dashboard-status-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 18px;
+}
+
+.dashboard-status-filter {
+    appearance: none;
+    border: 1px solid #d9e1ef;
+    border-radius: 999px;
+    padding: 8px 22px;
+    background: #ffffff;
+    color: #4b5d7a;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-status-filter:hover {
+    background: #eef3fb;
+    color: #1d3766;
+    border-color: #c3d1ea;
+}
+
+.dashboard-status-filter.is-active {
+    background: linear-gradient(180deg, #1f3a6e 0%, #152a53 100%);
+    color: #ffffff;
+    border-color: #152a53;
+    box-shadow: 0 8px 18px rgba(21, 42, 83, 0.25);
+}
+
+/* Existing categories banner — ιδια μπλε φορμα με το Following στους users */
+.admin-existing-categories {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(180deg, #f5f8ff, #eef4ff);
+    border: 1px solid #dbe4f2;
+    border-left: 4px solid #4a6cf7;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.admin-existing-categories-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #435674;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.admin-existing-categories-label::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 50% 50%, #ffffff 0 18%, transparent 20%),
+        linear-gradient(135deg, #4a6cf7, #7ea2ff);
+    box-shadow: 0 4px 10px rgba(74, 108, 247, 0.2);
+}
+
+/* Existing categories — ιδια μορφη με τα following chips στους users */
+.admin-category-delete-trigger {
+    border: 1px solid #d7e1f0;
+    border-radius: 999px;
+    background: #f8fbff;
+    padding: 4px 10px;
+    margin: 0;
+    color: #28405f;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.2;
+}
+
+.admin-category-delete-trigger:hover {
+    background: #fff2f2;
+    border-color: #e8c1c1;
+}
+
+.admin-category-delete-trigger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-category-delete-name {
+    color: #2f4772;
+    font-weight: 700;
+}
+
+.admin-category-delete-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9c2f3e;
+    letter-spacing: 0.01em;
+}
+
+.dashboard-subtitle {
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #142b53;
 }
 
 .dashboard-search-panel {

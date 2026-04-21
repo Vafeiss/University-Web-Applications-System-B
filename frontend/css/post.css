@@ -76,6 +76,137 @@ textarea {
     resize: vertical;
     line-height: 1.5;
 }
+
+/* Custom category dropdown — max 2 visible options, scroll για τα υπολοιπα */
+.post-category-field {
+    margin-bottom: 18px;
+}
+
+.post-category-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.post-category-trigger {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 42px 10px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e3760;
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.post-category-trigger:hover {
+    border-color: #b5c3d9;
+}
+
+.post-category-trigger:focus,
+.post-category-dropdown.is-open .post-category-trigger {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.post-category-trigger::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid #5f78a2;
+    border-bottom: 2px solid #5f78a2;
+    transform: rotate(45deg) translateY(-4px);
+    transition: transform 0.2s ease;
+}
+
+.post-category-dropdown.is-open .post-category-trigger::after {
+    transform: rotate(-135deg) translateY(-1px);
+}
+
+.post-category-label {
+    color: #8094b2;
+}
+
+.post-category-label.has-value {
+    color: #1e3760;
+    font-weight: 600;
+}
+
+.post-category-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: 8px;
+    border: 1px solid #e0e6ef;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.10);
+}
+
+.post-category-options {
+    display: grid;
+    gap: 6px;
+    /* δειχνει ~2 options, τα υπολοιπα με scroll (οπως notifications/comments) */
+    max-height: 104px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #c3d1ea #eef3fb;
+}
+
+.post-category-options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.post-category-options::-webkit-scrollbar-track {
+    background: #eef3fb;
+    border-radius: 999px;
+}
+
+.post-category-options::-webkit-scrollbar-thumb {
+    background: #c3d1ea;
+    border-radius: 999px;
+}
+
+.post-category-options::-webkit-scrollbar-thumb:hover {
+    background: #aebfdd;
+}
+
+.post-category-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 0;
+    border-radius: 10px;
+    background: #f7f9fd;
+    color: #35506f;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.post-category-option:hover {
+    background: #eef4fb;
+}
+
+.post-category-option input {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    accent-color: #214f95;
+    border: 0;
+}
+
 /* Ετικέτες για φόρμες */
 label {
     display: block;
