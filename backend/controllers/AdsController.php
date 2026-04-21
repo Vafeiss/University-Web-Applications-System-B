@@ -21,7 +21,7 @@
  * Used By:
  * - frontend/ads_user.php (AJAX calls)
  *
- * Author:
+ * Author:Panagiwtis Panagiwtou & Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

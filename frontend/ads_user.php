@@ -24,7 +24,7 @@
  * Used By:
  * - Linked from main dashboard (index.php)
  *
- * Author:
+ * Author: Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

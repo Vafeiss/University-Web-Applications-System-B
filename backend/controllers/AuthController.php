@@ -28,7 +28,7 @@
  * - register.php
  * - forgot_password.php
  *
- * Author:
+ * Author:Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

@@ -24,7 +24,7 @@
  * - frontend/search.php (AJAX search requests)
  * - frontend/posts.php (filtered post loading)
  *
- * Author:
+ * Author:Antriani Theofanous 
  * Date: 2026
  */
 

@@ -21,7 +21,7 @@
  * Used By:
  * - all frontend pages (loaded globally)
  *
- * Author:
+ * Author: Antriani Theofanous 
  * Date: 2026
  */
 

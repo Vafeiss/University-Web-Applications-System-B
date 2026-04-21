@@ -29,7 +29,7 @@
  * - Link from login.php
  * - Unauthenticated users registering
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

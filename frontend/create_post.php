@@ -30,7 +30,7 @@
  * - Navigation link from posts.php
  * - Users creating new posts
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

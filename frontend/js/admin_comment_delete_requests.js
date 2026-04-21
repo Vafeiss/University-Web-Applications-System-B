@@ -18,7 +18,7 @@
  * Used By:
  * - frontend/admin_comment_delete_requests.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

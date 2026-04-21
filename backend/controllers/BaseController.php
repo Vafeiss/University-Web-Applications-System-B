@@ -27,7 +27,7 @@
  * Used By:
  * - All controller classes (AdsController, PostController, etc.)
  *
- * Author:
+ * Author:Pelagia Koniotaki
  * Date: 2026
  */
 

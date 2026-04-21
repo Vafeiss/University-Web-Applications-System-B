@@ -24,7 +24,7 @@
  * Used By:
  * - Linked from the password-reset email
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

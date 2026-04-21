@@ -21,7 +21,7 @@
  * Used By:
  * - Linked from main dashboard (index.php) and admin_dashboard.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

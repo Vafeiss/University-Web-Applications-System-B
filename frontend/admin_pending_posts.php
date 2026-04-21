@@ -23,7 +23,7 @@
  * Used By:
  * - Linked from admin_dashboard.php
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

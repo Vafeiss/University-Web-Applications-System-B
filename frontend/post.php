@@ -31,7 +31,7 @@
  * - posts.php (post list navigation)
  * - admin_dashboard.php (admin moderation)
  *
- * Author:
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

@@ -30,7 +30,7 @@
  * - Main page after login
  * - Navigation hub for all authenticated users
  *
- * Author:
+ * Author: Pelagia Koniotaki & Antriani Theofanous 
  * Date: 2026
  */
 

@@ -27,7 +27,7 @@
  * Used By:
  * - Linked from post cards, search results and main dashboard
  *
- * Author:
+ * Author:Pelagia Koniotaki
  * Date: 2026
  */
 

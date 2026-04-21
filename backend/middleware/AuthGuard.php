@@ -24,7 +24,7 @@
  * - index.php
  * - admin.php
  *
- * Author: Pela Koniotaki
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 
