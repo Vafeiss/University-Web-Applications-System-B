@@ -84,18 +84,14 @@ $ads = $adsStmt ? $adsStmt->fetchAll(PDO::FETCH_ASSOC) : [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Διαχείριση Διαφημίσεων</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body { background-color: #f4f7f6; padding: 20px; }
-        .admin-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .table img, .table video { border-radius: 5px; object-fit: cover; }
-    </style>
+    <link rel="stylesheet" href="css/admin_ads.css?v=<?php echo filemtime(__DIR__ . '/css/admin_ads.css'); ?>">
 </head>
 <body>
 
 <div class="container">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <h2 class="mb-0">📢 Διαχείριση Διαφημίσεων (Admin)</h2>
-        <a href="admin_dashboard.php" class="btn btn-outline-secondary">Επιστροφή στο Admin</a>
+        <h2 class="mb-0">Διαχείριση Διαφημίσεων</h2>
+        <a href="admin_dashboard.php" class="btn btn-outline-secondary">Επιστροφή</a>
     </div>
 
     <div class="admin-card mb-5">
