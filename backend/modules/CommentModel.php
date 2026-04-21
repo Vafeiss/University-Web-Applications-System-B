@@ -1,4 +1,34 @@
 <?php
+/**
+ * File: CommentModel.php
+ * Layer: Model
+ * Module: Comments
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Data model for comment management. Provides CRUD operations for comments,
+ * deletion request handling, and deletion count tracking per user.
+ *
+ * Functions:
+ * - createComment() → inserts new comment on a post
+ * - getCommentsByPost() → retrieves comments for a post with deletion request flags
+ * - deleteRequestExists() → checks if user requested deletion for a comment
+ * - deleteComment() → marks comment as removed by moderation
+ * - getDeleteRequestById() → retrieves pending deletion request details
+ * - listDeleteRequests() → admins view pending comment deletion requests
+ * - getCommentDeletionCount() → counts delete requests per user for reports
+ *
+ * Security:
+ * - PDO prepared statements prevent SQL injection
+ * - Comment masking: removed comments display '[Removed by moderation]'
+ * - Deletion request user isolation
+ *
+ * Used By:
+ * - CommentController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/../config/database.php';
 

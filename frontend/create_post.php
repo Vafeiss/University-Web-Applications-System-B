@@ -1,4 +1,39 @@
 <?php
+/**
+ * File: create_post.php
+ * Layer: Frontend Page
+ * Module: Create Post
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Post creation interface with title, content, optional category, and file attachments.
+ * Supports anonymous posting, up to 5 file attachments, and post policy acknowledgment.
+ *
+ * Features:
+ * - Post title and content input (rich text)
+ * - Category selection dropdown
+ * - Anonymous post checkbox
+ * - File attachment management (max 5 files)
+ * - File preview before submission
+ * - Post policy dialog/acknowledgment
+ * - Form validation and error display
+ * - Post submission with AJAX
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - requireCompleteProfile() enforces profile setup
+ * - Ban check via BanGuard middleware
+ * - CSRF protection via form tokens
+ * - File upload validation on backend
+ *
+ * Used By:
+ * - Navigation link from posts.php
+ * - Users creating new posts
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 require_once "../backend/middleware/BanGuard.php";
 enforceFrontendUserNotBanned();

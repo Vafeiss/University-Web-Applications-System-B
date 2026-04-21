@@ -1,3 +1,28 @@
+/**
+ * File: login.css
+ * Layer: Frontend Styles
+ * Module: Authentication (Login)
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the login page including centered card, form inputs,
+ * password visibility toggle and alternate action links.
+ *
+ * Sections:
+ * - Global body/background
+ * - Centered auth card
+ * - Form inputs and labels
+ * - Password visibility toggle
+ * - Primary action button
+ * - Links (register / forgot password)
+ *
+ * Used By:
+ * - login.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 body {
     min-height: 100vh;
     margin: 0;

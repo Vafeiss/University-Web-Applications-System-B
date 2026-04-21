@@ -1,5 +1,29 @@
 <?php
-// logout - κανει clear session και redirect στο login
+/**
+ * File: logout.php
+ * Layer: Frontend Page
+ * Module: Authentication (Logout)
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Ends the current user session and redirects to the login page.
+ * Clears all session variables and destroys the session cookie.
+ *
+ * Features:
+ * - Destroys PHP session
+ * - Unsets all session variables
+ * - Redirects to login.php
+ *
+ * Security:
+ * - session_destroy() clears all session data
+ * - Session cookie cleared on client
+ *
+ * Used By:
+ * - Linked from main dashboard (index.php) and admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
 
 session_start();
 

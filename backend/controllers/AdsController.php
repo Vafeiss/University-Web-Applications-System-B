@@ -1,4 +1,29 @@
 <?php
+/**
+ * File: AdsController.php
+ * Layer: Controller
+ * Module: Ads
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Handles advertisement rewards by tracking ad views and crediting tokens.
+ * Updates user token balance upon successful ad completion and records
+ * the transaction in the database.
+ *
+ * Functions:
+ * - rewardAdView() → processes ad reward and token credit
+ *
+ * Security:
+ * - requireLogin() middleware enforces authentication
+ * - Input validation on ad_id parameter
+ * - Database transactions ensure consistency
+ *
+ * Used By:
+ * - frontend/ads_user.php (AJAX calls)
+ *
+ * Author:
+ * Date: 2026
+ */
 
 header("Content-Type: application/json");
 require_once __DIR__ . '/BaseController.php';

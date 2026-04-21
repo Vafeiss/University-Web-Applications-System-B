@@ -6,34 +6,27 @@
  * System: University Web Applications System B
  *
  * Description:
- * Middleware responsible for ensuring that an authenticated user
- * has completed their basic profile information before accessing
- * certain parts of the application.
+ * Middleware enforcing profile completion before main app access.
+ * Verifies user has set university and year of study. Redirects to
+ * profile setup if incomplete. Exempts admin users.
  *
- * The middleware checks whether the user has selected:
- * - University
- * - Year of study
- *
- * If the profile is incomplete, the user is redirected to the
- * profile setup page in order to complete their information.
- *
- * Responsibilities:
- * - Validate profile completion
- * - Protect pages that require a completed profile
+ * Functions:
+ * - requireCompleteProfile() → enforces profile completion check
  *
  * Security:
- * - Uses session-based authentication
- * - Queries the database using PDO prepared statements
- *
- * Database Tables Used:
- * - users
+ * - Session validation before profile check
+ * - PDO prepared statements for database queries
+ * - Admin bypass for system administrators
+ * - Graceful handling of missing profile data
  *
  * Used By:
  * - index.php
  * - posts.php
  * - create_post.php
+ * - profile_view.php
+ * - All pages requiring complete profile
  *
- * Author: Pela Koniotaki
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

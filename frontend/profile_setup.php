@@ -1,36 +1,34 @@
 <?php
 /**
  * File: profile_setup.php
- * Layer: Frontend
+ * Layer: Frontend Page
  * Module: User Profile Initialization
  * System: University Web Applications System B
  *
  * Description:
- * This page is displayed after the user's first successful login.
- * It allows the user to complete their basic profile information
- * required by the platform.
+ * Page displayed after the user's first successful login. Lets the user
+ * complete the basic profile information required by the platform
+ * (university, year of study and optional interest categories) before
+ * accessing the main app.
  *
- * The user must select:
- * - University
- * - Year of study
+ * Features:
+ * - University selection
+ * - Year of study selection
  * - Optional interest categories (filters)
- *
- * After submission:
- * Data is sent to ProfileController.php which updates:
- * - users.university
- * - users.year
- * - user_interest table
- *
- * Access Control:
- * - Only authenticated users can access this page
- * - Users who already completed their profile are redirected
+ * - Submit sends data to ProfileController.php which updates users.university,
+ *   users.year and the user_interest table
  *
  * Security:
+ * - Only authenticated users can access this page
+ * - Users who already completed their profile are redirected
  * - Session-based authentication
- * - Prepared statements for database queries
+ * - PDO prepared statements for database queries
  * - Output escaping using htmlspecialchars()
  *
- * Author: Pela Koniotaki
+ * Used By:
+ * - Linked from login.php (first-time login redirect)
+ *
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

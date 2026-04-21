@@ -1,4 +1,40 @@
 <?php
+/**
+ * File: NotificationModel.php
+ * Layer: Model
+ * Module: Notifications
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Data model for notification lifecycle. Handles notification creation, delivery,
+ * read status tracking, and deletion. Supports both plain and localized (i18n) notifications.
+ *
+ * Functions:
+ * - createNotification() → creates notification for user
+ * - createLocalizedNotification() → creates i18n notification with key/params/fallback
+ * - notifyAdmins() → sends notification to all admins
+ * - notifyAdminsLocalized() → sends localized notification to admins
+ * - getNotificationsByUser() → retrieves user notifications with status
+ * - markAsRead() → marks single notification as read
+ * - markAllAsRead() → marks all user notifications as read
+ * - deleteByIdForUser() → removes notification
+ * - deleteAllReadByUser() → removes all read notifications
+ * - buildLocalizedPayload() → creates JSON payload for i18n rendering
+ *
+ * Security:
+ * - User isolation: users only see their own notifications
+ * - PDO prepared statements for all queries
+ * - Localized payload encoding with JSON
+ *
+ * Used By:
+ * - NotificationController
+ * - CommentController
+ * - PostController
+ * - CategoryController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -46,12 +82,7 @@ class NotificationModel {
         }
     }
 
-    /*
-     Δημιουργεί ένα JSON payload για ειδοποίηση που φιλοξενεί
-     translation key, params και fallback message για παλιούς clients.
-     Αυτό επιτρέπει στο frontend να μεταφράζει το μήνυμα
-     σε πραγματικό χρόνο ανάλογα με την επιλεγμένη γλώσσα.
-    */
+    // φτιαχνει json με key + params + fallback, ωστε το frontend να κανει translate αναλογα με τη γλωσσα
     public static function buildLocalizedPayload(string $key, array $params = [], string $fallback = ""): string {
         $payload = [
             "i18n_key" => $key,
@@ -62,13 +93,13 @@ class NotificationModel {
         return json_encode($payload, JSON_UNESCAPED_UNICODE);
     }
 
-    // Δημιουργεί μια localized ειδοποίηση: key + params αποθηκεύονται σε JSON
+    // notification με key + params αντι για σκετο string στη βαση
     public function createLocalizedNotification(int $userId, string $type, ?int $referenceId, string $key, array $params = [], string $fallback = "") {
         $payload = self::buildLocalizedPayload($key, $params, $fallback);
         return $this->createNotification($userId, $type, $referenceId, $payload);
     }
 
-    // Στέλνει localized ειδοποίηση σε όλους τους admins
+    // ιδιο με notifyAdmins αλλα με localized payload
     public function notifyAdminsLocalized(string $type, ?int $referenceId, string $key, array $params = [], string $fallback = "", ?int $excludeUserId = null): void {
         $adminUserIds = $this->getAdminUserIds($excludeUserId);
 

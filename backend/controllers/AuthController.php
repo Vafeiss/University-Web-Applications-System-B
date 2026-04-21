@@ -1,6 +1,36 @@
 <?php
-// AuthController - register/login/password reset + referral system
-// Pela Koniotaki
+/**
+ * File: AuthController.php
+ * Layer: Controller
+ * Module: Authentication
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Handles user authentication workflows: login, registration, password reset,
+ * and referral code generation. Manages session creation and user validation.
+ *
+ * Functions:
+ * - login() → validates credentials and returns user with redirect
+ * - register() → creates new user account with unique referral code
+ * - resetPassword() → initiates password reset flow via email
+ * - generateUniqueReferralCode() → creates unique code for referral system
+ * - getPostLoginRedirect() → determines redirect path based on user role/profile
+ *
+ * Security:
+ * - PDO prepared statements for all database queries
+ * - Password hashing using standard algorithms
+ * - Session regeneration on login
+ * - Referral code uniqueness enforcement
+ * - Email verification via PHPMailer
+ *
+ * Used By:
+ * - login.php
+ * - register.php
+ * - forgot_password.php
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . "/../config/database.php";
 require_once __DIR__ . "/../middleware/BanGuard.php";
@@ -91,7 +121,7 @@ class AuthController
         $username = trim($username);
         $email = trim($email);
         $inputReferralCode = $inputReferralCode ? trim($inputReferralCode) : null;
-
+        // έλεγχος για κενά πεδία
         if ($username === "" || $email === "" || $password === "") {
             return ["ok" => false, "message" => "Συμπλήρωσε όλα τα πεδία."];
         }
@@ -100,8 +130,9 @@ class AuthController
         $check = $this->conn->prepare(
             "SELECT user_id FROM users WHERE username = :u OR email = :e LIMIT 1"
         );
+        //τωρα δίνουμε πραγματικές τιμές και για τα δύο placeholders για εκτελεση query
         $check->execute([":u" => $username, ":e" => $email]);
-
+        // αν υπάρχει διπλώτητα 
         if ($check->fetch()) {
             return ["ok" => false, "message" => "Το username ή το email υπάρχει ήδη."];
         }
@@ -180,7 +211,7 @@ class AuthController
         } catch (Throwable $e) {
             // αν κατι παει στραβα, rollback
             if ($this->conn->inTransaction()) {
-                $this->conn->rollBack();
+                $this->conn->rollBack();    //βαση επαναφέρεται στην κατάσταση πριν την εγγραφή, και ακυρώνονται όλες οι εντολές που εκτελέστηκαν μέσα στο transaction
             }
 
             return [

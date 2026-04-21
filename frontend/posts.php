@@ -1,4 +1,39 @@
 <?php
+/**
+ * File: posts.php
+ * Layer: Frontend Page
+ * Module: Posts Feed
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Main posts feed interface with search, filtering, sorting, and notifications.
+ * Displays posts from all users or filtered by interests/following with sidebar navigation.
+ *
+ * Features:
+ * - Posts feed display (paginated, infinite scroll)
+ * - Search bar with filters (keyword, category, date range, author)
+ * - Sort options (newest, oldest, title A-Z, Z-A)
+ * - Filter by followed users only
+ * - Notifications dropdown panel
+ * - Sidebar with user profile, navigation links
+ * - Admin option to view rejected posts
+ * - Token balance display
+ * - Free daily download notice
+ * - Language switcher
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - requireCompleteProfile() enforces profile setup
+ * - Ban checking via BanGuard middleware
+ *
+ * Used By:
+ * - Main page after login
+ * - Navigation hub for all authenticated users
+ *
+ * Author:
+ * Date: 2026
+ */
+
 require_once "../backend/config/database.php";
 require_once "../backend/middleware/BanGuard.php";
 session_start();    

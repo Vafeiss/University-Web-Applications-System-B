@@ -1,3 +1,31 @@
+/**
+ * File: post.js
+ * Layer: Frontend Script
+ * Module: Single Post Page
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Frontend logic for the single-post page. Loads the post, renders
+ * content, attachments and comments, and handles comment creation,
+ * reply threads, comment deletion and time-ago formatting.
+ *
+ * Functions:
+ * - initCommentComposer()
+ * - loadComments()
+ * - loadPost()
+ * - renderAdminPostDeleteButton()
+ * - renderAdminPostDeleteDialog()
+ * - renderAttachments()
+ * - renderCommentsSection()
+ * - renderPostActionControls()
+ *
+ * Used By:
+ * - frontend/post.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 /* Μετατροπή timestamp σε "time ago" */
 
 function timeAgo(dateString){

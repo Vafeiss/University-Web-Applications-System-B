@@ -1,4 +1,35 @@
 <?php
+/**
+ * File: CategoryModel.php
+ * Layer: Model
+ * Module: Categories
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Data model for categories and category requests. Handles database operations
+ * for category management including user requests, admin approvals, and deletion
+ * with cascading post removal.
+ *
+ * Functions:
+ * - requestCategory() → inserts new category suggestion from user
+ * - getPendingRequests() → retrieves awaiting admin approval requests
+ * - getExistingCategories() → lists all approved categories
+ * - approveCategoryRequest() → admin approves and creates category
+ * - rejectCategoryRequest() → admin rejects category request
+ * - deleteCategoryAndPosts() → removes category and related posts
+ * - getCategoryById() → retrieves category details
+ *
+ * Security:
+ * - PDO prepared statements for all queries
+ * - Input validation on category names
+ * - Admin-only operations for approvals/rejections
+ *
+ * Used By:
+ * - CategoryController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . "/../config/database.php";
 

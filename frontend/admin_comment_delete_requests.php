@@ -1,4 +1,33 @@
 <?php
+/**
+ * File: admin_comment_delete_requests.php
+ * Layer: Frontend Page
+ * Module: Admin Comment Delete Requests
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Admin view listing user-submitted comment deletion requests.
+ * Admins can review the reason and approve or reject each request.
+ * Protected by BanGuard and requireAdmin.
+ *
+ * Features:
+ * - Table of pending comment delete requests
+ * - Approve / Reject action buttons per row
+ * - Author, reason and timestamp display
+ * - AJAX refresh after each action
+ *
+ * Security:
+ * - session_start() and BanGuard
+ * - requireAdmin() via AuthGuard
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 require_once "../backend/middleware/BanGuard.php";
 enforceFrontendUserNotBanned();

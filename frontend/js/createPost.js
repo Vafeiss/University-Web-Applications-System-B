@@ -1,3 +1,26 @@
+/**
+ * File: createPost.js
+ * Layer: Frontend Script
+ * Module: Create Post
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Frontend logic for the create-post page. Handles form submission,
+ * attachment selection (up to 5 files), client-side validation and
+ * feedback rendering after the post is submitted for review.
+ *
+ * Functions:
+ * - renderSelectedFiles()
+ * - showResponseMessage()
+ * - togglePostPolicyDialog()
+ *
+ * Used By:
+ * - frontend/create_post.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 const responseEl = document.getElementById("response");
 const postForm = document.getElementById("postForm");
 const attachmentsInput = document.getElementById("attachmentsInput");

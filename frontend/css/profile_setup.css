@@ -1,3 +1,29 @@
+/**
+ * File: profile_setup.css
+ * Layer: Frontend Styles
+ * Module: Profile Setup
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the first-login profile setup form where users
+ * pick university, year of study and interest categories.
+ *
+ * Sections:
+ * - Global body/background
+ * - Centered setup card
+ * - University and year selects
+ * - Interest categories checkboxes
+ * - Submit button and feedback
+ *
+ * Used By:
+ * - profile_setup.php
+ * - edit_profile_setup.php
+ * - edit_interests.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 body {
     min-height: 100vh;
     margin: 0;

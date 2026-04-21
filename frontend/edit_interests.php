@@ -1,4 +1,33 @@
 <?php
+/**
+ * File: edit_interests.php
+ * Layer: Frontend Page
+ * Module: User Interests
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Page where the logged-in user can update their selected interest
+ * categories. Used to personalize the interests-based feed and
+ * notifications.
+ *
+ * Features:
+ * - Checkbox list of available categories
+ * - Pre-selected current interests
+ * - Save and Cancel actions
+ * - AJAX save without full page reload
+ *
+ * Security:
+ * - session_start() and requireLogin()
+ * - ProfileGuard / requireCompleteProfile()
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from profile_view.php and profile_setup.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 
 require_once "../backend/middleware/AuthGuard.php";

@@ -1,3 +1,34 @@
+/**
+ * File: style.css
+ * Layer: Frontend Styles
+ * Module: Global Styles
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Global stylesheet shared across multiple pages. Provides the
+ * base page style, card and auth container templates and common
+ * element treatments used by several frontend pages.
+ *
+ * Sections:
+ * - Global page background and typography
+ * - Card and panel base styles
+ * - Auth container template
+ * - Form inputs and buttons
+ * - Shared utility classes
+ *
+ * Used By:
+ * - category_request.php
+ * - edit_interests.php
+ * - edit_profile_setup.php
+ * - index.php
+ * - login.php
+ * - profile_setup.php
+ * - profile_view.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 /* ======================================================
    GLOBAL PAGE STYLE
    Applies to the entire application

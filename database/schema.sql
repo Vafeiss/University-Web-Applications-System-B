@@ -1,3 +1,36 @@
+/*
+ * File: schema.sql
+ * Layer: Database Schema
+ * Module: Schema
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Complete database schema with all tables, relationships, indexes, and constraints.
+ * Includes users, posts, comments, categories, followers, notifications, ads, and auxiliary tables.
+ *
+ * Tables:
+ * - users → user accounts, roles, profile data, bans
+ * - posts → user-submitted posts with status and anonymous flag
+ * - comments → post comments with deletion requests
+ * - categories → post categories with request workflow
+ * - category_requests → pending category suggestions
+ * - followers → user follow relationships
+ * - notifications → user notifications with read/delete status
+ * - post_reports → content moderation reports
+ * - post_delete_requests → post deletion requests from users
+ * - comment_delete_requests → comment deletion requests
+ * - attachments → post file attachments metadata
+ * - advertisements → ad system configuration
+ * - ad_views → user ad view tracking for token rewards
+ * - transactions → token transaction history
+ *
+ * Used By:
+ * - All models and controllers
+ *
+ * Author:
+ * Date: 2026
+ */
+
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/

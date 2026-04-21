@@ -1,4 +1,35 @@
 <?php
+/**
+ * File: BaseController.php
+ * Layer: Controller
+ * Module: Base Controller
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Abstract base controller providing shared authentication, session, and
+ * response handling methods for all API controllers.
+ *
+ * Functions:
+ * - ensureSessionStarted() → initializes session if not already active
+ * - requireLogin() → enforces authentication and returns user_id
+ * - getCurrentUserId() → safely retrieves current user_id or null
+ * - isAdmin() → checks if current user has admin role
+ * - requireAdmin() → enforces admin-only access
+ * - getJSONInput() → parses JSON POST body
+ * - jsonResponse() → sends JSON response with HTTP status code
+ *
+ * Security:
+ * - Session validation on every protected call
+ * - Ban status checking integrated with requireLogin()
+ * - Admin role verification
+ * - JSON output with proper content-type headers
+ *
+ * Used By:
+ * - All controller classes (AdsController, PostController, etc.)
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/../middleware/BanGuard.php';
 

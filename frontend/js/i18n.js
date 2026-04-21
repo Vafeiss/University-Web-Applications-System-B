@@ -1,3 +1,30 @@
+/**
+ * File: i18n.js
+ * Layer: Frontend Script
+ * Module: Internationalization (i18n)
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Lightweight internationalization helper. Holds all translations
+ * (English + Greek), exposes helpers for translating strings and
+ * applying translations to DOM elements, and wires up language
+ * switcher controls with persistence in localStorage.
+ *
+ * Functions:
+ * - applyTranslations()
+ * - initSwitchers()
+ * - formatString()
+ * - getLanguage()
+ * - setLanguage()
+ * - syncSwitchers()
+ *
+ * Used By:
+ * - all frontend pages (loaded globally)
+ *
+ * Author:
+ * Date: 2026
+ */
+
 // κρατάει ολες τις μεταφράσεις και παρέχει βοηθητικές συναρτήσεις για την εφαρμογή τους στη σελίδα, καθώς και για τη διαχείριση της τρέχουσας γλώσσας και των switchers γλώσσας.
 (function () {
     const STORAGE_KEY = "unisupport-language";

@@ -1,4 +1,42 @@
 <?php
+/**
+ * File: PostModel.php
+ * Layer: Model
+ * Module: Posts
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Core data model for post management. Handles post creation, querying, deletion,
+ * attachments, reports, and admin moderation. Integrates ban checking with post approval.
+ *
+ * Functions:
+ * - createPost() → inserts new post with pending status
+ * - saveAttachment() → stores file metadata for post
+ * - getPostById() → retrieves single post with full details
+ * - getPostsByUser() → lists user's posts with pagination
+ * - getAllPosts() → retrieves all posts with optional filters
+ * - updatePostStatus() → sets post status (approved/rejected/deleted)
+ * - requestDeletePost() → user submits deletion request
+ * - reportPost() → user reports post for moderation
+ * - approvePost() → admin approves pending post
+ * - rejectPost() → admin rejects pending post
+ * - deletePost() → marks post as deleted
+ * - getPostReportCount() → counts reports on post
+ * - getUserReportCount() → counts user's reports for ban detection
+ *
+ * Security:
+ * - PDO prepared statements for all queries
+ * - Ban status checking (automatic banning on high reports)
+ * - Post status workflow enforcement
+ * - Attachment path sanitization
+ *
+ * Used By:
+ * - PostController
+ * - SearchController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/../config/database.php';
 

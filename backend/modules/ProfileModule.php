@@ -1,39 +1,32 @@
 <?php
 /**
  * File: ProfileModule.php
- * Layer: Backend Module
- * Module: User Profile Management
+ * Layer: Model
+ * Module: Profile Management
  * System: University Web Applications System B
  *
  * Description:
- * This module is responsible for handling all database operations
- * related to user profile data.
+ * Data model for user profile management. Handles profile initialization and updates
+ * including university, year, and interest category selection. Prevents duplicate
+ * entries and supports transactional consistency.
  *
- * It allows the system to update a user's university and year of study
- * as well as store the user's selected interest categories.
- *
- * The module is used by the ProfileController to persist
- * profile-related data in the database.
- *
- * Core Responsibilities:
- * - Update user profile information (university & year)
- * - Store user interest categories
- * - Prevent duplicate interest entries
- * - Support transactional profile updates
+ * Functions:
+ * - saveProfile() → updates university and year of study
+ * - saveInterests() → stores user-selected interest categories with duplicate prevention
+ * - getProfile() → retrieves complete profile for user
+ * - getUserInterests() → lists categories user is interested in
+ * - clearInterests() → removes all interests for user
  *
  * Security:
- * - Uses PDO prepared statements to prevent SQL injection
- * - Validates duplicate category entries before inserting
- * - Supports database transactions for atomic operations
- *
- * Database Tables Used:
- * - users
- * - user_interest
+ * - PDO prepared statements for all database operations
+ * - Transactional updates ensure data consistency
+ * - Duplicate category prevention
+ * - Input validation on university/year values
  *
  * Used By:
  * - ProfileController
  *
- * Author: Pela Koniotaki
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 

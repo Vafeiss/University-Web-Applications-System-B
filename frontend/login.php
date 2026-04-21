@@ -1,6 +1,36 @@
 <?php
-// login page - form + handler
-// Pela
+/**
+ * File: login.php
+ * Layer: Frontend Page
+ * Module: Authentication
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Login page with form processing. Handles user authentication, session creation,
+ * and login error display. Redirects logged-in users to dashboard.
+ *
+ * Features:
+ * - Login form with username/password
+ * - Ban message display if user account banned
+ * - Success message from registration
+ * - Form validation and error handling
+ * - Session regeneration for security
+ * - Automatic redirect if already logged in
+ * - Support for i18n (internationalization)
+ *
+ * Security:
+ * - Ban detection before redirect
+ * - Session regeneration on successful login
+ * - Input validation via AuthController
+ * - Password verification
+ *
+ * Used By:
+ * - Initial page for unauthenticated users
+ * - Post-logout destination
+ *
+ * Author:
+ * Date: 2026
+ */
 
 session_start();
 require_once "../backend/middleware/BanGuard.php";

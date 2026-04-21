@@ -1,7 +1,37 @@
 <?php
+/**
+ * File: CommentController.php
+ * Layer: Controller
+ * Module: Comments
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Manages comment lifecycle: creation, listing, deletion requests, and
+ * admin approvals. Automatically notifies post owners of new comments.
+ *
+ * Functions:
+ * - create() → users submit comments on posts with notifications
+ * - list() → retrieve comments for a post
+ * - requestDelete() → users request comment deletion
+ * - listDeleteRequests() → admins view pending deletions
+ * - approveDelete() → admins approve and remove comments
+ * - rejectDelete() → admins reject deletion requests
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - Input validation on post_id and content
+ * - PDO prepared statements for all queries
+ * - Comment masking: removed comments show '[Removed by moderation]'
+ *
+ * Used By:
+ * - frontend/post.php (comment submission via AJAX)
+ * - frontend/admin_comment_delete_requests.php
+ *
+ * Author:
+ * Date: 2026
+ */
 
 header("Content-Type: application/json");
-// import necessary files
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../modules/CommentModel.php';
 require_once __DIR__ . '/../modules/NotificationModel.php';

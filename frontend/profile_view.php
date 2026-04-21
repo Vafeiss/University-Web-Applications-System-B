@@ -1,4 +1,36 @@
 <?php
+/**
+ * File: profile_view.php
+ * Layer: Frontend Page
+ * Module: Profile View
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Profile page showing the user's personal info, interests, posts
+ * and followers. Supports both self-view (with edit links) and
+ * other-user view (with follow button).
+ *
+ * Features:
+ * - User info and avatar
+ * - Interests display
+ * - Followers / following counts
+ * - User's posts list
+ * - Follow / Unfollow button
+ * - Edit profile / interests links (self)
+ *
+ * Security:
+ * - session_start() and requireLogin()
+ * - ProfileGuard / requireCompleteProfile()
+ * - PDO prepared statements (database.php)
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from post cards, search results and main dashboard
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 
 require_once "../backend/middleware/AuthGuard.php";

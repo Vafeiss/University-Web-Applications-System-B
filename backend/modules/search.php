@@ -1,4 +1,35 @@
 <?php
+/**
+ * File: search.php
+ * Layer: Model
+ * Module: Search
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Search engine for posts with advanced filtering and sorting capabilities.
+ * Supports keyword search, category/date/author filters, followed-only posts,
+ * and role-based visibility (admins see rejected posts).
+ *
+ * Functions:
+ * - searchPosts() → main search with all filter/sort combinations
+ * - buildSearchSQL() → constructs dynamic SQL with filter conditions
+ * - applyFilters() → applies keyword, category, date, author filters
+ * - applySorting() → applies sort order (newest/oldest/title)
+ * - applyAccessControl() → enforces user/admin visibility rules
+ *
+ * Security:
+ * - PDO prepared statements for all queries
+ * - Parameterized keyword search prevents injection
+ * - User privacy: non-admins cannot see admin-only posts
+ * - Admin override: admins see rejected/deleted posts when status=2
+ * - Role-based result filtering
+ *
+ * Used By:
+ * - SearchController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 class Search {
 

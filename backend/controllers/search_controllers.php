@@ -1,4 +1,32 @@
 <?php
+/**
+ * File: search_controllers.php
+ * Layer: Controller
+ * Module: Search
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Provides advanced post search with multiple filters and sorting options.
+ * Supports keyword search, category filtering, date ranges, followed-only posts,
+ * and author filtering. Admin access shows rejected/deleted posts.
+ *
+ * Functions:
+ * - search() → executes post search with full filter/sort support
+ *
+ * Security:
+ * - Input validation on all query parameters
+ * - PDO prepared statements for keyword search
+ * - Respects user privacy: hides admin-only posts from non-admins
+ * - Admin-only visibility of rejected/deleted posts
+ * - User role-based result filtering
+ *
+ * Used By:
+ * - frontend/search.php (AJAX search requests)
+ * - frontend/posts.php (filtered post loading)
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../config/database.php';

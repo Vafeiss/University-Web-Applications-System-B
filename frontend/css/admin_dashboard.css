@@ -1,3 +1,31 @@
+/**
+ * File: admin_dashboard.css
+ * Layer: Frontend Styles
+ * Module: Admin Dashboard
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the administrator control panel. Covers layout of the
+ * dashboard shell, navigation rail, moderation cards, tables of
+ * pending items, notification dropdown and action buttons.
+ *
+ * Sections:
+ * - Global body/background
+ * - Dashboard shell and header
+ * - Navigation tabs and side rail
+ * - Cards and panels for pending posts, reports, delete requests
+ * - Table and list styling for moderation queues
+ * - Notification dropdown
+ * - Action buttons (approve / reject / delete)
+ *
+ * Used By:
+ * - admin_dashboard.php
+ * - posts.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 body {
     margin: 0;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;

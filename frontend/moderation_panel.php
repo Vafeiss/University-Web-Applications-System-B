@@ -1,6 +1,31 @@
 <?php
 /**
- * Feature 4: Moderation Control Panel 
+ * File: moderation_panel.php
+ * Layer: Frontend Page
+ * Module: Moderation Panel
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Admin panel for managing and moderating posts. Provides a unified
+ * entry point for approving, rejecting and bulk-acting on pending
+ * items.
+ *
+ * Features:
+ * - List of pending / flagged posts
+ * - Approve / Reject / Bulk action buttons
+ * - Filter by status and category
+ * - AJAX refresh after each action
+ *
+ * Security:
+ * - session_start() and BanGuard
+ * - requireAdmin() via AuthGuard
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from admin_dashboard.php
+ *
+ * Author: Pelagia Koniotaki
+ * Date: 2026
  */
 
 session_start();

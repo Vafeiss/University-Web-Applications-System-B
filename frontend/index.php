@@ -1,38 +1,34 @@
 <?php
 /**
  * File: index.php
- * Layer: Frontend
+ * Layer: Frontend Page
  * Module: User Dashboard
  * System: University Web Applications System B
  *
  * Description:
- * This page represents the main dashboard displayed after a
- * successful user login.
+ * Main dashboard displayed after successful login. Shows user welcome,
+ * token balance, role display, and navigation to main features.
+ * Entry point for authenticated users.
  *
- * It provides:
- * - Welcome message for the authenticated user
- * - Display of the user's role
+ * Features:
+ * - User welcome and profile summary
+ * - Token balance display
+ * - Admin panel link (admin-only)
+ * - Navigation to posts, create post, profile, notifications
+ * - Daily download notice for token rewards
  * - Logout functionality
- * - Access to the Admin Panel (only for administrators)
- *
- * Access Control:
- * - Only authenticated users can access this page
- * - Users must have completed their profile before entering
- *
- * Protection:
- * - requireLogin() middleware → ensures user is authenticated
- * - requireCompleteProfile() middleware → ensures profile is completed
  *
  * Security:
- * - Session-based authentication
- * - Output escaping using htmlspecialchars()
+ * - requireLogin() enforces authentication
+ * - requireCompleteProfile() enforces profile completion
+ * - htmlspecialchars() for output escaping
+ * - Session-based user identification
+ *
+ * Used By:
+ * - Initial redirect after login
+ * - Main app entry point
  *
  * Author: Pelagia Koniotaki
- */
-/**
- * Dashboard Page
- * Accessible only by authenticated users.
- * Author: pela koniotaki
  * Date: 2026
  */
 

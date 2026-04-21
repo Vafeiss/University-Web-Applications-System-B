@@ -1,4 +1,33 @@
 <?php
+/**
+ * File: edit_profile_setup.php
+ * Layer: Frontend Page
+ * Module: Profile Editing
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Page where the logged-in user can update their university and
+ * year of study. Reuses the profile setup form in edit mode.
+ *
+ * Features:
+ * - Pre-filled university and year selects
+ * - Save button updates profile
+ * - Link to edit interests
+ * - Validation before submission
+ *
+ * Security:
+ * - session_start() and requireLogin()
+ * - ProfileGuard / requireCompleteProfile()
+ * - PDO prepared statements (database.php)
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from profile_view.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 
 require_once "../backend/middleware/AuthGuard.php";

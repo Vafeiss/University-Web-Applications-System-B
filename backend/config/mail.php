@@ -2,35 +2,28 @@
 /**
  * File: mail.php
  * Layer: Backend Configuration
- * Module: Email / SMTP Configuration
+ * Module: SMTP Configuration
  * System: University Web Applications System B
  *
  * Description:
- * This configuration file provides the SMTP credentials used
- * by the system to send emails through PHPMailer.
+ * Returns array of SMTP credentials loaded from environment variables.
+ * Used by PHPMailer to send password reset and notification emails.
+ * Keeps sensitive credentials outside source control via .env file.
  *
- * The values are loaded from environment variables (.env)
- * using the PHP Dotenv library. This approach keeps sensitive
- * information (email credentials) outside of the source code.
- *
- * Used For:
- * - Password reset email delivery
- * - Future notification emails
- * *
- * Environment Variables:
- * - SMTP_HOST   → SMTP server address
- * - SMTP_USER   → Email account used to send emails
- * - SMTP_PASS   → Application password for SMTP authentication
- * - SMTP_PORT   → SMTP server port
+ * Configuration Keys:
+ * - host → SMTP server address
+ * - username → SMTP account email
+ * - password → SMTP authentication password
+ * - port → SMTP server port
  *
  * Security:
- * - Credentials are stored in the .env file
- * - .env file should NOT be committed to version control
+ * - Credentials stored in .env (excluded from version control)
+ * - No hardcoded credentials in source code
  *
  * Used By:
- * - AuthController (Password Reset Email)
+ * - AuthController (password reset emails)
  *
- * Author: pela koniotaki
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 return [

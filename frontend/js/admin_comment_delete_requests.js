@@ -1,3 +1,27 @@
+/**
+ * File: admin_comment_delete_requests.js
+ * Layer: Frontend Script
+ * Module: Admin Comment Delete Requests
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Frontend logic for the admin view of pending comment delete requests.
+ * Fetches the list from the backend, renders it, and lets admins approve
+ * or reject each request.
+ *
+ * Functions:
+ * - fetchJsonNoStore()
+ * - loadCommentDeleteRequests()
+ * - showFeedback()
+ * - escapeHtml()
+ *
+ * Used By:
+ * - frontend/admin_comment_delete_requests.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 document.addEventListener("DOMContentLoaded", function () {
 	loadCommentDeleteRequests();
 

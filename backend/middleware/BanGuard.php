@@ -1,4 +1,38 @@
 <?php
+/**
+ * File: BanGuard.php
+ * Layer: Middleware
+ * Module: Ban Enforcement
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Middleware for user ban enforcement across frontend and backend.
+ * Checks ban status, caches ban data, and provides ban messages.
+ * Prevents banned users from accessing protected pages/APIs.
+ *
+ * Functions:
+ * - hasBanColumns() → checks if ban columns exist in users table
+ * - getBannedAccountMessage() → returns standard ban message
+ * - getUserBanState() → retrieves cached ban status for user
+ * - isUserBanned() → checks if user has active ban
+ * - getUserBanMessage() → returns user-specific ban reason
+ * - clearAuthenticatedSession() → invalidates ban user session
+ * - enforceFrontendUserNotBanned() → redirects banned users from frontend
+ *
+ * Security:
+ * - Caches ban status to reduce database queries
+ * - Session clearing on ban detection
+ * - Protection against report spam (automatic banning)
+ *
+ * Used By:
+ * - AuthGuard.php
+ * - BanController.php
+ * - All protected frontend pages
+ * - BaseController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/../config/database.php';
 

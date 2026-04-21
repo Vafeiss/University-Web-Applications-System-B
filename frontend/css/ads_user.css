@@ -1,3 +1,28 @@
+/**
+ * File: ads_user.css
+ * Layer: Frontend Styles
+ * Module: Ads (User)
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the user-facing advertisements page. Covers page
+ * background, card layout, carousel, ad details and call-to-action
+ * buttons.
+ *
+ * Sections:
+ * - Page background and shell
+ * - Ad card grid
+ * - Carousel / slider
+ * - Ad details and metadata
+ * - Call-to-action buttons
+ *
+ * Used By:
+ * - ads_user.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 .ads-page {
     min-height: 100vh;
     display: flex;

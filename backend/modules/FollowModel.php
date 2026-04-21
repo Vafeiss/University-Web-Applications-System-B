@@ -1,4 +1,34 @@
 <?php
+/**
+ * File: FollowModel.php
+ * Layer: Model
+ * Module: Follows
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Data model for user follow relationships. Manages follower/following connections
+ * with bidirectional status tracking and duplicate prevention via ON DUPLICATE KEY UPDATE.
+ *
+ * Functions:
+ * - followUser() → creates or reactivates follow relationship
+ * - unfollowUser() → deactivates follow relationship
+ * - isFollowing() → checks if user follows target user
+ * - getFollowingUsers() → lists users that a user follows
+ * - getFollowers() → lists users following a user
+ * - getFollowCount() → retrieves total follower count for user
+ * - getFollowingCount() → retrieves total following count for user
+ *
+ * Security:
+ * - PDO prepared statements for all queries
+ * - Status-based soft deletes (status = 0 for unfollow)
+ * - ON DUPLICATE KEY UPDATE prevents duplicate relationships
+ *
+ * Used By:
+ * - FollowController
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/../config/database.php';
 

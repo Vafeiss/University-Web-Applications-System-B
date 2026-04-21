@@ -1,3 +1,27 @@
+/**
+ * File: admin_delete_requests.js
+ * Layer: Frontend Script
+ * Module: Admin Post Delete Requests
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Frontend logic for the admin view of pending post delete requests.
+ * Loads the list from the backend and handles approve/reject actions.
+ *
+ * Functions:
+ * - fetchJsonNoStore()
+ * - loadDeleteRequests()
+ * - showFeedback()
+ * - escapeHtml()
+ *
+ * Used By:
+ * - frontend/admin_delete_requests.php
+ * - frontend/admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 document.addEventListener("DOMContentLoaded", function () {
     loadDeleteRequests();
 

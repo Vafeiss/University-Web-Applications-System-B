@@ -1,4 +1,34 @@
 <?php
+/**
+ * File: CategoryController.php
+ * Layer: Controller
+ * Module: Categories
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Handles user category requests and admin approval workflow.
+ * Users can request new categories; admins review and approve/reject them.
+ * Sends localized notifications to admins on new requests.
+ *
+ * Functions:
+ * - request() → users submit new category suggestions
+ * - list() → admins retrieve pending category requests
+ * - summary() → admins view pending and existing categories
+ * - approve() → admins approve category request and create category
+ *
+ * Security:
+ * - requireLogin() for user requests
+ * - requireAdmin() for all admin operations
+ * - Input validation on category name
+ * - CSRF protection via JSON payload validation
+ *
+ * Used By:
+ * - frontend/category_request.php
+ * - frontend/admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . "/../modules/CategoryModel.php";

@@ -1,6 +1,31 @@
 <?php
-// forgot password - στελνει reset link στο email
-// Pela
+/**
+ * File: forgot_password.php
+ * Layer: Frontend Page
+ * Module: Password Recovery
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Public page where users request a password reset email.
+ * Submits the email to AuthController which sends a reset link.
+ *
+ * Features:
+ * - Email input form
+ * - Calls AuthController::forgotPassword
+ * - Inline success / error feedback
+ * - Link back to login page
+ *
+ * Security:
+ * - Email validation
+ * - Generic success response (no user enumeration)
+ * - Token-based reset link with expiry
+ *
+ * Used By:
+ * - Linked from login.php
+ *
+ * Author:
+ * Date: 2026
+ */
 
 session_start();
 

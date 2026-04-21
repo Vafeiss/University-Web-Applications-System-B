@@ -1,3 +1,32 @@
+/**
+ * File: admin_dashboard.js
+ * Layer: Frontend Script
+ * Module: Admin Dashboard
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Main controller script for the admin dashboard. Coordinates the
+ * different moderation sections (pending posts, reports, delete requests,
+ * category requests, banned users, notifications) and handles tab
+ * navigation, notifications dropdown, and admin actions.
+ *
+ * Functions:
+ * - applySidebarState()
+ * - closeRejectReasonDialog()
+ * - deleteNotification()
+ * - deleteReadNotifications()
+ * - fetchJSON()
+ * - handleCategoryDecision()
+ * - loadAdminSearchResults()
+ * - loadCategoryRequests()
+ *
+ * Used By:
+ * - frontend/admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 (function () {
     const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
     const CATEGORY_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
@@ -50,7 +79,7 @@
                 return translateFormat(payload.i18n_key, params, fallback || text);
             }
         } catch (error) {
-            // Not JSON, use the raw text
+            // δεν ειναι json, το αφηνουμε οπως ηρθε
         }
 
         return text;
@@ -114,7 +143,7 @@
             label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
         }
 
-        // Επαναφορτώνουμε τις ειδοποιήσεις στη νέα γλώσσα
+        // ξαναφορτωμα notifications στη νεα γλωσσα
         loadNotifications();
     });
 

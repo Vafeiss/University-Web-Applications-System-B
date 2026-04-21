@@ -1,3 +1,29 @@
+/**
+ * File: admin_reports.js
+ * Layer: Frontend Script
+ * Module: Admin Reports
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Frontend logic for the admin view of user-submitted post reports.
+ * Loads the reports from the backend and handles approve/reject actions.
+ *
+ * Functions:
+ * - fetchJsonNoStore()
+ * - loadReports()
+ * - renderReportedContent()
+ * - showFeedback()
+ * - escapeHtml()
+ * - reportTypeLabel()
+ *
+ * Used By:
+ * - frontend/admin_reports.php
+ * - frontend/admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 document.addEventListener("DOMContentLoaded", function () {
     loadReports();
 

@@ -1,31 +1,34 @@
 <?php
 /**
  * File: ProfileController.php
- * Layer: Backend Controller
- * Module: User Profile Management
+ * Layer: Controller
+ * Module: Profile Management
  * System: University Web Applications System B
  *
  * Description:
- * Handles profile initialization after first login.
- * The controller receives data from profile_setup.php
- * and updates the user profile.
+ * Handles user profile setup and updates. Manages initial profile completion
+ * (university, year, interests) and subsequent profile modifications.
+ * Enforces profile completion requirement before accessing main app.
  *
- * Responsibilities:
- * - Validate incoming form data
- * - Update university & year in users table
- * - Insert selected interest categories
- * - Ensure database consistency with transactions
+ * Functions:
+ * - setup workflow → handles initial profile completion
+ * - updateProfile → updates university and year
+ * - updateInterests → modifies user interest categories
  *
  * Security:
- * - Requires authenticated session
- * - Uses PDO prepared statements
- * - Prevents invalid direct access
+ * - requireLogin() enforces authentication
+ * - Ban guard checks before profile operations
+ * - Input validation and sanitization
+ * - PDO prepared statements for all queries
+ * - Transactional updates for consistency
  *
- * Tables Used:
- * - users
- * - user_interest
+ * Used By:
+ * - frontend/profile_setup.php
+ * - frontend/edit_profile_setup.php
+ * - frontend/edit_interests.php
  *
- * Author: Pela Koniotaki
+ * Author: Pelagia Koniotaki
+ * Date: 2026
  */
 
 session_start();

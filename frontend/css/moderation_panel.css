@@ -1,3 +1,27 @@
+/**
+ * File: moderation_panel.css
+ * Layer: Frontend Styles
+ * Module: Moderation Panel
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the admin moderation control panel, including the
+ * container layout, lists of banned users and action controls.
+ *
+ * Sections:
+ * - Page background and layout
+ * - Main container
+ * - Lists of flagged items / banned users
+ * - Action buttons
+ * - Form inputs for ban / unban
+ *
+ * Used By:
+ * - moderation_panel.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 body {
     padding: 20px;
     background-color: #f0f2f5;

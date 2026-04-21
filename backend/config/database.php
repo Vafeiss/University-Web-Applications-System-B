@@ -7,35 +7,24 @@
  *
  * Description:
  * Provides an object-oriented database connection using PHP PDO.
- * This class is responsible for establishing a secure connection
- * to the MySQL database and returning a reusable PDO instance.
+ * Establishes a secure, reusable connection to the MySQL database
+ * with UTF-8 encoding and exception-based error handling.
  *
- * The Database class is used across the application by controllers
- * and modules to interact with the database.
- *
- * Features:
- * - PDO-based database connection
- * - UTF-8 character encoding
- * - Exception-based error handling
- * - Centralized database configuration
+ * Functions:
+ * - connect() → returns PDO instance for database operations
  *
  * Security:
- * - PDO prepared statements are used throughout the system
- *   to prevent SQL injection.
- * - Error mode is set to PDO::ERRMODE_EXCEPTION for proper
- *   error handling and debugging.
- *
- * Database:
- * - MySQL
- * - Charset: utf8mb4
+ * - PDO prepared statements prevent SQL injection
+ * - Exception mode enabled (PDO::ERRMODE_EXCEPTION)
+ * - Centralized credential management
  *
  * Used By:
  * - AuthController
  * - ProfileController
  * - PostController
- * - Modules (PostModule, ProfileModule, etc.)
+ * - All Model classes (CategoryModel, CommentModel, etc.)
  *
- * Author: Pela Koniotaki
+ * Author: Pelagia Koniotaki
  * Date: 2026
  */
 //obj oriented συνδεση με τη βάση δεδομένων

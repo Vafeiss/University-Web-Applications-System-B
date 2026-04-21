@@ -1,15 +1,41 @@
-/* ========================================
-   1) Βασικά
-======================================== */
+/**
+ * File: post.css
+ * Layer: Frontend Styles
+ * Module: Posts Feed and Single Post
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Main stylesheet for the posts feed and single-post pages.
+ * Covers post cards, comments, attachments, search bar, followers
+ * dropdown, reporting and delete-request dialogs.
+ *
+ * Sections:
+ * - Base layout and typography
+ * - Post cards (feed and single)
+ * - Comments and nested replies
+ * - Attachments badge and preview
+ * - Search bar and followers dropdown
+ * - Report / delete request buttons
+ * - Dialogs and confirmation popups
+ *
+ * Used By:
+ * - admin_dashboard.php
+ * - create_post.php
+ * - post.php
+ * - posts.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
+/* βασικα */
 
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: linear-gradient(180deg, #f4f7fc 0%, #eef3fb 100%);
 }
 
-/* ========================================
-   2) Κεντρικό container
-======================================== */
+/* κεντρικο container */
 
 .post-container {
     position: relative;
@@ -156,10 +182,7 @@ button:hover {
     background: #1d4ed8;
 }
 
-/* ========================================
-   4) Μηνύματα απόκρισης (create post)
-======================================== */
-/* Μηνύματα επιτυχίας ή σφάλματος μετά την υποβολή της φόρμας δημιουργίας post */
+/* μηνυματα αποκρισης (create post) */
 .response-message {
     display: none;
     margin-top: 14px;
@@ -185,10 +208,7 @@ button:hover {
     border: 1px solid #f3b6b6;
 }
 
-/* ========================================
-   5) Upload συνημμένων (create post)
-======================================== */
-/* Στυλ για το τμήμα προσθήκης συνημμένων στη φόρμα δημιουργίας post */
+/* upload συνημμενων (create post) */
 .attachments-upload {
     margin-top: 16px;
     margin-bottom: 22px;
@@ -204,7 +224,7 @@ button:hover {
     font-weight: 700;
     color: #1f2e45;
 }
-/* Στυλ για την κεφαλίδα του τμήματος συνημμένων, που περιλαμβάνει τον τίτλο και το κουμπί επιλογής αρχείων */
+/* κεφαλιδα attachments (τιτλος + choose button) */
 .attachments-head {
     display: flex;
     align-items: flex-start;
@@ -212,7 +232,7 @@ button:hover {
     gap: 12px;
     margin-bottom: 12px;
 }
-/* Εξασφαλίζει ότι το κείμενο τίτλου δεν θα σπάσει σε πολλές γραμμές και θα παραμείνει στην ίδια γραμμή με το κουμπί επιλογής αρχείων */
+/* κρατα τον τιτλο σε μια γραμμη δίπλα στο κουμπι */
 .attachments-head-text {
     min-width: 0;
 }
@@ -223,7 +243,7 @@ button:hover {
     font-size: 12px;
     color: #64748b;
 }
-/* Στυλ για το input type="file" που χρησιμοποιείται για την επιλογή συνημμένων */
+/* input type=file για τα συνημμενα */
 #attachmentsInput {
     width: 100%;
     margin-bottom: 0;
@@ -232,7 +252,7 @@ button:hover {
     border-radius: 8px;
     background: #fff;
 }
-/* Στυλ για το κουμπί επιλογής αρχείων μέσα στο input type="file" */
+/* file-selector button μεσα στο input */
 #attachmentsInput::file-selector-button {
     margin-right: 10px;
     padding: 8px 12px;
@@ -242,11 +262,10 @@ button:hover {
     color: #fff;
     cursor: pointer;
 }
-/* Εφέ hover για το κουμπί επιλογής αρχείων */
 #attachmentsInput::file-selector-button:hover {
     background: #1857b7;
 }
-/* Κρυφό input για συνημμένα (θα ενεργοποιείται από το κουμπί επιλογής αρχείων) */
+/* κρυφο input, το ανοιγει το κουμπι */
 .attachments-native-input {
     position: absolute;
     width: 1px;
@@ -277,7 +296,6 @@ button:hover {
     box-shadow: none;
     transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-/* Εφέ hover για το κουμπί επιλογής αρχείων */
 .attachments-choose-btn:hover {
     background: #f4f7fc;
     border-color: #b8c8e3;
@@ -285,13 +303,12 @@ button:hover {
     transform: none;
     box-shadow: none;
 }
-/* Εστίαση στο κουμπί επιλογής αρχείων */
 .attachments-native-input:focus + .attachments-choose-btn,
 .attachments-choose-btn:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(155, 179, 226, 0.35);
 }
-/* Εμφάνιση επιλεγμένων αρχείων κάτω από το κουμπί επιλογής */
+/* λιστα επιλεγμενων αρχειων */
 .selected-files {
     display: block;
     margin-top: 12px;
@@ -301,16 +318,13 @@ button:hover {
     font-weight: 500;
 }
 
-/* ========================================
-   6) Feed posts (posts.php)
-======================================== */
-/* Στυλ για τα links των posts στο feed */
+/* feed posts (posts.php) */
 .post-link {
     text-decoration: none;
     color: inherit;
     display: block;
 }
-/* Στυλ για κάθε κάρτα post στο feed */
+/* καρτα post στο feed */
 .post-card {
     border: 1px solid #e5e5e5;
     padding: 20px;
@@ -320,19 +334,18 @@ button:hover {
     cursor: pointer;
     transition: all 0.25s ease;
 }
-/* Εφέ hover για τις κάρτες των posts στο feed */
 .post-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     border-color: #007bff;
 }
-/* Στυλ για τον τίτλο κάθε post στο feed */
+/* τιτλος post στο feed */
 .post-title {
     margin: 0;
     font-size: 22px;
     font-weight: 600;
 }
-/* Στυλ για τα μεταδεδομένα κάθε post στο feed (συγγραφέας, ημερομηνία, κατηγορία) */
+/* metadata του post: author, ημ/νια, κατηγορια */
 .post-meta {
     color: #777;
     margin-top: 8px;
@@ -342,7 +355,7 @@ button:hover {
     gap: 8px;
 }
 
-/* Στυλ για τις ετικέτες κατηγοριών κάθε post στο feed */
+/* badge κατηγοριας */
 .category-badge {
     display: inline-block;
     background: #eef4ff;
@@ -352,9 +365,7 @@ button:hover {
     font-size: 12px;
 }
 
-/* ========================================
-   6b) Feed layout (posts.php)
-======================================== */
+/* feed layout (posts.php) */
 
 body {
     margin: 0;
@@ -1295,6 +1306,22 @@ body:has(.user-feed-shell) {
     box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.12);
 }
 
+/* απαλο μπλε στο κουμπι ακολουθων οταν πατιεται/ανοιγει */
+.feed-search-followers-toggle:focus,
+.feed-search-followers-toggle:focus-visible,
+.feed-search-followers-toggle:active,
+.feed-search-followers-toggle[aria-expanded="true"] {
+    outline: none;
+    background: rgba(255, 255, 255, 0.94);
+    border-color: #c1d1ea;
+    color: #28405f;
+    box-shadow: 0 0 0 3px rgba(120, 145, 190, 0.14);
+}
+
+.feed-search-followers-toggle[aria-expanded="true"]::after {
+    color: #62708a;
+}
+
 .feed-status-filters {
     display: inline-flex;
     align-items: center;
@@ -1747,9 +1774,7 @@ body.info-dialog-open {
     background: #fdeff0;
 }
 
-/* ========================================
-   6a) Notifications
-======================================== */
+/* notifications */
 
 .notifications-wrap {
     position: relative;
@@ -2644,19 +2669,16 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     }
 }
 
-/* ========================================
-   7) Single post page
-======================================== */
-/* Στυλ για τη σελίδα προβολής ενός μεμονωμένου post */
+/* single post page */
 .single-post {
     max-width: 700px;
 }
-/* Στυλ για τον τίτλο του post στη σελίδα προβολής */
+/* τιτλος post στη σελιδα προβολης */
 .single-title {
     font-size: 34px;
     margin-bottom: 10px;
 }
-/* Στυλ για τα μεταδεδομένα του post στη σελίδα προβολής (συγγραφέας, ημερομηνία, κατηγορία) */
+/* metadata στη σελιδα προβολης */
 .single-meta {
     display: flex;
     align-items: center;
@@ -2665,40 +2687,38 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     font-size: 14px;
     margin-bottom: 25px;
 }
-/* Στυλ για τον διαχωριστικό χαρακτήρα μεταξύ των μεταδεδομένων (π.χ. "John Doe • Jan 1, 2024") */
+/* διαχωριστικη τελεια μεταξυ metadata */
 .meta-separator {
     color: #aaa;
 }
-/* Στυλ για το κύριο περιεχόμενο του post στη σελίδα προβολής */
+/* κυριο περιεχομενο post */
 .single-content {
     font-size: 18px;
     line-height: 1.7;
     margin-top: 20px;
 }
-/* Στυλ για τα links επιστροφής στο feed από τη σελίδα προβολής ενός post */
+/* back link στο feed */
 .back-link {
     display: inline-block;
     margin-bottom: 20px;
     text-decoration: none;
     color: #007bff;
 }
-/* Εφέ hover για τα links επιστροφής στο feed */
 .back-link:hover {
     text-decoration: underline;
 }
-/* Στυλ για τα τμήματα διαχείρισης (διαγραφή, αναφορά) στη σελίδα προβολής ενός post */
+/* section διαγραφης/αναφορας στο πανω δεξια */
 .post-delete-section {
     position: absolute;
     top: 30px;
     right: 30px;
 }
-/* Στυλ για το τμήμα αναφοράς ενός post στη σελίδα προβολής */
 .post-report-section {
     position: absolute;
     top: 30px;
     right: 30px;
 }
-/* Στυλ για το κουμπί υποβολής αιτήματος διαγραφής ενός post από τον χρήστη */
+/* κουμπι αιτηματος διαγραφης (user) */
 .post-delete-request-btn {
     display: inline-flex;
     align-items: center;
@@ -2718,7 +2738,7 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     transition: color 0.2s ease;
 }
 
-/* Στυλ για το κουμπί διαγραφής ενός post από τον διαχειριστή στη σελίδα προβολής */
+/* κουμπι διαγραφης (admin) */
 .admin-post-delete-btn {
     display: inline-flex;
     align-items: center;
@@ -2737,7 +2757,6 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     cursor: pointer;
     transition: color 0.2s ease;
 }
-/* Εφέ hover για το κουμπί υποβολής αιτήματος διαγραφής ενός post από τον χρήστη */
 .post-delete-request-btn:hover,
 .post-delete-request-btn:focus,
 .post-delete-request-btn:focus-visible {
@@ -2746,7 +2765,6 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     background: transparent;
     text-decoration: none;
 }
-/* Εφέ hover για το κουμπί διαγραφής ενός post από τον διαχειριστή στη σελίδα προβολής */
 .admin-post-delete-btn:hover,
 .admin-post-delete-btn:focus,
 .admin-post-delete-btn:focus-visible {
@@ -2755,13 +2773,12 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     background: transparent;
     text-decoration: none;
 }
-/* Στυλ για το κουμπί υποβολής αιτήματος διαγραφής ενός post όταν είναι απενεργοποιημένο (π.χ. μετά την υποβολή αιτήματος) */
+/* disabled state μετα την υποβολη */
 .post-delete-request-btn.is-disabled {
     color: #d1a3a3;
     opacity: 0.65;
     cursor: default;
 }
-/* Εφέ hover για το κουμπί υποβολής αιτήματος διαγραφής ενός post όταν είναι απενεργοποιημένο */
 .post-delete-request-btn.is-disabled:hover,
 .post-delete-request-btn.is-disabled:focus,
 .post-delete-request-btn.is-disabled:focus-visible {
@@ -2769,7 +2786,7 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     opacity: 0.65;
     background: transparent;
 }
-/* Στυλ για το κουμπί υποβολής αναφοράς ενός post στη σελίδα προβολής */
+/* κουμπι αναφορας post */
 .post-report-btn {
     display: inline-flex;
     align-items: center;
@@ -2788,7 +2805,6 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     cursor: pointer;
     transition: color 0.2s ease;
 }
-/* Εφέ hover για το κουμπί υποβολής αναφοράς ενός post στη σελίδα προβολής */
 .post-report-btn:hover,
 .post-report-btn:focus,
 .post-report-btn:focus-visible {
@@ -2797,13 +2813,12 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     background: transparent;
     text-decoration: none;
 }
-/* Στυλ για το κουμπί υποβολής αναφοράς ενός post όταν είναι απενεργοποιημένο (π.χ. μετά την υποβολή αναφοράς) */
+/* disabled report btn μετα την υποβολη */
 .post-report-btn.is-disabled {
     color: #d1a3a3;
     opacity: 0.65;
     cursor: default;
 }
-/* Εφέ hover για το κουμπί υποβολής αναφοράς ενός post όταν είναι απενεργοποιημένο */
 .post-report-btn.is-disabled:hover,
 .post-report-btn.is-disabled:focus,
 .post-report-btn.is-disabled:focus-visible {
@@ -2812,10 +2827,7 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     background: transparent;
 }
 
-/* ========================================
-   8) Attachments panel (single post)
-======================================== */
-/* Στυλ για το τμήμα προβολής συνημμένων στη σελίδα προβολής ενός post */
+/* attachments panel (single post) */
 .attachments-panel {
     margin-top: 26px;
     border: 1px solid #d9e2f1;
@@ -2823,7 +2835,7 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     background: #fbfdff;
     overflow: hidden;
 }
-/* Στυλ για το κουμπί εναλλαγής εμφάνισης της λίστας συνημμένων στη σελίδα προβολής ενός post */
+/* toggle για show/hide attachments list */
 .attachments-toggle {
     width: 100%;
     display: flex;
@@ -2838,7 +2850,7 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     font-weight: 700;
     cursor: pointer;
 }
-/* Εφέ hover για το κουμπί εναλλαγής εμφάνισης της λίστας συνημμένων στη σελίδα προβολής ενός post */
+/* badge με αριθμο συνημμενων */
 .attachments-count {
     min-width: 30px;
     text-align: center;
@@ -2924,9 +2936,7 @@ html[lang="en"] .user-feed-shell .notifications-btn {
     background: #1857b7;
 }
 
-/* ========================================
-   9) Comments
-======================================== */
+/* comments */
 
 .comments-section {
     margin-top: 30px;
@@ -3334,9 +3344,7 @@ body.comment-dialog-open {
     border-color: #f3c1c1;
 }
 
-/* ========================================
-   10) Responsive
-======================================== */
+/* responsive */
 
 @media (max-width: 640px) {
     .post-delete-section {

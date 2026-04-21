@@ -1,5 +1,33 @@
 <?php
-// 1. ΣΥΝΔΕΣΗ ΜΕ ΤΗ ΒΑΣΗ
+/**
+ * File: ads_user.php
+ * Layer: Frontend Page
+ * Module: Ads (User View)
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Page where logged-in users view advertisements and earn tokens for
+ * watching them. Integrates with AdsController for delivery and with
+ * the token system for rewards.
+ *
+ * Features:
+ * - Carousel / slider of active advertisements
+ * - Token reward tracking per ad viewed
+ * - Call-to-action link to advertiser
+ * - Fallback message when no ads available
+ *
+ * Security:
+ * - session_start() and requireLogin()
+ * - PDO prepared statements (database.php)
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from main dashboard (index.php)
+ *
+ * Author:
+ * Date: 2026
+ */
+
 require_once "../backend/config/database.php";
 session_start();
 

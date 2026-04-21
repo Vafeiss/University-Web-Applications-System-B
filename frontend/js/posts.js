@@ -1,3 +1,32 @@
+/**
+ * File: posts.js
+ * Layer: Frontend Script
+ * Module: Posts Feed
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Main script for the posts feed. Loads the appropriate feed
+ * (default, following, interests), renders post cards, handles
+ * search, filtering, attachments preview, comments, follow/unfollow,
+ * reports, delete requests and the notifications dropdown.
+ *
+ * Functions:
+ * - applySidebarState()
+ * - deleteNotification()
+ * - deleteReadNotifications()
+ * - fetchJSON()
+ * - handleNotificationClick()
+ * - loadDefaultFeed()
+ * - loadFollowerFilterOptions()
+ * - loadFollowersBanner()
+ *
+ * Used By:
+ * - frontend/posts.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
 const CAT_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
 const FOLLOW_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/FollowController.php";
@@ -53,7 +82,7 @@ function resolveNotificationMessage(rawMessage) {
             return translateFormat(payload.i18n_key, params, fallback || text);
         }
     } catch (error) {
-        // Not a JSON payload, fall through and return the raw text
+        // δεν ειναι json, το αφηνουμε οπως ηρθε
     }
 
     return text;
@@ -482,8 +511,7 @@ function setupNotificationsUI() {
         }
     });
 
-    // όταν αλλάξει η γλώσσα, ανανεώνουμε τη λίστα ειδοποιήσεων
-    // ώστε τα μηνύματα να εμφανιστούν μεταφρασμένα χωρίς refresh
+    // αλλαγη γλωσσας -> ξαναφορτωνουμε τα notifications για να μεταφραστουν
     window.addEventListener("unisupport:languagechange", () => {
         loadNotifications();
     });
@@ -1995,8 +2023,7 @@ window.addEventListener("unisupport:languagechange", () => {
         }
     }
 
-    // Ξανα-φορτώνουμε το banner ενδιαφερόντων / ακολούθων ώστε το κείμενο
-    // να εμφανίζεται αμέσως στη νέα γλώσσα αντί να περιμένει refresh ή αλλαγή tab
+    // refresh στο banner ενδιαφεροντων/ακολουθων μολις αλλαξει γλωσσα
     const interestsBanner = document.getElementById("interestsBanner");
     if (interestsBanner && !interestsBanner.hidden) {
         if (activeFeedMode === "followers") {

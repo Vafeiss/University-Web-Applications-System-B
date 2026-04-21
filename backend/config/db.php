@@ -1,4 +1,25 @@
 <?php
+/**
+ * File: db.php
+ * Layer: Backend Configuration
+ * Module: Database Configuration
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Legacy database connection configuration for PDO MySQL setup.
+ * Provides direct connection credentials for alternative database access.
+ *
+ * Security:
+ * - PDO prepared statements enabled
+ * - Exception error mode for proper error handling
+ * - UTF-8 character encoding
+ *
+ * Used By:
+ * - Fallback/legacy code paths
+ *
+ * Author:
+ * Date: 2026
+ */
 
 $host = 'localhost';
 $db   = 'university_web';

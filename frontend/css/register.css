@@ -1,3 +1,28 @@
+/**
+ * File: register.css
+ * Layer: Frontend Styles
+ * Module: Authentication (Register)
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the registration page including the centered card,
+ * form inputs, validation hints and alternate action links.
+ *
+ * Sections:
+ * - Global body/background
+ * - Centered auth card
+ * - Form inputs and labels
+ * - Password strength / validation hints
+ * - Primary action button
+ * - Link back to login
+ *
+ * Used By:
+ * - register.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 body {
     min-height: 100vh;
     margin: 0;

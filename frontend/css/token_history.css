@@ -1,3 +1,27 @@
+/**
+ * File: token_history.css
+ * Layer: Frontend Styles
+ * Module: Token History
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the token balance and transaction history page.
+ * Covers balance card, filters and transaction list.
+ *
+ * Sections:
+ * - Page shell and background
+ * - Balance summary card
+ * - Filter controls
+ * - Transaction list rows
+ * - Amount badges (credit / debit)
+ *
+ * Used By:
+ * - token_history.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 body {
     margin: 0;
     background: #f4f7fb;

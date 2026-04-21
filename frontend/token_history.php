@@ -1,4 +1,33 @@
 <?php
+/**
+ * File: token_history.php
+ * Layer: Frontend Page
+ * Module: Token History
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Page showing the logged-in user's current token balance and
+ * the history of their token transactions (rewards, spending).
+ *
+ * Features:
+ * - Current balance summary card
+ * - Filter by transaction type / date
+ * - Transaction list rows with amount and reason
+ * - Running total display
+ *
+ * Security:
+ * - session_start() and requireLogin()
+ * - BanGuard check
+ * - PDO prepared statements (database.php)
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from main dashboard (index.php)
+ *
+ * Author:
+ * Date: 2026
+ */
+
 require_once "../backend/config/database.php";
 require_once "../backend/middleware/BanGuard.php";
 session_start();

@@ -1,4 +1,38 @@
 <?php
+/**
+ * File: admin_dashboard.php
+ * Layer: Frontend Page
+ * Module: Admin Dashboard
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Central admin control panel with tabbed interface for moderation tasks.
+ * Provides dashboards for pending posts, deletion requests, reports, and other admin functions.
+ *
+ * Features:
+ * - Pending posts review and approval/rejection
+ * - Post deletion requests management
+ * - Comment deletion requests management
+ * - User report review and actions
+ * - Category request approvals
+ * - User account management (bans)
+ * - Admin username and email display
+ * - Tab-based navigation between sections
+ * - Localized notification support
+ *
+ * Security:
+ * - Admin role check (redirects non-admins)
+ * - Ban check before access
+ * - Session validation
+ *
+ * Used By:
+ * - admin.php (redirect entry point)
+ * - Admin navigation from index.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 require_once "../backend/middleware/BanGuard.php";
 enforceFrontendUserNotBanned();

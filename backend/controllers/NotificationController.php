@@ -1,4 +1,33 @@
 <?php
+/**
+ * File: NotificationController.php
+ * Layer: Controller
+ * Module: Notifications
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Provides notification management endpoints for users. Supports retrieving
+ * notifications, marking individual/all notifications as read, and deleting
+ * read notifications.
+ *
+ * Functions:
+ * - list() → retrieves all notifications for current user
+ * - markRead() → marks single notification as read
+ * - markAllRead() → marks all notifications as read
+ * - deleteRead() → removes all read notifications
+ * - deleteOne() → removes single notification
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - User isolation: users only see their own notifications
+ * - Input validation on notification_id
+ *
+ * Used By:
+ * - frontend notifications panel (AJAX calls)
+ *
+ * Author:
+ * Date: 2026
+ */
 
 header("Content-Type: application/json");
 

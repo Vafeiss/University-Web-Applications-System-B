@@ -1,6 +1,37 @@
 <?php
-// register page
-// Pela
+/**
+ * File: register.php
+ * Layer: Frontend Page
+ * Module: Authentication
+ * System: University Web Applications System B
+ *
+ * Description:
+ * User registration page with form handling. Accepts username, email, password,
+ * optional referral code. Enforces terms acceptance and creates new user account.
+ *
+ * Features:
+ * - Registration form (username, email, password, referral code)
+ * - Terms & Conditions checkbox requirement
+ * - Form validation and error display
+ * - Success redirect to login page
+ * - Referral code bonus support
+ * - Password strength guidelines
+ * - Bootstrap-styled responsive form
+ *
+ * Security:
+ * - Policy acceptance requirement
+ * - Input validation in AuthController
+ * - Password hashing before storage
+ * - CSRF protection via form tokens
+ * - Unique username/email constraints
+ *
+ * Used By:
+ * - Link from login.php
+ * - Unauthenticated users registering
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once "../backend/controllers/AuthController.php";
 

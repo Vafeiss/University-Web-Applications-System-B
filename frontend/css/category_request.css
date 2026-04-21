@@ -1,3 +1,27 @@
+/**
+ * File: category_request.css
+ * Layer: Frontend Styles
+ * Module: Category Requests
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the page where users request new categories and
+ * review their previous request history.
+ *
+ * Sections:
+ * - Page shell and hero
+ * - Request form inputs
+ * - History list and cards
+ * - Delete/cancel buttons
+ * - Status badges (pending / approved / rejected)
+ *
+ * Used By:
+ * - category_request.php
+ *
+ * Author:
+ * Date: 2026
+ */
+
 .request-history-item {
     position: relative;
     padding-right: 34px;

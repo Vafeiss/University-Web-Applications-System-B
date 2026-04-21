@@ -1,4 +1,40 @@
 <?php
+/**
+ * File: post.php
+ * Layer: Frontend Page
+ * Module: Single Post View
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Displays single post with full details, comments, and user interactions.
+ * Supports post viewing, commenting, reporting, deletion requests, and admin
+ * moderation preview. Dynamically determines back navigation based on admin context.
+ *
+ * Features:
+ * - Single post display with user info
+ * - Comments listing and creation
+ * - Comment deletion requests
+ * - Post reporting interface
+ * - Post deletion request submission
+ * - Admin preview mode (from dashboard)
+ * - Multiple admin source contexts (pending, delete requests, reports, etc.)
+ * - Attachment display
+ * - Anonymous post handling
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - Ban checking via BanGuard middleware
+ * - Admin preview requires explicit flag
+ * - Input validation on post_id parameter
+ *
+ * Used By:
+ * - posts.php (post list navigation)
+ * - admin_dashboard.php (admin moderation)
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 require_once "../backend/middleware/BanGuard.php";
 enforceFrontendUserNotBanned();

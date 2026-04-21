@@ -1,4 +1,32 @@
 <?php
+/**
+ * File: category_request.php
+ * Layer: Frontend Page
+ * Module: Category Requests
+ * System: University Web Applications System B
+ *
+ * Description:
+ * User page for submitting new category suggestions to the admins
+ * and reviewing the status of previously submitted requests.
+ *
+ * Features:
+ * - Form to submit a new category name
+ * - List of user's previous requests with status
+ * - Delete own pending request option
+ * - Inline feedback on success / error
+ *
+ * Security:
+ * - session_start() and requireLogin()
+ * - Input validation on category name
+ * - htmlspecialchars() for output escaping
+ *
+ * Used By:
+ * - Linked from main dashboard (index.php)
+ *
+ * Author:
+ * Date: 2026
+ */
+
 session_start();
 
 require_once "../backend/middleware/AuthGuard.php";

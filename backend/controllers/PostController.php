@@ -1,6 +1,43 @@
 <?php
+/**
+ * File: PostController.php
+ * Layer: Controller
+ * Module: Posts
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Core controller for post lifecycle management. Handles post creation with
+ * attachments, deletion requests, user reports, and admin moderation/approval workflow.
+ *
+ * Functions:
+ * - create() → users create posts with optional file attachments (max 5 files)
+ * - listByUser() → retrieve user's posts with pagination
+ * - getPostById() → fetch single post details
+ * - requestDelete() → users submit post deletion requests
+ * - report() → users report posts for moderation
+ * - listDeleteRequests() → admins view pending deletions
+ * - approveDelete() → admins approve and delete posts
+ * - rejectDelete() → admins reject deletion requests
+ * - approvePost() → admins approve pending posts
+ * - rejectPost() → admins reject pending posts
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - File upload validation: extension, size, MIME type checks
+ * - Attachment directory outside web root
+ * - PDO prepared statements for all queries
+ * - Admin-only approval/moderation operations
+ *
+ * Used By:
+ * - frontend/create_post.php
+ * - frontend/posts.php
+ * - frontend/post.php
+ * - frontend/admin_dashboard.php
+ *
+ * Author:
+ * Date: 2026
+ */
 
-// Return JSON responses
 header("Content-Type: application/json");
 
 require_once __DIR__ . '/BaseController.php';
@@ -928,7 +965,7 @@ if (isset($_GET['action'])) {
         case 'rejectReport':
             $controller->rejectReport();
             break;
-        
+
         case 'commentDeleteRequests':
             $controller->commentDeleteRequests();
             break;

@@ -1,6 +1,32 @@
 <?php
-// reset password - με token απο το email
-// Pela
+/**
+ * File: reset_password.php
+ * Layer: Frontend Page
+ * Module: Password Reset
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Public page that lets a user set a new password using the reset
+ * token received by email. Validates the token through AuthController
+ * and updates the password on success.
+ *
+ * Features:
+ * - New password and confirm fields
+ * - Token validation via AuthController
+ * - Inline success / error feedback
+ * - Redirect to login on success
+ *
+ * Security:
+ * - Token validation with expiry check
+ * - Password strength validation
+ * - Password hashed with password_hash()
+ *
+ * Used By:
+ * - Linked from the password-reset email
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once "../backend/controllers/AuthController.php";
 

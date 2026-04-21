@@ -1,4 +1,32 @@
 <?php
+/**
+ * File: FollowController.php
+ * Layer: Controller
+ * Module: Follows
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Manages user follow relationships. Allows users to follow/unfollow other users
+ * and check follow status. Prevents self-following and duplicate follows.
+ *
+ * Functions:
+ * - follow() → user follows another user
+ * - unfollow() → user unfollows another user
+ * - isFollowing() → checks if current user follows a target user
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - Input validation on user_id
+ * - Self-follow prevention
+ * - Duplicate follow prevention
+ * - Idempotent unfollow operations
+ *
+ * Used By:
+ * - frontend/profile_view.php (AJAX follow/unfollow)
+ *
+ * Author:
+ * Date: 2026
+ */
 
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../modules/FollowModel.php';
