@@ -507,6 +507,7 @@ body.admin-dialog-open {
     background-repeat: no-repeat;
     background-size: 100% 100%;
     pointer-events: none;
+    z-index: 1;
 }
 
 .dashboard-search-topbar .dashboard-search-keyword-wrap:focus-within {
@@ -530,12 +531,14 @@ body.admin-dialog-open {
 
 .dashboard-search-input {
     width: 100%;
-    padding: 14px 18px;
+    min-width: 0;
+    padding: 0 18px 0 58px;
     border-radius: 14px;
     border: 1.5px solid #dbe4f2;
     background: #f8fbff;
     color: #1e293b;
     font-size: 16px;
+    line-height: 46px;
     transition: border 0.18s;
 }
 
