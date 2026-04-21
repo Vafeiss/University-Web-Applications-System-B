@@ -1572,6 +1572,8 @@ function setupSearchControls() {
     const form = document.getElementById("feedSearchForm");
     const clearButton = document.getElementById("feedSearchClear");
     const keywordInput = document.getElementById("feedSearchKeyword");
+    const fromInput = document.getElementById("feedSearchFrom");
+    const toInput = document.getElementById("feedSearchTo");
     const title = document.getElementById("feedTitle");
     const filtersToggle = document.getElementById("feedSearchFiltersToggle");
     const advancedFilters = document.getElementById("feedSearchAdvanced");
@@ -1583,6 +1585,19 @@ function setupSearchControls() {
     if (!form || !clearButton || !title) {
         return;
     }
+
+    const minimumFilterDate = "2026-01-01";
+    [fromInput, toInput].forEach((input) => {
+        if (!input) {
+            return;
+        }
+
+        input.min = minimumFilterDate;
+
+        if (input.value && input.value < minimumFilterDate) {
+            input.value = "";
+        }
+    });
 
     if (filtersToggle && advancedFilters) {
         filtersToggle.addEventListener("click", () => {
