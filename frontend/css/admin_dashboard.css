@@ -522,6 +522,7 @@ body.admin-dialog-open {
 .dashboard-search-users-toggle,
 .dashboard-search-btn {
     height: 46px;
+    margin-bottom: 0;
     box-sizing: border-box;
     transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, transform 0.22s ease;
 }
@@ -591,6 +592,7 @@ body.admin-dialog-open {
     width: 52px;
     height: 46px;
     flex: 0 0 52px;
+    align-self: center;
     display: inline-flex;
     align-items: center;
     justify-content: center;
