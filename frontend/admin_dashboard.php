@@ -141,6 +141,7 @@ $i18nJsVersion = filemtime(__DIR__ . '/js/i18n.js');
 					</button>
 
 					<button type="button" id="adminProfileOpenTop" class="feed-dashboard-toplink" data-i18n="admin.view_profile">View profile</button>
+					<a href="admin_ads.php" class="feed-dashboard-toplink" data-i18n="admin.manage_ads">Manage ads</a>
 
 					<div class="notifications-wrap">
 						<button type="button" id="adminNotificationsBtn" class="notifications-btn" aria-label="Open notifications" aria-haspopup="true" aria-expanded="false" data-i18n-aria-label="common.notifications">
