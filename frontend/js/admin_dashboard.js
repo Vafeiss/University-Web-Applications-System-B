@@ -19,6 +19,42 @@
     function translate(key, fallback) {
         return window.UniSupportI18n?.t(key, fallback) ?? fallback;
     }
+
+    function translateFormat(key, params, fallback) {
+        const i18n = window.UniSupportI18n;
+        if (i18n && typeof i18n.tf === "function") {
+            return i18n.tf(key, params, fallback);
+        }
+        if (i18n && typeof i18n.format === "function") {
+            return i18n.format(i18n.t ? i18n.t(key, fallback) : fallback, params);
+        }
+        return fallback;
+    }
+
+    function resolveNotificationMessage(rawMessage) {
+        const text = String(rawMessage ?? "");
+        if (!text) {
+            return "";
+        }
+
+        const trimmed = text.trim();
+        if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+            return text;
+        }
+
+        try {
+            const payload = JSON.parse(trimmed);
+            if (payload && typeof payload === "object" && typeof payload.i18n_key === "string") {
+                const params = (payload.params && typeof payload.params === "object") ? payload.params : {};
+                const fallback = typeof payload.fallback === "string" ? payload.fallback : "";
+                return translateFormat(payload.i18n_key, params, fallback || text);
+            }
+        } catch (error) {
+            // Not JSON, use the raw text
+        }
+
+        return text;
+    }
     const SECTION_CONFIG = {
         posts: {
             load: loadPostsView
@@ -77,6 +113,9 @@
         if (label) {
             label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
         }
+
+        // Επαναφορτώνουμε τις ειδοποιήσεις στη νέα γλώσσα
+        loadNotifications();
     });
 
     function bindTabs() {
@@ -525,9 +564,13 @@
                 ? new Date(notification.created_at).toLocaleString()
                 : "";
 
+            const localizedMessage = resolveNotificationMessage(notification.message);
+            const deleteAriaLabel = translate("common.delete_notification", "Delete notification");
+            const deleteTitle = translate("common.delete", "Delete");
+
             item.innerHTML = `
-                <span class="notification-delete-btn" role="button" tabindex="0" aria-label="Delete notification" title="Delete">x</span>
-                <div class="notification-text">${escapeHtml(notification.message || "")}</div>
+                <span class="notification-delete-btn" role="button" tabindex="0" aria-label="${escapeHtml(deleteAriaLabel)}" title="${escapeHtml(deleteTitle)}">x</span>
+                <div class="notification-text">${escapeHtml(localizedMessage)}</div>
                 <div class="notification-time">${escapeHtml(createdAt)}</div>
             `;
 

@@ -93,9 +93,14 @@ class PostController extends BaseController {
 
             $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
             $notificationModel = new NotificationModel();
-            $notificationModel->notifyAdmins(
+            $notificationModel->notifyAdminsLocalized(
                 'admin_pending_post',
                 (int)$post_id,
+                'notifications.admin_pending_post',
+                [
+                    "actor" => $actorName,
+                    "title" => $title
+                ],
                 $actorName . ' submitted a new pending post: ' . $title
             );
 
@@ -324,11 +329,17 @@ class PostController extends BaseController {
         $this->postModel->createPostDeleteRequest($post_id, $user_id, $reason);
 
         $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $postTitleForNotification = (string)($post['title'] ?? 'Untitled post');
         $notificationModel = new NotificationModel();
-        $notificationModel->notifyAdmins(
+        $notificationModel->notifyAdminsLocalized(
             'admin_post_delete_request',
             (int)$post_id,
-            $actorName . ' submitted a post delete request for: ' . ((string)($post['title'] ?? 'Untitled post'))
+            'notifications.admin_post_delete_request',
+            [
+                "actor" => $actorName,
+                "title" => $postTitleForNotification
+            ],
+            $actorName . ' submitted a post delete request for: ' . $postTitleForNotification
         );
 
         $this->jsonResponse(["message" => "Post delete request submitted"]);
@@ -365,11 +376,17 @@ class PostController extends BaseController {
         $this->postModel->createPostReport($post_id, $user_id, $reason);
 
         $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $reportedTitle = (string)($post['title'] ?? 'Untitled post');
         $notificationModel = new NotificationModel();
-        $notificationModel->notifyAdmins(
+        $notificationModel->notifyAdminsLocalized(
             'admin_post_report',
             (int)$post_id,
-            $actorName . ' reported a post: ' . ((string)($post['title'] ?? 'Untitled post'))
+            'notifications.admin_post_report',
+            [
+                "actor" => $actorName,
+                "title" => $reportedTitle
+            ],
+            $actorName . ' reported a post: ' . $reportedTitle
         );
 
         $this->jsonResponse(["message" => "Post report submitted"]);
@@ -413,10 +430,12 @@ class PostController extends BaseController {
             $isAnonymous = !empty($post['is_anonymous']);
 
             // OWNER notification
-            $notificationModel->createNotification(
+            $notificationModel->createLocalizedNotification(
                 (int)$post['user_id'],
                 "post_approved",
                 (int)$post_id,
+                "notifications.post_approved",
+                ["title" => (string)$post['title']],
                 "Your post \"" . $post['title'] . "\" has been approved"
             );
 
@@ -610,10 +629,12 @@ class PostController extends BaseController {
         if ($wasRejectedNow && $post) {
             $notificationModel = new NotificationModel();
 
-            $notificationModel->createNotification(
+            $notificationModel->createLocalizedNotification(
                 (int)$post['user_id'],
                 "post_rejected",
                 (int)$post_id,
+                "notifications.post_rejected",
+                ["title" => (string)$post['title']],
                 // (προσωρινά χωρίς reason στο message — θα το βάλουμε μετά)
                 "Your post \"" . $post['title'] . "\" was rejected"
             );
@@ -650,11 +671,14 @@ class PostController extends BaseController {
 
         if ($wasApprovedNow && $request) {
             $notificationModel = new NotificationModel();
-            $notificationModel->createNotification(
+            $titleForNotification = (string)($request['title'] ?? 'Untitled post');
+            $notificationModel->createLocalizedNotification(
                 (int)$request['requested_by'],
                 "delete_approved",
                 (int)$request['post_id'],
-                "Your delete request for \"" . ((string)($request['title'] ?? 'Untitled post')) . "\" was approved"
+                "notifications.delete_approved",
+                ["title" => $titleForNotification],
+                "Your delete request for \"" . $titleForNotification . "\" was approved"
             );
         }
 
@@ -677,11 +701,14 @@ class PostController extends BaseController {
 
         if ($wasRejectedNow && $request) {
             $notificationModel = new NotificationModel();
-            $notificationModel->createNotification(
+            $titleForNotification = (string)($request['title'] ?? 'Untitled post');
+            $notificationModel->createLocalizedNotification(
                 (int)$request['requested_by'],
                 "delete_rejected",
                 (int)$request['post_id'],
-                "Your delete request for \"" . ((string)($request['title'] ?? 'Untitled post')) . "\" was rejected"
+                "notifications.delete_rejected",
+                ["title" => $titleForNotification],
+                "Your delete request for \"" . $titleForNotification . "\" was rejected"
             );
         }
 
@@ -717,10 +744,12 @@ class PostController extends BaseController {
             $postTitle = (string)($report['post_title'] ?? ('Post #' . (int)($report['content_id'] ?? 0)));
             $referenceId = (int)($report['post_id'] ?? $report['content_id'] ?? 0);
 
-            $notificationModel->createNotification(
+            $notificationModel->createLocalizedNotification(
                 (int)$report['reported_by'],
                 "report_approved",
                 $referenceId,
+                "notifications.report_approved",
+                ["title" => $postTitle],
                 "Your report for \"" . $postTitle . "\" was approved. Action was taken."
             );
         }
@@ -748,10 +777,12 @@ class PostController extends BaseController {
             $postTitle = (string)($report['post_title'] ?? ('Post #' . (int)($report['content_id'] ?? 0)));
             $referenceId = (int)($report['post_id'] ?? $report['content_id'] ?? 0);
 
-            $notificationModel->createNotification(
+            $notificationModel->createLocalizedNotification(
                 (int)$report['reported_by'],
                 "report_rejected",
                 $referenceId,
+                "notifications.report_rejected",
+                ["title" => $postTitle],
                 "Your report for \"" . $postTitle . "\" was rejected."
             );
         }

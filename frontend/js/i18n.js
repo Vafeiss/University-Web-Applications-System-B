@@ -1,3 +1,4 @@
+// κρατάει ολες τις μεταφράσεις και παρέχει βοηθητικές συναρτήσεις για την εφαρμογή τους στη σελίδα, καθώς και για τη διαχείριση της τρέχουσας γλώσσας και των switchers γλώσσας.
 (function () {
     const STORAGE_KEY = "unisupport-language";
 
@@ -8,6 +9,35 @@
             "common.notifications": "Notifications",
             "common.delete_all_read": "Delete all read",
             "common.no_notifications": "No notifications yet.",
+            "common.delete_notification": "Delete notification",
+            "common.delete": "Delete",
+            "notifications.post_approved": "Your post \"{title}\" has been approved",
+            "notifications.post_rejected": "Your post \"{title}\" was rejected",
+            "notifications.delete_approved": "Your delete request for \"{title}\" was approved",
+            "notifications.delete_rejected": "Your delete request for \"{title}\" was rejected",
+            "notifications.report_approved": "Your report for \"{title}\" was approved. Action was taken.",
+            "notifications.report_rejected": "Your report for \"{title}\" was rejected.",
+            "notifications.category_request_approved": "Your category request \"{name}\" was approved",
+            "notifications.category_request_rejected": "Your category request \"{name}\" was rejected",
+            "notifications.comment": "{user} commented on your post",
+            "notifications.new_post_following": "{author} created a new post: {title}",
+            "notifications.new_post_interest": "New post in your interest category ({category}): {title}",
+            "notifications.admin_pending_post": "{actor} submitted a new pending post: {title}",
+            "notifications.admin_post_delete_request": "{actor} submitted a post delete request for: {title}",
+            "notifications.admin_post_report": "{actor} reported a post: {title}",
+            "notifications.admin_comment_delete_request": "{actor} submitted a comment delete request.",
+            "notifications.admin_category_request": "{actor} submitted a category request: {name}",
+            "notifications.untitled_post": "Untitled post",
+            "notifications.unnamed_category": "Unnamed category",
+            "notifications.a_user": "A user",
+            "posts.no_interests_selected": "You have not selected any interests yet.",
+            "posts.showing_all_posts": "Showing all posts.",
+            "posts.not_following_anyone": "You are not following anyone yet.",
+            "posts.follow_users_hint": "Follow users to see their posts here.",
+            "posts.no_followers_yet": "No one is following you yet.",
+            "posts.followers_will_appear": "Your followers will appear here.",
+            "posts.click_to_unfollow": "Click to unfollow",
+            "posts.unfollow_short": "Unfollow",
             "common.cancel": "Cancel",
             "common.accept": "Accept",
             "common.close": "Close",
@@ -151,6 +181,35 @@
             "common.notifications": "Ειδοποιήσεις",
             "common.delete_all_read": "Διαγραφή αναγνωσμένων",
             "common.no_notifications": "Δεν υπάρχουν ειδοποιήσεις ακόμη.",
+            "common.delete_notification": "Διαγραφή ειδοποίησης",
+            "common.delete": "Διαγραφή",
+            "notifications.post_approved": "Η ανάρτησή σας «{title}» εγκρίθηκε",
+            "notifications.post_rejected": "Η ανάρτησή σας «{title}» απορρίφθηκε",
+            "notifications.delete_approved": "Το αίτημα διαγραφής σας για την ανάρτηση «{title}» εγκρίθηκε",
+            "notifications.delete_rejected": "Το αίτημα διαγραφής σας για την ανάρτηση «{title}» απορρίφθηκε",
+            "notifications.report_approved": "Η αναφορά σας για την ανάρτηση «{title}» εγκρίθηκε. Ελήφθησαν μέτρα.",
+            "notifications.report_rejected": "Η αναφορά σας για την ανάρτηση «{title}» απορρίφθηκε.",
+            "notifications.category_request_approved": "Το αίτημα κατηγορίας «{name}» εγκρίθηκε",
+            "notifications.category_request_rejected": "Το αίτημα κατηγορίας «{name}» απορρίφθηκε",
+            "notifications.comment": "Ο/Η {user} σχολίασε στην ανάρτησή σας",
+            "notifications.new_post_following": "Ο/Η {author} δημοσίευσε νέα ανάρτηση: {title}",
+            "notifications.new_post_interest": "Νέα ανάρτηση στην κατηγορία ενδιαφέροντός σας ({category}): {title}",
+            "notifications.admin_pending_post": "Ο/Η {actor} υπέβαλε νέα εκκρεμή ανάρτηση: {title}",
+            "notifications.admin_post_delete_request": "Ο/Η {actor} υπέβαλε αίτημα διαγραφής για την ανάρτηση: {title}",
+            "notifications.admin_post_report": "Ο/Η {actor} ανέφερε ανάρτηση: {title}",
+            "notifications.admin_comment_delete_request": "Ο/Η {actor} υπέβαλε αίτημα διαγραφής σχολίου.",
+            "notifications.admin_category_request": "Ο/Η {actor} υπέβαλε αίτημα κατηγορίας: {name}",
+            "notifications.untitled_post": "Ανάρτηση χωρίς τίτλο",
+            "notifications.unnamed_category": "Κατηγορία χωρίς όνομα",
+            "notifications.a_user": "Ένας χρήστης",
+            "posts.no_interests_selected": "Δεν έχεις επιλέξει ακόμη ενδιαφέροντα.",
+            "posts.showing_all_posts": "Εμφάνιση όλων των αναρτήσεων.",
+            "posts.not_following_anyone": "Δεν ακολουθείς κανέναν ακόμη.",
+            "posts.follow_users_hint": "Ακολούθησε χρήστες για να βλέπεις τις αναρτήσεις τους εδώ.",
+            "posts.no_followers_yet": "Δεν σε ακολουθεί κανείς ακόμη.",
+            "posts.followers_will_appear": "Οι ακόλουθοί σου θα εμφανιστούν εδώ.",
+            "posts.click_to_unfollow": "Πάτησε για να καταργήσεις την ακολούθηση",
+            "posts.unfollow_short": "Κατάργηση",
             "common.cancel": "Ακύρωση",
             "common.accept": "Αποδοχή",
             "common.close": "Κλείσιμο",
@@ -308,6 +367,23 @@
         return translations[language]?.[key] ?? translations.en[key] ?? fallback;
     }
 
+    function formatString(template, params) {
+        if (!params || typeof template !== "string") {
+            return template;
+        }
+        return template.replace(/\{(\w+)\}/g, (match, name) => {
+            if (Object.prototype.hasOwnProperty.call(params, name)) {
+                return String(params[name] ?? "");
+            }
+            return match;
+        });
+    }
+
+    function tf(key, params, fallback = "") {
+        const template = t(key, fallback);
+        return formatString(template, params);
+    }
+
     function applyTranslations(root = document) {
         root.querySelectorAll("[data-i18n]").forEach((node) => {
             node.textContent = t(node.dataset.i18n, node.textContent);
@@ -360,6 +436,8 @@
 
     window.UniSupportI18n = {
         t,
+        tf,
+        format: formatString,
         getLanguage,
         setLanguage,
         applyTranslations,

@@ -50,14 +50,16 @@ class CommentController extends BaseController {
             $commenter_username = $stmt->fetchColumn();
             
             // δημιουργούμε δυναμικό μήνυμα με το όνομα του commenter
-            $message = $commenter_username . " commented on your post";
-            
+            $fallbackMessage = $commenter_username . " commented on your post";
+
             // δημιουργεί εγγραφή ειδοποίησης στο database για τον ιδιοκτήτη του post
-            $notificationModel->createNotification(
-                $post['user_id'], // receiver (owner)
-                'comment',        // type
-                $data['post_id'], // post reference
-                $message
+            $notificationModel->createLocalizedNotification(
+                (int)$post['user_id'], // receiver (owner)
+                'comment',             // type
+                (int)$data['post_id'], // post reference
+                'notifications.comment',
+                ["user" => (string)$commenter_username],
+                $fallbackMessage
             );
         }
         
@@ -112,9 +114,11 @@ class CommentController extends BaseController {
 
         $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
         $notificationModel = new NotificationModel();
-        $notificationModel->notifyAdmins(
+        $notificationModel->notifyAdminsLocalized(
             'admin_comment_delete_request',
             (int)$comment_id,
+            'notifications.admin_comment_delete_request',
+            ["actor" => $actorName],
             $actorName . ' submitted a comment delete request.'
         );
 

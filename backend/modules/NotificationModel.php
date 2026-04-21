@@ -45,6 +45,43 @@ class NotificationModel {
             );
         }
     }
+
+    /*
+     Δημιουργεί ένα JSON payload για ειδοποίηση που φιλοξενεί
+     translation key, params και fallback message για παλιούς clients.
+     Αυτό επιτρέπει στο frontend να μεταφράζει το μήνυμα
+     σε πραγματικό χρόνο ανάλογα με την επιλεγμένη γλώσσα.
+    */
+    public static function buildLocalizedPayload(string $key, array $params = [], string $fallback = ""): string {
+        $payload = [
+            "i18n_key" => $key,
+            "params" => (object)$params,
+            "fallback" => $fallback
+        ];
+
+        return json_encode($payload, JSON_UNESCAPED_UNICODE);
+    }
+
+    // Δημιουργεί μια localized ειδοποίηση: key + params αποθηκεύονται σε JSON
+    public function createLocalizedNotification(int $userId, string $type, ?int $referenceId, string $key, array $params = [], string $fallback = "") {
+        $payload = self::buildLocalizedPayload($key, $params, $fallback);
+        return $this->createNotification($userId, $type, $referenceId, $payload);
+    }
+
+    // Στέλνει localized ειδοποίηση σε όλους τους admins
+    public function notifyAdminsLocalized(string $type, ?int $referenceId, string $key, array $params = [], string $fallback = "", ?int $excludeUserId = null): void {
+        $adminUserIds = $this->getAdminUserIds($excludeUserId);
+
+        if (empty($adminUserIds)) {
+            return;
+        }
+
+        $payload = self::buildLocalizedPayload($key, $params, $fallback);
+
+        foreach ($adminUserIds as $adminUserId) {
+            $this->createNotification($adminUserId, $type, $referenceId, $payload);
+        }
+    }
     // αποθηκεύει μια νέα ειδοποίηση στη βάση δεδομένων
     public function createNotification($userId, $type, $referenceId, $message) {
 
@@ -152,13 +189,19 @@ class NotificationModel {
         $followers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($followers as $follower) {
-            $message = $follower['author_name'] . " created a new post: " . $postTitle;
+            $authorName = (string)$follower['author_name'];
+            $fallback = $authorName . " created a new post: " . $postTitle;
 
-            $this->createNotification(
+            $this->createLocalizedNotification(
                 (int)$follower['follower_id'],
                 "new_post_following",
                 $postId,
-                $message
+                "notifications.new_post_following",
+                [
+                    "author" => $authorName,
+                    "title" => $postTitle
+                ],
+                $fallback
             );
         }
     }
@@ -184,13 +227,19 @@ class NotificationModel {
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($users as $user) {
-            $message = "New post in your interest category (" . $user['category_name'] . "): " . $postTitle;
+            $categoryName = (string)$user['category_name'];
+            $fallback = "New post in your interest category (" . $categoryName . "): " . $postTitle;
 
-            $this->createNotification(
+            $this->createLocalizedNotification(
                 (int)$user['user_id'],
                 "new_post_interest",
                 $postId,
-                $message
+                "notifications.new_post_interest",
+                [
+                    "category" => $categoryName,
+                    "title" => $postTitle
+                ],
+                $fallback
             );
         }
     }

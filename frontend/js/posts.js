@@ -23,6 +23,42 @@ function translate(key, fallback) {
     return window.UniSupportI18n?.t(key, fallback) ?? fallback;
 }
 
+function translateFormat(key, params, fallback) {
+    const i18n = window.UniSupportI18n;
+    if (i18n && typeof i18n.tf === "function") {
+        return i18n.tf(key, params, fallback);
+    }
+    if (i18n && typeof i18n.format === "function") {
+        return i18n.format(i18n.t ? i18n.t(key, fallback) : fallback, params);
+    }
+    return fallback;
+}
+
+function resolveNotificationMessage(rawMessage) {
+    const text = String(rawMessage ?? "");
+    if (!text) {
+        return "";
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+        return text;
+    }
+
+    try {
+        const payload = JSON.parse(trimmed);
+        if (payload && typeof payload === "object" && typeof payload.i18n_key === "string") {
+            const params = (payload.params && typeof payload.params === "object") ? payload.params : {};
+            const fallback = typeof payload.fallback === "string" ? payload.fallback : "";
+            return translateFormat(payload.i18n_key, params, fallback || text);
+        }
+    } catch (error) {
+        // Not a JSON payload, fall through and return the raw text
+    }
+
+    return text;
+}
+
 function mapStatusParamToNumeric(status) {
     const normalized = String(status ?? "").toLowerCase();
     if (normalized === "approved" || normalized === "1") {
@@ -236,9 +272,13 @@ function renderNotifications(notifications) {
             ? new Date(notification.created_at).toLocaleString()
             : "";
 
+        const localizedMessage = resolveNotificationMessage(notification.message);
+        const deleteAriaLabel = translate("common.delete_notification", "Delete notification");
+        const deleteTitle = translate("common.delete", "Delete");
+
         item.innerHTML = `
-            <span class="notification-delete-btn" role="button" tabindex="0" aria-label="Delete notification" title="Delete">x</span>
-            <div class="notification-text">${escapeHtml(notification.message || "")}</div>
+            <span class="notification-delete-btn" role="button" tabindex="0" aria-label="${escapeHtml(deleteAriaLabel)}" title="${escapeHtml(deleteTitle)}">x</span>
+            <div class="notification-text">${escapeHtml(localizedMessage)}</div>
             <div class="notification-time">${escapeHtml(createdAt)}</div>
         `;
 
@@ -440,6 +480,12 @@ function setupNotificationsUI() {
             dropdown.hidden = true;
             btn.setAttribute("aria-expanded", "false");
         }
+    });
+
+    // όταν αλλάξει η γλώσσα, ανανεώνουμε τη λίστα ειδοποιήσεων
+    // ώστε τα μηνύματα να εμφανιστούν μεταφρασμένα χωρίς refresh
+    window.addEventListener("unisupport:languagechange", () => {
+        loadNotifications();
     });
 }
 
@@ -874,8 +920,8 @@ async function loadInterestsBanner() {
         if (!ok || !Array.isArray(data) || data.length === 0) {
             banner.innerHTML = `
                 <div class="interests-banner no-interests">
-                    <div class="no-interests-text">You have not selected any interests yet.</div>
-                    <div class="no-interests-sub">Showing all posts.</div>
+                    <div class="no-interests-text">${escapeHtml(translate("posts.no_interests_selected", "You have not selected any interests yet."))}</div>
+                    <div class="no-interests-sub">${escapeHtml(translate("posts.showing_all_posts", "Showing all posts."))}</div>
                 </div>`;
             return;
         }
@@ -920,10 +966,13 @@ async function loadFollowersBanner() {
             }
         });
 
+        const unfollowTitle = translate("posts.click_to_unfollow", "Click to unfollow");
+        const unfollowLabel = translate("posts.unfollow_short", "Unfollow");
+
         const followingChips = followingUsers
             .map((user) => {
                 const userId = Number(user.user_id);
-                return `<button type="button" class="follower-unfollow-trigger" data-unfollow-id="${userId}" title="Click to unfollow"><span class="follower-name">${escapeHtml(user.username)}</span><span class="follower-unfollow-hint">Unfollow</span></button>`;
+                return `<button type="button" class="follower-unfollow-trigger" data-unfollow-id="${userId}" title="${escapeHtml(unfollowTitle)}"><span class="follower-name">${escapeHtml(user.username)}</span><span class="follower-unfollow-hint">${escapeHtml(unfollowLabel)}</span></button>`;
             })
             .join("");
 
@@ -936,15 +985,15 @@ async function loadFollowersBanner() {
                 <div class="interests-banner${followingUsers.length === 0 ? " no-interests" : ""}">
                 <div class="interests-label">${escapeHtml(translate("posts.following", "Following"))}</div>
                     ${followingUsers.length === 0
-                        ? `<div class="no-interests-text">You are not following anyone yet.</div>
-                           <div class="no-interests-sub">Follow users to see their posts here.</div>`
+                        ? `<div class="no-interests-text">${escapeHtml(translate("posts.not_following_anyone", "You are not following anyone yet."))}</div>
+                           <div class="no-interests-sub">${escapeHtml(translate("posts.follow_users_hint", "Follow users to see their posts here."))}</div>`
                         : `<div class="interests-chips">${followingChips}</div>`}
                 </div>
                 <div class="interests-banner${followersUsers.length === 0 ? " no-interests" : ""}">
                     <div class="interests-label">${escapeHtml(translate("posts.following_you", "Following you"))}</div>
                     ${followersUsers.length === 0
-                        ? `<div class="no-interests-text">No one is following you yet.</div>
-                           <div class="no-interests-sub">Your followers will appear here.</div>`
+                        ? `<div class="no-interests-text">${escapeHtml(translate("posts.no_followers_yet", "No one is following you yet."))}</div>
+                           <div class="no-interests-sub">${escapeHtml(translate("posts.followers_will_appear", "Your followers will appear here."))}</div>`
                         : `<div class="interests-chips">${followersChips}</div>`}
                 </div>
             </div>`;
@@ -1943,6 +1992,17 @@ window.addEventListener("unisupport:languagechange", () => {
         const label = toggle.querySelector(".feed-sidebar-toggle-label");
         if (label) {
             label.textContent = collapsed ? translate("common.show_menu", "Show menu") : translate("common.hide_menu", "Hide menu");
+        }
+    }
+
+    // Ξανα-φορτώνουμε το banner ενδιαφερόντων / ακολούθων ώστε το κείμενο
+    // να εμφανίζεται αμέσως στη νέα γλώσσα αντί να περιμένει refresh ή αλλαγή tab
+    const interestsBanner = document.getElementById("interestsBanner");
+    if (interestsBanner && !interestsBanner.hidden) {
+        if (activeFeedMode === "followers") {
+            loadFollowersBanner();
+        } else {
+            loadInterestsBanner();
         }
     }
 });

@@ -27,9 +27,14 @@ class CategoryController extends BaseController {
 
         $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
         $notificationModel = new NotificationModel();
-        $notificationModel->notifyAdmins(
+        $notificationModel->notifyAdminsLocalized(
             'admin_category_request',
             null,
+            'notifications.admin_category_request',
+            [
+                "actor" => $actorName,
+                "name" => $name
+            ],
             $actorName . ' submitted a category request: ' . $name
         );
 
@@ -80,10 +85,12 @@ class CategoryController extends BaseController {
 
         $notificationModel = new NotificationModel();
         $requestedName = (string)($request["suggested_name"] ?? $name);
-        $notificationModel->createNotification(
+        $notificationModel->createLocalizedNotification(
             (int)$request["requested_by"],
             "category_request_approved",
             $requestId,
+            "notifications.category_request_approved",
+            ["name" => $requestedName],
             "Your category request \"" . $requestedName . "\" was approved"
         );
 
@@ -146,10 +153,12 @@ class CategoryController extends BaseController {
 
         $notificationModel = new NotificationModel();
         $requestedName = (string)($request["suggested_name"] ?? "Unnamed category");
-        $notificationModel->createNotification(
+        $notificationModel->createLocalizedNotification(
             (int)$request["requested_by"],
             "category_request_rejected",
             $requestId,
+            "notifications.category_request_rejected",
+            ["name" => $requestedName],
             "Your category request \"" . $requestedName . "\" was rejected"
         );
 
