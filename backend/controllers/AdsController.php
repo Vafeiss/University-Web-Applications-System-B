@@ -49,6 +49,46 @@ class AdsController extends BaseController {
         try {
             $pdo->beginTransaction();
 
+            $adStmt = $pdo->prepare("SELECT advertise_id, cooldown_hours FROM advertisements WHERE advertise_id = ? LIMIT 1");
+            $adStmt->execute([$ad_id]);
+            $ad = $adStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$ad) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                $this->jsonResponse(["message" => "Advertisement not found"], 404);
+            }
+
+            $lastViewStmt = $pdo->prepare(
+                "SELECT v.viewed_at, a.cooldown_hours
+                 FROM ad_views v
+                 INNER JOIN advertisements a ON a.advertise_id = v.advertise_id
+                 WHERE v.user_id = ?
+                 ORDER BY v.viewed_at DESC
+                 LIMIT 1"
+            );
+            $lastViewStmt->execute([$user_id]);
+            $lastView = $lastViewStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($lastView) {
+                $lastViewedAtTs = strtotime((string) ($lastView['viewed_at'] ?? ''));
+                $lastCooldownHours = (int) ($lastView['cooldown_hours'] ?? 0);
+                if ($lastViewedAtTs !== false && $lastCooldownHours > 0) {
+                    $remainingSeconds = ($lastViewedAtTs + ($lastCooldownHours * 3600)) - time();
+                    if ($remainingSeconds > 0) {
+                        if ($pdo->inTransaction()) {
+                            $pdo->rollBack();
+                        }
+                        $this->jsonResponse([
+                            "message" => "Please wait before watching another advertisement",
+                            "remaining_seconds" => $remainingSeconds,
+                            "cooldown_hours" => $lastCooldownHours
+                        ], 429);
+                    }
+                }
+            }
+
             $stmt = $pdo->prepare("UPDATE users SET token_balance = token_balance + 1 WHERE user_id = ?");
             $stmt->execute([$user_id]);
 
@@ -73,7 +113,9 @@ class AdsController extends BaseController {
 
         $this->jsonResponse([
             "ok" => true,
-            "message" => "Advertisement view rewarded successfully"
+            "message" => "Advertisement view rewarded successfully",
+            "cooldown_hours" => (int) ($ad['cooldown_hours'] ?? 0),
+            "remaining_seconds" => (int) (($ad['cooldown_hours'] ?? 0) * 3600)
         ]);
     }
 }

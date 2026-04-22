@@ -45,38 +45,43 @@ $stmt->execute([$user_id]);
 $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
 $total_tokens = $user_data['token_balance'] ?? 0;
 
-// 3. ΕΥΡΕΣΗ ΤΕΛΕΥΤΑΙΑΣ ΠΡΟΒΟΛΗΣ (για αποφυγή επανάληψης)
-// ΝΕΟ (PDO):
-$stmt2 = $conn->prepare("SELECT advertise_id FROM ad_views WHERE user_id = ? ORDER BY viewed_at DESC LIMIT 1");
-$stmt2->execute([$user_id]);
-$last_row = $stmt2->fetch(PDO::FETCH_ASSOC);
-$last_ad_id = $last_row ? $last_row['advertise_id'] : 0;
-$stmtLastTime = $conn->prepare("
-    SELECT viewed_at 
-    FROM ad_views 
-    WHERE user_id = ? 
-    ORDER BY viewed_at DESC 
+// Τελευταια προβολη + cooldown του ad που ειδε τελευταιο ο χρηστης.
+$stmtLastView = $conn->prepare("
+    SELECT v.viewed_at, v.advertise_id, a.cooldown_hours
+    FROM ad_views v
+    INNER JOIN advertisements a ON a.advertise_id = v.advertise_id
+    WHERE v.user_id = ?
+    ORDER BY v.viewed_at DESC
     LIMIT 1
 ");
-$stmtLastTime->execute([$user_id]);
-$last_view_time = $stmtLastTime->fetchColumn();
-// 4. ΕΠΙΛΟΓΗ ΔΙΑΦΗΜΙΣΗΣ 
-// Επιλέγει μια τυχαία διαφήμιση που δεν την έχει δει ο χρήστης εντός του χρόνου cooldown της
-// ΝΕΟ (PDO):
-$stmt3 = $conn->prepare("
-    SELECT a.*
-    FROM advertisements a
-    WHERE NOT EXISTS (
-        SELECT 1 FROM ad_views v
-        WHERE v.user_id = ?
-        AND v.viewed_at > NOW() - INTERVAL a.cooldown_hours HOUR
-    )
-    ORDER BY RAND()
-    LIMIT 1
-");
-$stmt3->execute([$user_id]);
-$current_ad = $stmt3->fetch(PDO::FETCH_ASSOC);
-$can_watch = $current_ad ? true : false;
+$stmtLastView->execute([$user_id]);
+$last_view = $stmtLastView->fetch(PDO::FETCH_ASSOC) ?: null;
+
+$last_view_time = $last_view['viewed_at'] ?? null;
+$cooldown_hours = isset($last_view['cooldown_hours']) ? (int) $last_view['cooldown_hours'] : 0;
+$remaining_seconds = 0;
+
+if ($last_view_time && $cooldown_hours > 0) {
+    $lastViewedAtTs = strtotime((string) $last_view_time);
+    if ($lastViewedAtTs !== false) {
+        $nextAvailableTs = $lastViewedAtTs + ($cooldown_hours * 3600);
+        $remaining_seconds = max(0, $nextAvailableTs - time());
+    }
+}
+
+$current_ad = null;
+$can_watch = false;
+
+if ($remaining_seconds <= 0) {
+    $stmt3 = $conn->query("
+        SELECT *
+        FROM advertisements
+        ORDER BY RAND()
+        LIMIT 1
+    ");
+    $current_ad = $stmt3 ? $stmt3->fetch(PDO::FETCH_ASSOC) : null;
+    $can_watch = (bool) $current_ad;
+}
 
 $adsCssVersion = filemtime(__DIR__ . '/css/ads_user.css');
 
@@ -140,45 +145,57 @@ if ($current_ad) {
             <?php else: ?>
                 <div id="countdownBox" class="text-center py-5 my-auto">
                     <div class="display-6 mb-3">⏳</div>
-                    <h5 class="fw-bold">Περίμενε λίγο...</h5>
-                    <p class="text-muted">
-                        Μπορείς να ξαναδείς διαφήμιση σε 
-                        <b id="timerLive">--:--</b>
-                    </p>
+                    <?php if ($remaining_seconds > 0): ?>
+                        <h5 class="fw-bold">Περίμενε λίγο...</h5>
+                        <p class="text-muted">
+                            Μπορείς να ξαναδείς διαφήμιση σε 
+                            <b id="timerLive">--:--:--</b>
+                        </p>
+                    <?php else: ?>
+                        <h5 class="fw-bold">Δεν υπάρχουν διαθέσιμες διαφημίσεις</h5>
+                        <p class="text-muted">Δοκίμασε ξανά αργότερα.</p>
+                    <?php endif; ?>
                 </div>
-                <script>
-                const lastViewTime = "<?php echo $last_view_time ?? ''; ?>";
-                const cooldownHours = <?php echo $current_ad['cooldown_hours'] ?? 1; ?>;
-                function startCountdown(lastViewTime, cooldownHours) {
-                    if (!lastViewTime) return;
-                    const lastTime = new Date(lastViewTime).getTime();
-                    const cooldownMs = cooldownHours * 60 * 60 * 1000;
-                    function updateCountdown() {
-                        const now = new Date().getTime();
-                        const remaining = (lastTime + cooldownMs) - now;
-                        if (remaining <= 0) {
-                            document.getElementById("countdownBox").innerHTML = `
-                                <h5 class=\"ads-success-title\">✔ Μπορείς να δεις νέα διαφήμιση!</h5>
-                                <button onclick=\"location.reload()\" class=\"btn btn-primary mt-3\">Δες διαφήμιση</button>
-                            `;
-                            return;
-                        }
-                        const minutes = Math.floor(remaining / 60000);
-                        const seconds = Math.floor((remaining % 60000) / 1000);
-                        document.getElementById("timerLive").innerText =
-                            `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                    }
-                    updateCountdown();
-                    setInterval(updateCountdown, 1000);
-                }
-                startCountdown(lastViewTime, cooldownHours);
-                </script>
             <?php endif; ?>
         </div>
     </div>
 </div>
 
 <script>
+const initialRemainingSeconds = <?php echo (int) $remaining_seconds; ?>;
+
+function startCooldownCountdown(remainingSeconds) {
+    const timerNode = document.getElementById("timerLive");
+    const countdownBox = document.getElementById("countdownBox");
+
+    if (!timerNode || !countdownBox || remainingSeconds <= 0) {
+        return;
+    }
+
+    let secondsLeft = remainingSeconds;
+
+    function render() {
+        if (secondsLeft <= 0) {
+            countdownBox.innerHTML = `
+                <h5 class="ads-success-title">✔ Μπορείς να δεις νέα διαφήμιση!</h5>
+                <button onclick="location.reload()" class="btn btn-primary mt-3">Δες διαφήμιση</button>
+            `;
+            return;
+        }
+
+        const hours = Math.floor(secondsLeft / 3600);
+        const minutes = Math.floor((secondsLeft % 3600) / 60);
+        const seconds = secondsLeft % 60;
+        timerNode.innerText = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        secondsLeft -= 1;
+    }
+
+    render();
+    setInterval(render, 1000);
+}
+
+startCooldownCountdown(initialRemainingSeconds);
+
 function startPremiumAd() {
     document.getElementById('setup_box').hidden = true;
     document.getElementById('ad_box').hidden = false;
@@ -231,15 +248,33 @@ function finishAd(id) {
 
         if (ok && data && data.ok) {
 
-            const cooldownHours = <?php echo $current_ad['cooldown_hours'] ?? 1; ?>;
+            const cooldownHours = data.cooldown_hours || <?php echo $current_ad['cooldown_hours'] ?? 1; ?>;
+            const cooldownSeconds = data.remaining_seconds || (cooldownHours * 3600);
 
             document.getElementById('ad_box').innerHTML = `
                 <div class="text-center py-5">
                     <h5 class="ads-success-title">✔ Κέρδισες 1 token!</h5>
                     <p>Μπορείς να ξαναδείς διαφήμιση μετά από <b>${cooldownHours} ώρα${cooldownHours > 1 ? 'ς' : ''}</b>.</p>
-                    <button class="btn btn-secondary mt-3" disabled>Περίμενε ${cooldownHours} ώρα${cooldownHours > 1 ? 'ς' : ''}</button>
+                    <p class="text-muted mb-3">Υπόλοιπο αναμονής: <b id="postRewardTimer"></b></p>
+                    <button class="btn btn-secondary mt-3" disabled>Περίμενε για να ξαναδείς διαφήμιση</button>
                 </div>
             `;
+
+            const postRewardTimer = document.getElementById('postRewardTimer');
+            if (postRewardTimer) {
+                let secondsLeft = cooldownSeconds;
+                const renderRewardTimer = () => {
+                    const hours = Math.floor(secondsLeft / 3600);
+                    const minutes = Math.floor((secondsLeft % 3600) / 60);
+                    const seconds = secondsLeft % 60;
+                    postRewardTimer.textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    if (secondsLeft > 0) {
+                        secondsLeft -= 1;
+                    }
+                };
+                renderRewardTimer();
+                setInterval(renderRewardTimer, 1000);
+            }
 
         } else {
             const errorMessage = data && data.message ? data.message : 'Κάτι πήγε στραβά.';
