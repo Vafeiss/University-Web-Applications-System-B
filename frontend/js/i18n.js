@@ -159,6 +159,18 @@
             "login.register": "Register",
             "login.forgot_password": "Forgot password?",
             "login.submit": "Login",
+            "forgot_password.subtitle": "Recover access to your student workspace with a secure password reset link.",
+            "forgot_password.title": "Forgot Password",
+            "forgot_password.intro": "Enter your email to receive a password reset link.",
+            "forgot_password.email": "Email",
+            "forgot_password.submit": "Generate Reset Link",
+            "forgot_password.back_to_login": "Back to Login",
+            "forgot_password.message_email_sent": "If the email exists, we sent you a link.",
+            "forgot_password.message_email_setup_missing": "Email setup is still missing on this project.",
+            "reset_password.title": "Reset Password",
+            "reset_password.new_password": "New Password",
+            "reset_password.submit": "Reset Password",
+            "reset_password.message_invalid_request": "Invalid request",
             "admin.moderation_workspace": "Moderation workspace",
             "admin.signed_in_as": "Signed in as",
             "admin.posts": "Posts",
@@ -375,6 +387,18 @@
             ,"admin.no_pending_category_requests": "Δεν υπάρχουν εκκρεμή αιτήματα κατηγοριών."
             ,"admin.failed_search_results": "Αποτυχία φόρτωσης αποτελεσμάτων αναζήτησης."
             ,"admin.rejection_reason_required": "Παρακαλώ συμπληρώστε λόγο απόρριψης."
+            ,"forgot_password.subtitle": "Ανάκτησε ξανά πρόσβαση στον φοιτητικό σου χώρο με έναν ασφαλή σύνδεσμο επαναφοράς κωδικού."
+            ,"forgot_password.title": "Ξέχασα τον Κωδικό"
+            ,"forgot_password.intro": "Συμπλήρωσε το email σου για να λάβεις σύνδεσμο επαναφοράς κωδικού."
+            ,"forgot_password.email": "Email"
+            ,"forgot_password.submit": "Αποστολή Συνδέσμου Επαναφοράς"
+            ,"forgot_password.back_to_login": "Επιστροφή στη Σύνδεση"
+            ,"forgot_password.message_email_sent": "Αν το email υπάρχει, σου έχουμε στείλει σύνδεσμο επαναφοράς."
+            ,"forgot_password.message_email_setup_missing": "Η αποστολή email δεν έχει ρυθμιστεί ακόμη σε αυτό το project."
+            ,"reset_password.title": "Επαναφορά Κωδικού"
+            ,"reset_password.new_password": "Νέος Κωδικός"
+            ,"reset_password.submit": "Αλλαγή Κωδικού"
+            ,"reset_password.message_invalid_request": "Μη έγκυρο αίτημα"
         }
     };
 

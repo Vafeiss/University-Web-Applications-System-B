@@ -37,8 +37,17 @@ if (isset($_SESSION["user_id"])) {
 
 require_once "../backend/controllers/AuthController.php";
 
+$forgotPasswordCssVersion = filemtime(__DIR__ . '/css/forgot_password.css');
+$i18nJsVersion = filemtime(__DIR__ . '/js/i18n.js');
+
 $message = "";
 $is_ok = false;
+$messageKey = "";
+
+$messageKeyMap = [
+    "If the email exists, we sent you a link." => "forgot_password.message_email_sent",
+    "Email setup is still missing on this project." => "forgot_password.message_email_setup_missing",
+];
 
 // handle form
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -48,6 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $message = $res["message"] ?? "";
     $is_ok = !empty($res["ok"]);
+    $messageKey = $messageKeyMap[$message] ?? "";
 }
 ?>
 <!doctype html>
@@ -58,37 +68,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Forgot Password</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/forgot_password.css">
+    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/forgot_password.css?v=<?php echo $forgotPasswordCssVersion; ?>">
 </head>
 <body>
     <div class="auth-shell">
         <div class="auth-stack">
+            <div class="auth-language-switcher" data-language-switcher aria-label="Language switcher" data-i18n-aria-label="common.language_switcher">
+                <button type="button" class="language-switcher-btn is-active" data-language="en" aria-pressed="true">EN</button>
+                <button type="button" class="language-switcher-btn" data-language="el" aria-pressed="false">EL</button>
+            </div>
+
             <div class="auth-brand">
                 <span class="auth-brand-mark" aria-hidden="true">
                     <img src="/University-Web-Applications-System-B/frontend/imgs/unisupportlogo.png" alt="">
                 </span>
                 <div>
                     <h1>UniSupport</h1>
-                    <p>Recover access to your student workspace with a secure password reset link.</p>
+                    <p data-i18n="forgot_password.subtitle">Recover access to your student workspace with a secure password reset link.</p>
                 </div>
             </div>
 
             <div class="auth-card">
-                <h2>Forgot Password</h2>
+                <h2 data-i18n="forgot_password.title">Forgot Password</h2>
 
-                <p class="auth-intro">
+                <p class="auth-intro" data-i18n="forgot_password.intro">
                     Enter your email to receive a password reset link.
                 </p>
 
                 <?php if (!empty($message)): ?>
-                    <div class="auth-alert <?= $is_ok ? "success" : "" ?>">
+                    <div class="auth-alert <?= $is_ok ? "success" : "" ?>"<?php echo $messageKey !== "" ? ' data-i18n="' . htmlspecialchars($messageKey, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
                         <?= htmlspecialchars($message) ?>
                     </div>
                 <?php endif; ?>
 
                 <form method="POST" action="">
                     <div class="auth-field">
-                        <label for="forgotPasswordEmail">Email</label>
+                        <label for="forgotPasswordEmail" data-i18n="forgot_password.email">Email</label>
 
                         <div class="auth-input-wrap">
                             <span class="auth-input-icon" aria-hidden="true">
@@ -104,23 +119,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 name="email"
                                 class="auth-input"
                                 value="<?= htmlspecialchars($_POST["email"] ?? "") ?>"
+                                placeholder="Email"
+                                data-i18n-placeholder="forgot_password.email"
                                 required
                             >
                         </div>
                     </div>
 
-                    <button type="submit" class="auth-submit">
+                    <button type="submit" class="auth-submit" data-i18n="forgot_password.submit">
                         Generate Reset Link
                     </button>
                 </form>
 
                 <div class="auth-links">
                     <div>
-                        <a href="/University-Web-Applications-System-B/frontend/login.php">Back to Login</a>
+                        <a href="/University-Web-Applications-System-B/frontend/login.php" data-i18n="forgot_password.back_to_login">Back to Login</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src="js/i18n.js?v=<?php echo $i18nJsVersion; ?>"></script>
 </body>
 </html>
