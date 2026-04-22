@@ -563,6 +563,9 @@ body.admin-dialog-open {
 }
 
 .dashboard-search-panel {
+    position: relative;
+    z-index: 8;
+    overflow: visible;
     margin: 16px 0 22px;
     padding: 16px 18px 18px;
     border: 1px solid rgba(214, 225, 242, 0.9);
@@ -713,6 +716,8 @@ body.admin-dialog-open {
 }
 
 .dashboard-search-users-toggle {
+    display: inline-flex;
+    align-items: center;
     width: 100%;
     justify-content: space-between;
     gap: 10px;
@@ -737,14 +742,95 @@ body.admin-dialog-open {
 }
 
 .dashboard-search-users-menu {
+    position: absolute;
     top: calc(100% + 12px);
     left: 0;
+    right: 0;
+    z-index: 30;
+    width: 100%;
     min-width: 220px;
+    padding: 10px 0;
+    display: grid;
+    gap: 4px;
     border: 1px solid rgba(214, 225, 242, 0.95);
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.96);
     box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
     backdrop-filter: blur(10px);
+    max-height: min(320px, 45vh);
+    overflow-y: auto;
+}
+
+.dashboard-search-users-menu[hidden] {
+    display: none !important;
+}
+
+.dashboard-search-users-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: transparent;
+    color: #28405f;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.dashboard-search-users-option:hover {
+    background: #eef4ff;
+    color: #1f3f7a;
+}
+
+.dashboard-search-users-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    margin-bottom: 0;
+    padding: 0;
+    flex: 0 0 16px;
+    accent-color: #4c5bd4;
+}
+
+.dashboard-search-users-option span {
+    display: block;
+    line-height: 1.35;
+}
+
+#adminSearchUsersOptions,
+#pendingSearchUsersOptions {
+    display: grid;
+    gap: 4px;
+    max-height: 88px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #c3d1ea #eef3fb;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar,
+#pendingSearchUsersOptions::-webkit-scrollbar {
+    width: 6px;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar-track,
+#pendingSearchUsersOptions::-webkit-scrollbar-track {
+    background: #eef3fb;
+    border-radius: 6px;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar-thumb,
+#pendingSearchUsersOptions::-webkit-scrollbar-thumb {
+    background: #c3d1ea;
+    border-radius: 6px;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar-thumb:hover,
+#pendingSearchUsersOptions::-webkit-scrollbar-thumb:hover {
+    background: #a8b9d8;
 }
 
 .dashboard-search-actions {
