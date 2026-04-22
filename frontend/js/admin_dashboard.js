@@ -45,6 +45,7 @@
     let dashboardAutoRefreshTimerId = null;
     let isDashboardAutoRefreshInFlight = false;
     let rejectReasonDialogResolver = null;
+    let adminCategoryDeleteDialogResolver = null;
     function translate(key, fallback) {
         return window.UniSupportI18n?.t(key, fallback) ?? fallback;
     }
@@ -106,6 +107,7 @@
     };
     document.addEventListener("DOMContentLoaded", function () {
         ensureRejectReasonDialog();
+        ensureAdminCategoryDeleteDialog();
         setupAdminProfileDialog();
         setupInfoDialog();
         setupSidebarToggle();
@@ -441,6 +443,98 @@
             const resolve = rejectReasonDialogResolver;
             rejectReasonDialogResolver = null;
             resolve(reason);
+        }
+    }
+
+    function ensureAdminCategoryDeleteDialog() {
+        if (document.getElementById("adminCategoryDeleteDialog")) {
+            return;
+        }
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <div id="adminCategoryDeleteDialog" class="comment-policy-dialog" hidden>
+                <div class="comment-policy-card delete-request-form" role="dialog" aria-modal="true" aria-labelledby="adminCategoryDeleteTitle">
+                    <h4 id="adminCategoryDeleteTitle">${escapeHtml(translate("admin.delete_category", "Delete Category"))}</h4>
+                    <p id="adminCategoryDeleteMessage">${escapeHtml(translate("admin.delete_category_desc", "This will remove the category and all posts in it immediately. Are you sure you want to continue?"))}</p>
+                    <div class="comment-policy-actions">
+                        <button type="button" id="adminCategoryDeleteCancel" class="policy-link cancel">${escapeHtml(translate("common.cancel", "Cancel"))}</button>
+                        <button type="button" id="adminCategoryDeleteConfirm" class="policy-link danger">${escapeHtml(translate("admin.delete_category_confirm", "Delete category"))}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(wrapper.firstElementChild);
+
+        const dialog = document.getElementById("adminCategoryDeleteDialog");
+        const cancelButton = document.getElementById("adminCategoryDeleteCancel");
+        const confirmButton = document.getElementById("adminCategoryDeleteConfirm");
+
+        cancelButton?.addEventListener("click", function () {
+            closeAdminCategoryDeleteDialog(false);
+        });
+
+        confirmButton?.addEventListener("click", function () {
+            closeAdminCategoryDeleteDialog(true);
+        });
+
+        dialog?.addEventListener("click", function (event) {
+            if (event.target === dialog) {
+                closeAdminCategoryDeleteDialog(false);
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && adminCategoryDeleteDialogResolver && dialog && !dialog.hidden) {
+                closeAdminCategoryDeleteDialog(false);
+            }
+        });
+    }
+
+    function promptAdminCategoryDelete(categoryName) {
+        ensureAdminCategoryDeleteDialog();
+
+        const dialog = document.getElementById("adminCategoryDeleteDialog");
+        const message = document.getElementById("adminCategoryDeleteMessage");
+        const cancelButton = document.getElementById("adminCategoryDeleteCancel");
+
+        if (!dialog || !message) {
+            return Promise.resolve(false);
+        }
+
+        const safeName = String(categoryName || "category");
+        message.textContent = translateFormat(
+            "admin.delete_category_desc_named",
+            { name: safeName },
+            `Delete category "${safeName}" and all posts in this category? This cannot be undone.`
+        );
+
+        dialog.hidden = false;
+        document.body.classList.add("comment-dialog-open");
+
+        window.setTimeout(() => {
+            cancelButton?.focus();
+        }, 0);
+
+        return new Promise((resolve) => {
+            adminCategoryDeleteDialogResolver = resolve;
+        });
+    }
+
+    function closeAdminCategoryDeleteDialog(confirmed) {
+        const dialog = document.getElementById("adminCategoryDeleteDialog");
+
+        if (dialog) {
+            dialog.hidden = true;
+        }
+
+        document.body.classList.remove("comment-dialog-open");
+
+        if (adminCategoryDeleteDialogResolver) {
+            const resolve = adminCategoryDeleteDialogResolver;
+            adminCategoryDeleteDialogResolver = null;
+            resolve(Boolean(confirmed));
         }
     }
 
@@ -1347,9 +1441,7 @@
                             return;
                         }
 
-                        const confirmed = window.confirm(
-                            `Delete category \"${categoryName}\" and all posts in this category? This cannot be undone.`
-                        );
+                        const confirmed = await promptAdminCategoryDelete(categoryName);
 
                         if (!confirmed) {
                             return;

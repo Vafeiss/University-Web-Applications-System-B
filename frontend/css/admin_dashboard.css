@@ -555,6 +555,10 @@ body.admin-dialog-open {
     letter-spacing: 0.01em;
 }
 
+#adminCategoryDeleteTitle {
+    color: #c12727;
+}
+
 .dashboard-subtitle {
     margin: 0 0 8px;
     font-size: 17px;
