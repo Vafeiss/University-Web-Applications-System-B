@@ -41,6 +41,7 @@
 header("Content-Type: application/json");
 
 require_once __DIR__ . '/BaseController.php';
+require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../modules/PostModel.php';
 require_once __DIR__ . '/../modules/NotificationModel.php';
 /*
@@ -89,6 +90,14 @@ class PostController extends BaseController {
 
                 $uploadDir = __DIR__ . '/../../frontend/uploads/';
                 $totalFiles = count($_FILES['attachments']['name']);
+
+                if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                    $this->jsonResponse(["message" => "Upload directory is not available"], 500);
+                }
+
+                if (!is_writable($uploadDir)) {
+                    $this->jsonResponse(["message" => "Upload directory is not writable"], 500);
+                }
 
                 if ($totalFiles > 5) {
                     $this->jsonResponse(["message" => "Maximum 5 files allowed"], 400);
@@ -302,7 +311,7 @@ class PostController extends BaseController {
         // Φέρνουμε attachments
         $attachments = $this->postModel->getAttachmentsByPost($post_id);
 
-        $basePath = '/University-Web-Applications-System-B/frontend/';
+        $basePath = app_frontend_url() . '/';
         foreach ($attachments as &$attachment) {
             $rawPath = $attachment['file_path'] ?? '';
             if ($rawPath === '') {

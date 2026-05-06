@@ -28,6 +28,12 @@
 
 /* Μετατροπή timestamp σε "time ago" */
 
+const appConfig = window.APP_CONFIG || {};
+const BACKEND_BASE = appConfig.backendBase || "/backend";
+const FRONTEND_BASE = appConfig.frontendBase || "/frontend";
+const POST_CONTROLLER_URL = `${BACKEND_BASE}/controllers/PostController.php`;
+const COMMENT_CONTROLLER_URL = `${BACKEND_BASE}/controllers/CommentController.php`;
+
 function timeAgo(dateString){
 
     const date = new Date(dateString);
@@ -324,7 +330,7 @@ function renderPostActionControls(post, adminPreviewMode, dashboardPostsMode) {
 async function loadPost(postId){
 
     const response = await fetch(
-        "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=get&id=" + postId
+        `${POST_CONTROLLER_URL}?action=get&id=${postId}`
     );
 
     const post = await response.json();
@@ -392,7 +398,7 @@ function renderAttachments(attachments){
 
             const attachmentId = Number(file.attachment_id);
             const fileUrl = Number.isInteger(attachmentId) && attachmentId > 0
-                ? `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=downloadAttachment&attachment_id=${attachmentId}`
+                ? `${POST_CONTROLLER_URL}?action=downloadAttachment&attachment_id=${attachmentId}`
                 : (file.file_url || file.file_path || "#");
             const fileName = file.file_name || "Attachment";
             const fileType = (file.file_type || "FILE").toUpperCase();
@@ -504,7 +510,7 @@ async function loadComments(postId, options = {}){
     const adminDeleteMode = options.adminDeleteMode === true;
 
     const response = await fetch(
-        "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=list&post_id=" + postId
+        `${COMMENT_CONTROLLER_URL}?action=list&post_id=${postId}`
     );
     initCommentComposer();
 
@@ -792,7 +798,7 @@ async function previewAttachmentDownload(trigger) {
 
     try {
         const response = await fetch(
-            `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=previewDownload&attachment_id=${attachmentId}`,
+            `${POST_CONTROLLER_URL}?action=previewDownload&attachment_id=${attachmentId}`,
             { cache: "no-store" }
         );
 
@@ -844,7 +850,7 @@ document.addEventListener("submit", async function(e){
     };
 
     await fetch(
-        "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=create",
+        `${COMMENT_CONTROLLER_URL}?action=create`,
         {
             method:"POST",
             headers:{
@@ -979,7 +985,7 @@ document.addEventListener("submit", async function (event) {
     try {
 
         const response = await fetch(
-            "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=requestDelete",
+            `${COMMENT_CONTROLLER_URL}?action=requestDelete`,
             {
                 method: "POST",
                 headers: {
@@ -1033,7 +1039,7 @@ document.addEventListener("click", async function (event) {
 
     try {
         const response = await fetch(
-            "http://localhost/University-Web-Applications-System-B/backend/controllers/CommentController.php?action=adminDelete",
+            `${COMMENT_CONTROLLER_URL}?action=adminDelete`,
             {
                 method: "POST",
                 headers: {
@@ -1093,7 +1099,7 @@ document.addEventListener("click", async function(event){
 
     try {
         const response = await fetch(
-            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=adminDelete",
+            `${POST_CONTROLLER_URL}?action=adminDelete`,
             {
                 method: "POST",
                 headers: {
@@ -1168,7 +1174,7 @@ document.addEventListener("submit", async function(event){
 
     try {
         const response = await fetch(
-            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=requestDelete",
+            `${POST_CONTROLLER_URL}?action=requestDelete`,
             {
                 method: "POST",
                 headers: {
@@ -1245,7 +1251,7 @@ document.addEventListener("submit", async function(event){
 
     try {
         const response = await fetch(
-            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=requestReport",
+            `${POST_CONTROLLER_URL}?action=requestReport`,
             {
                 method: "POST",
                 headers: {

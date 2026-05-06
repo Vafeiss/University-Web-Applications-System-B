@@ -34,6 +34,7 @@
  */
 
 require_once "../backend/controllers/AuthController.php";
+require_once "../backend/config/app.php";
 
 $message = "";
 
@@ -52,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         );
 
         if (!empty($res["ok"])) {
-            header("Location: /University-Web-Applications-System-B/frontend/login.php?registered=1");
+            header("Location: " . app_frontend_url("login.php?registered=1"));
             exit;
         }
 
@@ -68,14 +69,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Register</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/register.css">
+    <link rel="stylesheet" href="<?php echo app_frontend_url('css/register.css'); ?>">
 </head>
 <body>
     <div class="auth-shell">
         <div class="auth-stack">
             <div class="auth-brand">
                 <span class="auth-brand-mark" aria-hidden="true">
-                    <img src="/University-Web-Applications-System-B/frontend/imgs/unisupportlogo.png" alt="">
+                    <img src="<?php echo app_frontend_url('imgs/unisupportlogo.png'); ?>" alt="">
                 </span>
                 <div>
                     <h1>UniSupport</h1>
@@ -165,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <div class="auth-links">
                     <div>
                         <span>Already have an account? </span>
-                        <a href="/University-Web-Applications-System-B/frontend/login.php">Login</a>
+                        <a href="<?php echo app_frontend_url('login.php'); ?>">Login</a>
                     </div>
                 </div>
             </div>

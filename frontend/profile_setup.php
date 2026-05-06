@@ -46,6 +46,7 @@ requireLogin();
 ========================= */
 
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 
 $db = new Database();
 $conn = $db->connect();
@@ -105,8 +106,8 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <!-- Custom Styles -->
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/profile_setup.css?v=<?php echo $profileSetupCssVersion; ?>">
+<link rel="stylesheet" href="<?php echo app_frontend_url('assets/style.css'); ?>">
+<link rel="stylesheet" href="<?php echo app_frontend_url('css/profile_setup.css'); ?>?v=<?php echo $profileSetupCssVersion; ?>">
 
 </head>
 
@@ -116,7 +117,7 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
     <div class="setup-stack">
         <div class="setup-brand">
             <span class="setup-brand-mark" aria-hidden="true">
-                <img src="/University-Web-Applications-System-B/frontend/imgs/unisupportlogo.png" alt="">
+                <img src="<?php echo app_frontend_url('imgs/unisupportlogo.png'); ?>" alt="">
             </span>
             <div>
                 <h1>UniSupport</h1>

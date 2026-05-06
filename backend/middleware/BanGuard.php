@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/app.php';
 /**
  * File: BanGuard.php
  * Layer: Middleware
@@ -140,7 +141,7 @@ function clearAuthenticatedSession(): void
 function redirectBannedUserToLogin(): void
 {
     $message = rawurlencode(getBannedAccountMessage());
-    header("Location: /University-Web-Applications-System-B/frontend/login.php?ban_message={$message}");
+    header("Location: " . app_frontend_url("login.php?ban_message={$message}"));
     exit;
 }
 

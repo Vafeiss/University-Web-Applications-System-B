@@ -34,6 +34,7 @@ require_once "../backend/middleware/AuthGuard.php";
 requireLogin();
 
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 
 $db = new Database();
 $conn = $db->connect();
@@ -72,7 +73,7 @@ $success = isset($_GET["success"]);
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Edit Interests</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
+<link rel="stylesheet" href="<?php echo app_frontend_url('assets/style.css'); ?>">
 </head>
 
 <body>

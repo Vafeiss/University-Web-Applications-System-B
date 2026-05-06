@@ -24,6 +24,10 @@
  * Date: 2026
  */
 
+const appConfig = window.APP_CONFIG || {};
+const BACKEND_BASE = appConfig.backendBase || "/backend";
+const POST_CONTROLLER_URL = `${BACKEND_BASE}/controllers/PostController.php`;
+
 document.addEventListener("DOMContentLoaded", function () {
     loadReports();
 
@@ -46,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const { response, data: result } = await fetchJsonNoStore(
-                `http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=${action}&id=${reportId}`
+                `${POST_CONTROLLER_URL}?action=${action}&id=${reportId}`
             );
 
             if (!response.ok) {
@@ -125,7 +129,7 @@ async function loadReports() {
 
     try {
         const { response, data: reports } = await fetchJsonNoStore(
-            "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=reports"
+            `${POST_CONTROLLER_URL}?action=reports`
         );
 
         if (!response.ok) {

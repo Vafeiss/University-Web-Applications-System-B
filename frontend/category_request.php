@@ -33,6 +33,7 @@ require_once "../backend/middleware/AuthGuard.php";
 requireLogin();
 
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 require_once "../backend/modules/CategoryModel.php";
 require_once "../backend/modules/NotificationModel.php";
 
@@ -194,8 +195,8 @@ function statusClass(int $status): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Request Category</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/category_request.css?v=<?php echo $categoryRequestCssVersion; ?>">
+<link rel="stylesheet" href="<?php echo app_frontend_url('assets/style.css'); ?>">
+<link rel="stylesheet" href="<?php echo app_frontend_url('css/category_request.css'); ?>?v=<?php echo $categoryRequestCssVersion; ?>">
 </head>
 <body>
 <div class="container auth-container">

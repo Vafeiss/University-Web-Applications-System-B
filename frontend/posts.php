@@ -35,6 +35,7 @@
  */
 
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 require_once "../backend/middleware/BanGuard.php";
 session_start();    
 enforceFrontendUserNotBanned();
@@ -626,6 +627,11 @@ $i18nJsVersion = filemtime(__DIR__ . '/js/i18n.js');
 <script>
 const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
 const currentUserId = <?= (int)$_SESSION['user_id'] ?>;
+window.APP_CONFIG = <?= json_encode([
+    'basePath' => app_base_path(),
+    'frontendBase' => app_frontend_url(),
+    'backendBase' => app_backend_url(),
+], JSON_UNESCAPED_SLASHES) ?>;
 </script>
 <script src="js/i18n.js?v=<?php echo $i18nJsVersion; ?>"></script>
 <script src="js/posts.js?v=<?php echo $postsJsVersion; ?>"></script>

@@ -36,6 +36,7 @@
  */
 
 session_start();
+require_once "../backend/config/app.php";
 require_once "../backend/middleware/BanGuard.php";
 enforceFrontendUserNotBanned();
 
@@ -111,6 +112,11 @@ if ($is_admin_session && !$is_admin_preview && $admin_source === 'dashboard_post
 <script>
 window.currentUserId = <?php echo (int) $_SESSION['user_id']; ?>;
 window.isAdminSession = <?php echo $is_admin_session ? 'true' : 'false'; ?>;
+window.APP_CONFIG = <?php echo json_encode([
+    'basePath' => app_base_path(),
+    'frontendBase' => app_frontend_url(),
+    'backendBase' => app_backend_url(),
+], JSON_UNESCAPED_SLASHES); ?>;
 loadPost(<?php echo $post_id; ?>);
 </script>
 </body>

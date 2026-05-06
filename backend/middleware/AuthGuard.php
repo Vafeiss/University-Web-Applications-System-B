@@ -29,6 +29,7 @@
  */
 
 require_once __DIR__ . '/BanGuard.php';
+require_once __DIR__ . '/../config/app.php';
 
 // Ξεκινάμε session μόνο αν δεν έχει ήδη ξεκινήσει
 if (session_status() === PHP_SESSION_NONE) {
@@ -42,7 +43,7 @@ if (session_status() === PHP_SESSION_NONE) {
 function requireLogin(): void
 {
     if (!isset($_SESSION["user_id"])) {
-        header("Location: /University-Web-Applications-System-B/frontend/login.php");
+        header("Location: " . app_frontend_url("login.php"));
         exit;
     }
 
@@ -61,7 +62,7 @@ function requireAdmin(): void
 
     // Αν δεν υπάρχει role ή δεν είναι admin τότε redirect
     if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
-        header("Location: /University-Web-Applications-System-B/frontend/index.php");
+        header("Location: " . app_frontend_url("index.php"));
         exit;
     }
 }

@@ -17,14 +17,16 @@
  * Used By:
  * - Fallback/legacy code paths
  *
- * Author:Antriani Theofanous & Pelagia Koniotaki
+ * Author: Antriani Theofanous & Pelagia Koniotaki
  * Date: 2026
  */
 
-$host = 'localhost';
-$db   = 'university_web';
-$user = 'root';
-$pass = '';
+require_once __DIR__ . '/env.php';
+
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$db   = $_ENV['DB_NAME'] ?? 'webvaria_student';
+$user = $_ENV['DB_USER'] ?? 'webvaria_student';
+$pass = $_ENV['DB_PASS'] ?? 'DL9pp[rir=f.!B*O';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);

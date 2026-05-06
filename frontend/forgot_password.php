@@ -28,10 +28,11 @@
  */
 
 session_start();
+require_once "../backend/config/app.php";
 
 // οχι για logged-in users
 if (isset($_SESSION["user_id"])) {
-    header("Location: /University-Web-Applications-System-B/frontend/index.php");
+    header("Location: " . app_frontend_url("index.php"));
     exit;
 }
 
@@ -68,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Forgot Password</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/forgot_password.css?v=<?php echo $forgotPasswordCssVersion; ?>">
+    <link rel="stylesheet" href="<?php echo app_frontend_url('css/forgot_password.css'); ?>?v=<?php echo $forgotPasswordCssVersion; ?>">
 </head>
 <body>
     <div class="auth-shell">
@@ -80,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <div class="auth-brand">
                 <span class="auth-brand-mark" aria-hidden="true">
-                    <img src="/University-Web-Applications-System-B/frontend/imgs/unisupportlogo.png" alt="">
+                    <img src="<?php echo app_frontend_url('imgs/unisupportlogo.png'); ?>" alt="">
                 </span>
                 <div>
                     <h1>UniSupport</h1>
@@ -133,7 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 <div class="auth-links">
                     <div>
-                        <a href="/University-Web-Applications-System-B/frontend/login.php" data-i18n="forgot_password.back_to_login">Back to Login</a>
+                        <a href="<?php echo app_frontend_url('login.php'); ?>" data-i18n="forgot_password.back_to_login">Back to Login</a>
                     </div>
                 </div>
             </div>

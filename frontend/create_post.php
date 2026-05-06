@@ -35,6 +35,7 @@
  */
 
 session_start();
+require_once "../backend/config/app.php";
 require_once "../backend/middleware/BanGuard.php";
 enforceFrontendUserNotBanned();
 
@@ -164,6 +165,13 @@ $createPostJsVersion = filemtime(__DIR__ . "/js/createPost.js");
 
         </div>
 
+        <script>
+        window.APP_CONFIG = <?php echo json_encode([
+            'basePath' => app_base_path(),
+            'frontendBase' => app_frontend_url(),
+            'backendBase' => app_backend_url(),
+        ], JSON_UNESCAPED_SLASHES); ?>;
+        </script>
         <script src="js/createPost.js?v=<?php echo $createPostJsVersion; ?>"></script>
 
 </body>

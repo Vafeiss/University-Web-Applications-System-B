@@ -22,6 +22,10 @@
  * Date: 2026
  */
 
+const appConfig = window.APP_CONFIG || {};
+const BACKEND_BASE = appConfig.backendBase || "/backend";
+const POST_CONTROLLER_URL = `${BACKEND_BASE}/controllers/PostController.php`;
+
 document.addEventListener("DOMContentLoaded", function () {
 	loadCommentDeleteRequests();
 
@@ -44,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		try {
 			const { response, data: result } = await fetchJsonNoStore(
-				`http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=${action}&id=${requestId}`
+				`${POST_CONTROLLER_URL}?action=${action}&id=${requestId}`
 			);
 
 			if (!response.ok) {
@@ -114,7 +118,7 @@ async function loadCommentDeleteRequests() {
 
 	try {
 		const { response, data: requests } = await fetchJsonNoStore(
-			"http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php?action=commentDeleteRequests"
+			`${POST_CONTROLLER_URL}?action=commentDeleteRequests`
 		);
 
 		if (!response.ok) {

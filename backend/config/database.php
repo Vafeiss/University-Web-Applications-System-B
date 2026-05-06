@@ -11,7 +11,7 @@
  * with UTF-8 encoding and exception-based error handling.
  *
  * Functions:
- * - connect() → returns PDO instance for database operations
+ * - connect() -> returns PDO instance for database operations
  *
  * Security:
  * - PDO prepared statements prevent SQL injection
@@ -27,22 +27,32 @@
  * Author: Pelagia Koniotaki
  * Date: 2026
  */
-//obj oriented συνδεση με τη βάση δεδομένων
-class Database {
-    // Database credentials
-    private string $host = "localhost";
-    private string $db_name = "system_b_support";
-    private string $username = "root";
-    private string $password = "";
-    //connect method returns a PDO instance
-    public function connect(): PDO {
+
+require_once __DIR__ . '/env.php';
+
+class Database
+{
+    private string $host;
+    private string $db_name;
+    private string $username;
+    private string $password;
+
+    public function __construct()
+    {
+        $this->host = $_ENV['DB_HOST'] ?? 'localhost';
+        $this->db_name = $_ENV['DB_NAME'] ?? 'webvaria_student';
+        $this->username = $_ENV['DB_USER'] ?? 'webvaria_student';
+        $this->password = $_ENV['DB_PASS'] ?? 'DL9pp[rir=f.!B*O';
+    }
+
+    public function connect(): PDO
+    {
         try {
             $conn = new PDO(
                 "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
                 $this->username,
                 $this->password
             );
-            // Enable exceptions for error handling
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             return $conn;
         } catch (PDOException $e) {

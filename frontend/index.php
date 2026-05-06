@@ -35,6 +35,7 @@
 require_once "../backend/middleware/AuthGuard.php";
 require_once "../backend/middleware/ProfileGuard.php";
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 
 /* =========================
    ACCESS CONTROL
@@ -69,8 +70,8 @@ $indexCssVersion = filemtime(__DIR__ . '/css/index.css');
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <!-- Custom CSS -->
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
-<link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/index.css?v=<?php echo $indexCssVersion; ?>">
+<link rel="stylesheet" href="<?php echo app_frontend_url('assets/style.css'); ?>">
+<link rel="stylesheet" href="<?php echo app_frontend_url('css/index.css'); ?>?v=<?php echo $indexCssVersion; ?>">
 
 </head>
 
@@ -78,10 +79,10 @@ $indexCssVersion = filemtime(__DIR__ . '/css/index.css');
 
 <!-- Top Menu Bar -->
 <div class="d-flex justify-content-end align-items-center gap-2 pt-4 pe-4 dashboard-top-menu">
-     <a href="/University-Web-Applications-System-B/frontend/profile_view.php" class="btn btn-link">View &amp; Edit profile</a>
-     <a href="/University-Web-Applications-System-B/frontend/edit_interests.php" class="btn btn-link">Edit interests</a>
-     <a href="/University-Web-Applications-System-B/frontend/category_request.php" class="btn btn-link">Request category</a>
-     <a href="/University-Web-Applications-System-B/frontend/ads_user.php" class="btn btn-warning fw-bold">Watch Ads</a>
+     <a href="<?php echo app_frontend_url('profile_view.php'); ?>" class="btn btn-link">View &amp; Edit profile</a>
+     <a href="<?php echo app_frontend_url('edit_interests.php'); ?>" class="btn btn-link">Edit interests</a>
+     <a href="<?php echo app_frontend_url('category_request.php'); ?>" class="btn btn-link">Request category</a>
+     <a href="<?php echo app_frontend_url('ads_user.php'); ?>" class="btn btn-warning fw-bold">Watch Ads</a>
      <span class="btn btn-outline-secondary disabled dashboard-token-badge">Tokens <strong><?= $tokenBalance ?></strong></span>
 </div>
 
@@ -112,7 +113,7 @@ Your role: <strong><?= htmlspecialchars($_SESSION["role"]) ?></strong>
 ========================= -->
 
 <a class="btn btn-outline-danger"
-   href="/University-Web-Applications-System-B/frontend/logout.php">
+   href="<?php echo app_frontend_url('logout.php'); ?>">
 Logout
 </a>
 

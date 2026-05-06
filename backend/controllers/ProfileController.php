@@ -33,6 +33,7 @@
 
 session_start();
 require_once __DIR__ . '/../middleware/BanGuard.php';
+require_once __DIR__ . '/../config/app.php';
 enforceFrontendUserNotBanned();
 
 /* =========================
@@ -42,7 +43,7 @@ enforceFrontendUserNotBanned();
 
 if (!isset($_SESSION['user_id'])) {
 
-    header("Location: ../../frontend/login.php");
+    header("Location: " . app_url("login.php"));
     exit;
 
 }
@@ -76,24 +77,24 @@ $profile = new ProfileModule();
 
 if ($action === 'updateProfile') {
    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-      redirectTo("../../frontend/edit_profile_setup.php");
+      redirectTo(app_url("edit_profile_setup.php"));
    }
 
    $university = trim($_POST['university'] ?? '');
    $year = trim($_POST['year'] ?? '');
 
    if ($university === '' || $year === '') {
-      redirectTo("../../frontend/edit_profile_setup.php?error=missing_fields");
+      redirectTo(app_url("edit_profile_setup.php?error=missing_fields"));
    }
 
    $profile->saveProfile((int)$userId, $university, $year);
    $_SESSION['flash_success'] = 'profile_updated';
-   redirectTo("../../frontend/profile_view.php");
+   redirectTo(app_url("profile_view.php"));
 }
 
 if ($action === 'updateInterests') {
    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-      redirectTo("../../frontend/edit_interests.php");
+      redirectTo(app_url("edit_interests.php"));
    }
 
    $categories = $_POST['categories'] ?? [];
@@ -111,7 +112,7 @@ if ($action === 'updateInterests') {
 
    $profile->replaceInterests((int)$userId, array_values(array_unique($normalizedCategories)));
    $_SESSION['flash_success'] = 'interests_updated';
-   redirectTo("../../frontend/posts.php");
+   redirectTo(app_url("posts.php"));
 }
 
 /* =========================
@@ -123,7 +124,7 @@ $year = trim($_POST['year'] ?? '');
 $categories = $_POST['categories'] ?? [];
 
 if ($university === '' || $year === '') {
-   redirectTo("../../frontend/profile_setup.php?error=missing_fields");
+   redirectTo(app_url("profile_setup.php?error=missing_fields"));
 }
 
 $profile->saveProfile((int)$userId, $university, $year);
@@ -132,4 +133,4 @@ if (is_array($categories) && !empty($categories)) {
    $profile->saveInterests((int)$userId, $categories);
 }
 
-redirectTo("../../frontend/posts.php");
+redirectTo(app_url("posts.php"));

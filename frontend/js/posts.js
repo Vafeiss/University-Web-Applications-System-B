@@ -27,11 +27,13 @@
  * Date: 2026
  */
 
-const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
-const CAT_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
-const FOLLOW_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/FollowController.php";
-const NOTIFICATION_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/NotificationController.php";
-const SEARCH_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/search_controllers.php";
+const appConfig = window.APP_CONFIG || {};
+const BACKEND_BASE = appConfig.backendBase || "/backend";
+const BASE_URL = `${BACKEND_BASE}/controllers/PostController.php`;
+const CAT_URL = `${BACKEND_BASE}/controllers/CategoryController.php`;
+const FOLLOW_URL = `${BACKEND_BASE}/controllers/FollowController.php`;
+const NOTIFICATION_URL = `${BACKEND_BASE}/controllers/NotificationController.php`;
+const SEARCH_URL = `${BACKEND_BASE}/controllers/search_controllers.php`;
 let activeFeedMode = "default";
 let previousSearchMode = "default";
 const followedUserIds = new Set();

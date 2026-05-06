@@ -31,6 +31,7 @@
  */
 
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../config/app.php";
 
 /**
  * Ensures that the currently logged-in user has completed
@@ -70,7 +71,7 @@ function requireCompleteProfile(): void
     // If profile incomplete → redirect to setup page
     if (!$user || $user["university"] === null || $user["year"] === null) {
 
-        header("Location: /University-Web-Applications-System-B/frontend/profile_setup.php");
+        header("Location: " . app_frontend_url("profile_setup.php"));
         exit;
     }
 }

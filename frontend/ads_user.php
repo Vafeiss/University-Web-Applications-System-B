@@ -29,6 +29,7 @@
  */
 
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -104,7 +105,7 @@ if ($current_ad) {
     <title>Get Your Tokens!</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/ads_user.css?v=<?php echo $adsCssVersion; ?>">
+    <link rel="stylesheet" href="<?php echo app_frontend_url('css/ads_user.css'); ?>?v=<?php echo $adsCssVersion; ?>">
 </head>
 <body class="ads-page">
 

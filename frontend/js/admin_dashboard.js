@@ -28,10 +28,12 @@
  */
 
 (function () {
-    const BASE_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/PostController.php";
-    const CATEGORY_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/CategoryController.php";
-    const SEARCH_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/search_controllers.php";
-    const NOTIFICATION_URL = "http://localhost/University-Web-Applications-System-B/backend/controllers/NotificationController.php";
+    const appConfig = window.APP_CONFIG || {};
+    const backendBase = appConfig.backendBase || "/backend";
+    const BASE_URL = `${backendBase}/controllers/PostController.php`;
+    const CATEGORY_URL = `${backendBase}/controllers/CategoryController.php`;
+    const SEARCH_URL = `${backendBase}/controllers/search_controllers.php`;
+    const NOTIFICATION_URL = `${backendBase}/controllers/NotificationController.php`;
     const ADMIN_SIDEBAR_STORAGE_KEY = "admin-feed-sidebar-collapsed";
     let selectedAdminAuthorFilters = ["__all__"];
     let publishedPostAuthors = [];

@@ -21,6 +21,10 @@
  * Date: 2026
  */
 
+const appConfig = window.APP_CONFIG || {};
+const BACKEND_BASE = appConfig.backendBase || "/backend";
+const FRONTEND_BASE = appConfig.frontendBase || "/frontend";
+
 const responseEl = document.getElementById("response");
 const postForm = document.getElementById("postForm");
 const attachmentsInput = document.getElementById("attachmentsInput");
@@ -131,7 +135,7 @@ if (postForm && attachmentsInput) {
         try {
 
             const response = await fetch(
-                "/University-Web-Applications-System-B/backend/controllers/PostController.php?action=create",
+                `${BACKEND_BASE}/controllers/PostController.php?action=create`,
                 {
                     method: "POST",
                     body: formData
@@ -157,7 +161,7 @@ if (postForm && attachmentsInput) {
                 return;
             }
 
-            const pendingUrl = "/University-Web-Applications-System-B/frontend/posts.php?mode=pending&status=0";
+            const pendingUrl = `${FRONTEND_BASE}/posts.php?mode=pending&status=0`;
             window.location.replace(pendingUrl);
 
         } catch(error) {

@@ -11,13 +11,13 @@
  * Keeps sensitive credentials outside source control via .env file.
  *
  * Configuration Keys:
- * - host → SMTP server address
- * - username → SMTP account email
- * - password → SMTP authentication password
- * - port → SMTP server port
+ * - host -> SMTP server address
+ * - username -> SMTP account email
+ * - password -> SMTP authentication password
+ * - port -> SMTP server port
  *
  * Security:
- * - Credentials stored in .env (excluded from version control)
+ * - Credentials stored in .env (excluded from source control)
  * - No hardcoded credentials in source code
  *
  * Used By:
@@ -26,9 +26,12 @@
  * Author: Pelagia Koniotaki
  * Date: 2026
  */
+
+require_once __DIR__ . '/env.php';
+
 return [
     'host' => $_ENV['SMTP_HOST'] ?? null,
     'username' => $_ENV['SMTP_USER'] ?? null,
     'password' => $_ENV['SMTP_PASS'] ?? null,
-    'port' => $_ENV['SMTP_PORT'] ?? null
+    'port' => $_ENV['SMTP_PORT'] ?? null,
 ];

@@ -32,6 +32,7 @@ session_start();
 
 require_once "../backend/middleware/AuthGuard.php";
 require_once "../backend/config/database.php";
+require_once "../backend/config/app.php";
 
 requireLogin();
 
@@ -74,7 +75,7 @@ $history_result = $historyStmt ? $historyStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 <head>
     <meta charset="UTF-8">
     <title>Moderation Control Panel</title>
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/moderation_panel.css?v=<?php echo $moderationPanelCssVersion; ?>">
+    <link rel="stylesheet" href="<?php echo app_frontend_url('css/moderation_panel.css'); ?>?v=<?php echo $moderationPanelCssVersion; ?>">
 </head>
 <body>
 

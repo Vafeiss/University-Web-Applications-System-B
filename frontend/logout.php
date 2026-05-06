@@ -26,6 +26,7 @@
  */
 
 session_start();
+require_once "../backend/config/app.php";
 
 // αδειαζουμε session
 $_SESSION = [];
@@ -48,5 +49,5 @@ if (ini_get("session.use_cookies")) {
 // destroy
 session_destroy();
 
-header("Location: /University-Web-Applications-System-B/frontend/login.php");
+header("Location: " . app_frontend_url("login.php"));
 exit;

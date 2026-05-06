@@ -34,6 +34,7 @@
 
 session_start();
 require_once "../backend/middleware/BanGuard.php";
+require_once "../backend/config/app.php";
 
 // redirect αν ηδη logged in
 if (isset($_SESSION["user_id"])) {
@@ -41,7 +42,7 @@ if (isset($_SESSION["user_id"])) {
         clearAuthenticatedSession();
         $_GET["ban_message"] = getBannedAccountMessage();
     } else {
-        header("Location: /University-Web-Applications-System-B/frontend/posts.php");
+        header("Location: " . app_frontend_url("posts.php"));
         exit;
     }
 }
@@ -88,8 +89,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Login</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/assets/style.css">
-    <link rel="stylesheet" href="/University-Web-Applications-System-B/frontend/css/login.css?v=<?php echo $loginCssVersion; ?>">
+    <link rel="stylesheet" href="<?php echo app_frontend_url('assets/style.css'); ?>">
+    <link rel="stylesheet" href="<?php echo app_frontend_url('css/login.css'); ?>?v=<?php echo $loginCssVersion; ?>">
 </head>
 <body>
     <div class="login-shell">
@@ -101,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <div class="login-brand">
                 <span class="login-brand-mark" aria-hidden="true">
-                    <img src="/University-Web-Applications-System-B/frontend/imgs/unisupportlogo.png" alt="">
+                    <img src="<?php echo app_frontend_url('imgs/unisupportlogo.png'); ?>" alt="">
                 </span>
                 <div>
                     <h1>UniSupport</h1>
@@ -151,10 +152,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <div class="login-links">
                     <div>
                         <span data-i18n="login.no_account">No account?</span>
-                        <a href="/University-Web-Applications-System-B/frontend/register.php" data-i18n="login.register">Register</a>
+                        <a href="<?php echo app_frontend_url('register.php'); ?>" data-i18n="login.register">Register</a>
                     </div>
                     <div>
-                        <a href="/University-Web-Applications-System-B/frontend/forgot_password.php" data-i18n="login.forgot_password">Forgot password?</a>
+                        <a href="<?php echo app_frontend_url('forgot_password.php'); ?>" data-i18n="login.forgot_password">Forgot password?</a>
                     </div>
                 </div>
             </div>
