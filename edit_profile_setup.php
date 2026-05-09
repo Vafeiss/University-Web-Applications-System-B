@@ -127,4 +127,4 @@ function checked(string $value, ?string $current): string {
 </div>
 </body>
 
-</
+</html>

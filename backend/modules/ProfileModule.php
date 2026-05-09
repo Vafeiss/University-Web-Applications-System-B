@@ -148,4 +148,52 @@ class ProfileModule {
 
                 foreach ($normalized as $categoryId) {
                     $insertStmt->execute([
-                        ":ui
+                        ":uid" => $userId,
+                        ":cid" => $categoryId
+                    ]);
+                }
+            }
+
+            // Όλα ΟΚ → κάνουμε commit
+            $this->conn->commit();
+        } catch (Throwable $e) {
+            // Κάτι έσπασε → rollback και ξαναπετάμε το exception στον controller
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Αποθήκευση όλου του προφίλ μαζί (πανεπιστήμιο + έτος + interests)
+     * σε ένα ενιαίο transaction. Αν αποτύχει οποιοδήποτε βήμα, γίνεται
+     * rollback και τίποτα δεν αποθηκεύεται.
+     *
+     * Χρήσιμο κυρίως κατά το αρχικό setup του προφίλ.
+     */
+    public function saveFullProfile(int $userId, string $university, string $year, array $categories): void
+    {
+        try {
+
+            $this->conn->beginTransaction();
+
+            // Πρώτα τα βασικά στοιχεία...
+            $this->saveProfile($userId, $university, $year);
+
+            // ...και μετά τα interests
+            $this->saveInterests($userId, $categories);
+
+            $this->conn->commit();
+
+        } catch (Exception $e) {
+
+            // Rollback και rethrow ώστε να το πιάσει ο controller
+            $this->conn->rollBack();
+            throw $e;
+
+        }
+    }
+
+}

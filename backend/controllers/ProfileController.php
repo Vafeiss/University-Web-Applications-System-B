@@ -96,4 +96,54 @@ if ($action === 'updateProfile') {
 
 
 // --- Action: Ενημέρωση ενδιαφερόντων από το Edit Interests ---
-if ($action === 'updateIntere
+if ($action === 'updateInterests') {
+
+   // Δεχόμαστε μόνο POST εδώ επίσης
+   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      redirectTo("../../edit_interests.php");
+   }
+
+   // Παίρνουμε τις επιλεγμένες κατηγορίες από τα checkboxes
+   $categories = $_POST['categories'] ?? [];
+   if (!is_array($categories)) {
+      $categories = [];
+   }
+
+   // Καθαρίζουμε: μόνο θετικά integer category_ids περνάνε
+   $normalizedCategories = [];
+   foreach ($categories as $categoryId) {
+      $value = (int)$categoryId;
+      if ($value > 0) {
+         $normalizedCategories[] = $value;
+      }
+   }
+
+   // Αντικαθιστούμε όλα τα παλιά interests με τη νέα λίστα (μέσα σε transaction)
+   $profile->replaceInterests((int)$userId, array_values(array_unique($normalizedCategories)));
+   $_SESSION['flash_success'] = 'interests_updated';
+   redirectTo("../../posts.php");
+}
+
+
+// --- Default περίπτωση: αρχικό setup προφίλ μετά την εγγραφή ---
+// Όταν ο χρήστης μόλις εγγραφεί, συμπληρώνει university + year + interests
+// μαζί στο ίδιο form και έρχονται όλα εδώ.
+$university = trim($_POST['university'] ?? '');
+$year = trim($_POST['year'] ?? '');
+$categories = $_POST['categories'] ?? [];
+
+// Τα βασικά (university, year) είναι υποχρεωτικά
+if ($university === '' || $year === '') {
+   redirectTo("../../profile_setup.php?error=missing_fields");
+}
+
+// Αποθήκευση πανεπιστημίου + έτους
+$profile->saveProfile((int)$userId, $university, $year);
+
+// Τα interests είναι προαιρετικά — τα βάζουμε μόνο αν επιλέχθηκε κάτι
+if (is_array($categories) && !empty($categories)) {
+   $profile->saveInterests((int)$userId, $categories);
+}
+
+// Τέλος: στέλνουμε τον χρήστη στο feed
+redirectTo("../../posts.php");

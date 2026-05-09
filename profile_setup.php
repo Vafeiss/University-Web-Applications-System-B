@@ -132,7 +132,7 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
                 <div class="setup-alert">University and year of study are required.</div>
             <?php endif; ?>
 
-            <form method="POST" action="../backend/controllers/ProfileController.php">
+            <form method="POST" action="/student/backend/controllers/ProfileController.php">
                 <div class="setup-field">
                     <label for="universityTrigger">University</label>
                     <div class="setup-dropdown" id="universityDropdown">

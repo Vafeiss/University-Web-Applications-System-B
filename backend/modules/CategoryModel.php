@@ -259,4 +259,100 @@ class CategoryModel {
             return false;
         }
 
-        // Έλεγχος για διπλό όνομα (case-insensiti
+        // Έλεγχος για διπλό όνομα (case-insensitive)
+        $existsStmt = $this->db->prepare(
+            "SELECT category_id
+             FROM categories
+             WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))
+             LIMIT 1"
+        );
+
+        $existsStmt->execute([$normalizedName]);
+
+        if ($existsStmt->fetchColumn()) {
+            return false;
+        }
+
+        // Insert της νέας κατηγορίας
+        $stmt = $this->db->prepare("
+            INSERT INTO categories (name)
+            VALUES (?)
+        ");
+
+        return $stmt->execute([$normalizedName]);
+    }
+
+
+    // --- ADMIN: φέρνει αίτημα κατηγορίας με συγκεκριμένο id ---
+    // Χρειάζεται για να εμφανίσει ο admin τις λεπτομέρειες πριν approve/reject.
+    public function getRequestById($requestId) {
+
+        $stmt = $this->db->prepare("
+            SELECT request_id, requested_by, suggested_name, status
+            FROM category_requests
+            WHERE request_id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$requestId]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+
+    // --- ADMIN: αλλάζει το status ενός αιτήματος ---
+    // Status: 0 = pending, 1 = approved, 2 = rejected
+    public function updateRequestStatus($requestId, $status){
+
+        $stmt = $this->db->prepare("
+            UPDATE category_requests
+            SET status = ?
+            WHERE request_id = ?
+        ");
+
+        return $stmt->execute([$status, $requestId]);
+    }
+
+
+    // --- Πιο "ασφαλής" εκδοχή: αλλάζει το status ΜΟΝΟ αν είναι ακόμα pending ---
+    // Έτσι αποφεύγουμε race conditions όπου 2 admins θα έκαναν approve/reject
+    // ταυτόχρονα στο ίδιο αίτημα.
+    public function updateRequestStatusIfPending($requestId, $status): bool {
+
+        $stmt = $this->db->prepare("
+            UPDATE category_requests
+            SET status = ?
+            WHERE request_id = ?
+            AND status = 0
+        ");
+
+        $stmt->execute([$status, $requestId]);
+
+        // Αν δεν επηρεάστηκε καμία γραμμή, σημαίνει ότι το αίτημα
+        // είχε ήδη γίνει approved/rejected από κάποιον άλλον
+        return $stmt->rowCount() > 0;
+    }
+
+
+    // --- USER: τα δικά του ενδιαφέροντα ---
+    // Φέρνει τις κατηγορίες που έχει επιλέξει ο χρήστης (από user_interest)
+    // και τις επιστρέφει αλφαβητικά. Με GROUP BY name αποφεύγουμε διπλές
+    // εμφανίσεις σε περίπτωση που υπάρχουν 2 categories με ίδιο όνομα.
+    public function getUserInterests($userId) {
+
+        $stmt = $this->db->prepare("
+            SELECT MIN(c.category_id) AS category_id, c.name
+            FROM user_interest ui
+            JOIN categories c ON ui.category_id = c.category_id
+            WHERE ui.user_id = ?
+            GROUP BY c.name
+            ORDER BY c.name ASC
+        ");
+
+        $stmt->execute([$userId]);
+
+        // Επιστρέφει array με στοιχεία της μορφής ["category_id"=>X, "name"=>"..."]
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+}
