@@ -1,75 +1,48 @@
-# UniSupport — Student Forum System
+# UniSupport
 
-Πτυχιακή εργασία για το μάθημα CEI328 (University Web Applications) — Cyprus University of Technology.
+Εργασία για το μάθημα CEI328 — Web Applications.
+Ομαδική με την Αντριάνη Θεοφάνους.
 
-Ένα web-based σύστημα κοινότητας φοιτητών για ανταλλαγή σημειώσεων, ασκήσεων και
-υλικού μαθημάτων με σύστημα κατηγοριών, follow, σχολίων, διαχείρισης από admin
-και token-based downloads.
+Είναι ένα μικρό φόρουμ φοιτητών όπου ο καθένας μπορεί να ανεβάζει σημειώσεις,
+παλιά διαγωνίσματα και ασκήσεις, να σχολιάζει, να κάνει follow άλλους χρήστες
+και να μαζεύει tokens για να κατεβάζει υλικό. Ο admin βλέπει pending posts,
+αιτήματα διαγραφής και reports.
 
-## Δομή
+## Πώς το τρέχω τοπικά (XAMPP)
 
-```
-student/
-├── assets/                # CSS / static assets
-├── backend/
-│   ├── config/            # DB & mail configuration
-│   ├── controllers/       # Endpoint logic (Auth, Post, Comment, ...)
-│   ├── helpers/           # Helper functions
-│   ├── middleware/        # AuthGuard, BanGuard, ProfileGuard
-│   └── modules/           # Data models (PostModel, ProfileModule, ...)
-├── css/                   # Page-specific styles
-├── imgs/                  # Static images
-├── js/                    # Frontend JavaScript
-├── uploads/               # User-uploaded attachments
-└── *.php                  # Frontend pages (login, posts, profile, ...)
-```
+Χρειάζεται XAMPP με Apache + MySQL + PHP 8.
 
-## Τοπικό setup με XAMPP
+1. Βάλε τον φάκελο μέσα στο `htdocs` (πρέπει να λέγεται `student`,
+   γιατί ο κώδικας έχει paths που ξεκινούν από `/student/...`).
 
-### 1. Pre-requisites
+2. Φτιάξε δύο αρχεία αντιγράφοντας τα templates:
+   - `backend/config/database.example.php` → `backend/config/database.php`
+   - `.env.example` → `.env`
 
-- XAMPP εγκατεστημένο (Apache + MySQL + PHP 8.x)
-- Composer (για composer install — προαιρετικό αν έχεις ήδη `vendor/`)
+   Στο `database.php` βάλε τα στοιχεία σου (στον δικό μου XAMPP χρησιμοποιώ
+   `root` χωρίς password). Στο `.env` τα SMTP του Gmail (για το forgot password).
 
-### 2. Files
+3. Άνοιξε το phpMyAdmin και φτιάξε μια άδεια βάση με το ίδιο όνομα που έβαλες
+   στο `database.php` (στο δικό μας: `webvaria_student`). Μετά κάνε import
+   το `schema.sql` που έχουμε δίπλα στην εργασία.
 
-Από τον φάκελο του project:
+4. `composer install` για να φτιαχτεί ο `vendor` φάκελος (PHPMailer κλπ).
 
-```bash
-cp backend/config/database.example.php backend/config/database.php
-cp .env.example .env
-```
+5. Πάμε στο `http://localhost/student/login.php` και κάνουμε register.
 
-Άνοιξε το `database.php` και βάλε τα δικά σου credentials (για XAMPP συνήθως
-`username = root`, `password = ''`). Το ίδιο και στο `.env` για SMTP credentials.
+## Φάκελοι
 
-### 3. Database
+- `backend/` — config, controllers, middleware, modules (η "λογική" του site)
+- `assets/`, `css/`, `js/`, `imgs/` — frontend assets
+- `uploads/` — εκεί ανεβαίνουν τα attachments των posts
+- Στο root είναι όλες οι σελίδες (`login.php`, `posts.php`, `profile_view.php`, κλπ)
 
-1. Άνοιξε `http://localhost/phpmyadmin`
-2. Δημιούργησε database με όνομα ίδιο με το `db_name` του `database.php`
-3. Import τα `database/schema.sql` και τυχόν `database/*.sql` migrations
+## Σημειώσεις
 
-### 4. Composer dependencies
+- Τα `database.php`, `mail.php` και `.env` είναι git-ignored γιατί έχουν
+  credentials. Χρησιμοποιήστε τα `.example` αντίγραφα ως template.
+- Ο `vendor/` δεν ανεβαίνει στο git — τρέξτε `composer install` αφού κλωνοποιήσετε.
 
-```bash
-composer install
-```
+---
 
-(Δημιουργεί τον `vendor/` φάκελο.)
-
-### 5. Run
-
-Άνοιξε στον browser:
-
-```
-http://localhost/student/login.php
-```
-
-## Authors
-
-- Pelagia Koniotaki
-- Antriani Theofanous
-
-## Date
-
-2026
+Pelagia Koniotaki & Antriani Theofanous, 2026
