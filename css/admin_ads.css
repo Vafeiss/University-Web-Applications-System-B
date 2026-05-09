@@ -1,0 +1,105 @@
+/* Ads admin panel - UniSupport style override */
+body {
+    background: linear-gradient(180deg, #f4f7fc 0%, #eef3fb 100%);
+    color: #1e293b;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html {
+    background: unset;
+}
+
+.admin-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px 28px 22px 28px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    border: 1.5px solid #e2e8f0;
+    margin-bottom: 32px;
+}
+
+h2, h5 {
+    color: #142b53;
+    font-weight: 700;
+}
+
+label, .form-label, .table th {
+    color: #435674;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+input.form-control {
+    border-radius: 12px;
+    border: 1px solid #dbe4f2;
+    background: #f8fbff;
+    color: #1e293b;
+    font-size: 15px;
+    padding: 10px 14px;
+    transition: border 0.18s;
+}
+input.form-control:focus {
+    border-color: #4a6cf7;
+    box-shadow: 0 2px 8px #4a6cf71a;
+}
+
+.btn-success, .btn-danger {
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 8px 18px;
+    box-shadow: 0 2px 8px #4a6cf71a;
+    border: none;
+}
+.btn-success {
+    background: linear-gradient(90deg, #4a6cf7 0%, #7ea2ff 100%);
+}
+.btn-success:hover {
+    background: linear-gradient(90deg, #3a5edb 0%, #5e7edb 100%);
+}
+.btn-danger {
+    background: #fdecef;
+    color: #9c3d48;
+}
+.btn-danger:hover {
+    background: #f9d9de;
+    color: #7b2c38;
+}
+.btn-outline-secondary {
+    border-radius: 10px;
+    font-weight: 600;
+    color: #435674;
+    border: 1.5px solid #dbe4f2;
+    background: #f8fbff;
+    transition: background 0.18s, color 0.18s;
+}
+.btn-outline-secondary:hover {
+    background: #eaf1ff;
+    color: #2346a0;
+}
+
+.table {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+.table thead.table-dark th {
+    background: linear-gradient(90deg, #4a6cf7 0%, #7ea2ff 100%);
+    color: #fff;
+    border: none;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+}
+.table-hover tbody tr:hover {
+    background: #f5f8ff;
+}
+.table td, .table th {
+    vertical-align: middle;
+    font-size: 15px;
+}
+.table img, .table video {
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px #4a6cf71a;
+}

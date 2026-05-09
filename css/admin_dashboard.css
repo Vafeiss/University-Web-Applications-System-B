@@ -1,0 +1,1009 @@
+/**
+ * File: admin_dashboard.css
+ * Layer: Frontend Styles
+ * Module: Admin Dashboard
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the administrator control panel. Covers layout of the
+ * dashboard shell, navigation rail, moderation cards, tables of
+ * pending items, notification dropdown and action buttons.
+ *
+ * Sections:
+ * - Global body/background
+ * - Dashboard shell and header
+ * - Navigation tabs and side rail
+ * - Cards and panels for pending posts, reports, delete requests
+ * - Table and list styling for moderation queues
+ * - Notification dropdown
+ * - Action buttons (approve / reject / delete)
+ *
+ * Used By:
+ * - admin_dashboard.php
+ * - posts.php
+ *
+ * Author: Pelagia Koniotaki
+ * Date: 2026
+ */
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #f4f7fc 0%, #eef3fb 100%);
+    color: #1e293b;
+    min-height: 100vh;
+}
+
+html {
+    min-height: 100vh;
+    background: unset;
+}
+
+.pending-page {
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 16px 28px;
+}
+
+.pending-page-header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #142b53;
+}
+
+.pending-page-header p {
+    margin: 8px 0 0;
+    color: #5f6f89;
+    font-size: 15px;
+}
+
+.pending-feedback {
+    margin-top: 16px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.pending-feedback.success {
+    background: #eaf8ef;
+    border-color: #b9e3c8;
+    color: #1f6a3a;
+}
+
+.pending-feedback.error {
+    background: #fdeff0;
+    border-color: #efc3c6;
+    color: #8b2330;
+}
+
+.pending-grid {
+    margin-top: 20px;
+    display: grid;
+    gap: 18px;
+}
+
+.pending-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pending-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+}
+
+.pending-card h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #0f172a;
+}
+
+.pending-title-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.pending-title-link:hover {
+    text-decoration: underline;
+    color: #1d4f9b;
+}
+
+.pending-meta {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: #7b89a1;
+}
+
+.pending-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e0edff;
+    color: #1e40af;
+    font-weight: 600;
+}
+
+.pending-content {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+.pending-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+
+.pending-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pending-btn.approve {
+    background: #2f9e44;
+    color: #fff;
+}
+
+.pending-btn.approve:hover {
+    background: #257f37;
+}
+
+.pending-btn.reject {
+    background: #fdecef;
+    color: #9c3d48;
+}
+
+.pending-btn.reject:hover {
+    background: #f9d9de;
+}
+
+.pending-state {
+    border: 1px dashed #c9d6ea;
+    border-radius: 12px;
+    background: #f8fbff;
+    color: #5d6c86;
+    padding: 22px;
+    text-align: center;
+    font-weight: 600;
+}
+
+body.admin-dialog-open {
+    overflow: hidden;
+}
+
+.admin-profile-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 1450;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.22);
+    backdrop-filter: blur(4px);
+}
+
+.admin-profile-dialog[hidden] {
+    display: none !important;
+}
+
+.admin-profile-card {
+    width: min(100%, 310px);
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    border: 1px solid #dbe4f3;
+    border-radius: 16px;
+    padding: 18px 18px 14px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    text-align: center;
+}
+
+.admin-profile-card h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #223a6a;
+}
+
+.admin-profile-card p {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #6b7a93;
+}
+
+.admin-profile-list {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+    text-align: left;
+}
+
+.admin-profile-item {
+    padding: 10px 12px;
+    border: 1px solid #d9e3f2;
+    border-radius: 12px;
+    background: #f7faff;
+}
+
+.admin-profile-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #7a88a1;
+}
+
+.admin-profile-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #334c77;
+    word-break: break-word;
+}
+
+.admin-profile-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.admin-profile-close {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    background: #eef2f8;
+    color: #4f5f78;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-profile-close:hover {
+    background: #e4e9f1;
+    transform: translateY(-1px);
+}
+
+.admin-reject-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.32);
+}
+
+.admin-reject-dialog[hidden] {
+    display: none !important;
+}
+
+.admin-reject-card {
+    width: min(420px, 100%);
+    background: #fff;
+    border: 1px solid #dbe4f3;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
+}
+
+.admin-reject-card h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #c12727;
+}
+
+.admin-reject-card p {
+    margin: 0;
+    color: #5d687b;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.admin-reject-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid #cfd9e8;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: none;
+    min-height: 44px;
+    max-height: 180px;
+    overflow: hidden;
+}
+
+.admin-reject-textarea:focus {
+    outline: none;
+    border-color: #89a8ee;
+    box-shadow: 0 0 0 3px rgba(137, 168, 238, 0.18);
+}
+
+.admin-reject-error {
+    margin-top: 8px;
+    color: #9c2f3b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-reject-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.admin-reject-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-reject-btn.cancel {
+    background: #eef2f8;
+    color: #4f5f78;
+}
+
+.admin-reject-btn.cancel:hover {
+    background: #e4e9f1;
+}
+
+.admin-reject-btn.danger {
+    background: #c12727;
+    color: #fff;
+}
+
+.admin-reject-btn.danger:hover {
+    background: #a61f1f;
+}
+
+.feed-dashboard-topbar {
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 82px;
+    padding: 18px 26px 16px 68px;
+}
+
+.feed-topbar-title {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    white-space: nowrap;
+    text-align: left;
+    margin-left: 0;
+    margin-right: auto;
+    flex: 0 0 auto;
+}
+
+.app-topbar-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+/* Παραπανω κενο μεταξυ tabs στο admin side menu */
+.feed-sidebar-tabs[aria-label="Admin moderation sections"] {
+    gap: 20px;
+}
+
+/* default: κρυμμενα panels — μονο το .is-active φαινεται */
+.dashboard-panel {
+    display: none;
+}
+
+.dashboard-panel.is-active {
+    display: block;
+}
+
+.dashboard-panel-header {
+    margin-bottom: 14px;
+}
+
+.dashboard-panel-header h2 {
+    margin: 0;
+    font-size: 30px;
+    color: #142b53;
+}
+
+.dashboard-panel-header p {
+    margin: 8px 0 0;
+    color: #5f6f89;
+    font-size: 15px;
+}
+
+.dashboard-panel-header p:first-child {
+    margin-top: 0;
+}
+
+/* Pending / Approved / Rejected — ξεχωριστα pill tabs */
+.dashboard-status-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 18px;
+}
+
+.dashboard-status-filter {
+    appearance: none;
+    border: 1px solid #d9e1ef;
+    border-radius: 999px;
+    padding: 8px 22px;
+    background: #ffffff;
+    color: #4b5d7a;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-status-filter:hover {
+    background: #eef3fb;
+    color: #1d3766;
+    border-color: #c3d1ea;
+}
+
+.dashboard-status-filter.is-active {
+    background: linear-gradient(180deg, #1f3a6e 0%, #152a53 100%);
+    color: #ffffff;
+    border-color: #152a53;
+    box-shadow: 0 8px 18px rgba(21, 42, 83, 0.25);
+}
+
+/* Existing categories banner — ιδια μπλε φορμα με το Following στους users */
+.admin-existing-categories {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(180deg, #f5f8ff, #eef4ff);
+    border: 1px solid #dbe4f2;
+    border-left: 4px solid #4a6cf7;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.admin-existing-categories-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #435674;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.admin-existing-categories-label::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 50% 50%, #ffffff 0 18%, transparent 20%),
+        linear-gradient(135deg, #4a6cf7, #7ea2ff);
+    box-shadow: 0 4px 10px rgba(74, 108, 247, 0.2);
+}
+
+/* Existing categories — ιδια μορφη με τα following chips στους users */
+.admin-category-delete-trigger {
+    border: 1px solid #d7e1f0;
+    border-radius: 999px;
+    background: #f8fbff;
+    padding: 4px 10px;
+    margin: 0;
+    color: #28405f;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.2;
+}
+
+.admin-category-delete-trigger:hover {
+    background: #fff2f2;
+    border-color: #e8c1c1;
+}
+
+.admin-category-delete-trigger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-category-delete-name {
+    color: #2f4772;
+    font-weight: 700;
+}
+
+.admin-category-delete-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9c2f3e;
+    letter-spacing: 0.01em;
+}
+
+#adminCategoryDeleteTitle {
+    color: #c12727;
+}
+
+.dashboard-subtitle {
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #142b53;
+}
+
+.dashboard-search-panel {
+    position: relative;
+    z-index: 8;
+    overflow: visible;
+    margin: 16px 0 22px;
+    padding: 16px 18px 18px;
+    border: 1px solid rgba(214, 225, 242, 0.9);
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 251, 255, 0.86) 100%);
+    box-shadow:
+        0 14px 32px rgba(15, 23, 42, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(10px);
+}
+
+.dashboard-search-topbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+.dashboard-search-keyword-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 260px;
+    transition: transform 0.22s ease;
+}
+
+.dashboard-search-keyword-wrap::before {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    transform: translateY(-50%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2350679d' stroke-width='2.2'%3E%3Ccircle cx='11' cy='11' r='7.25'/%3E%3Cpath stroke-linecap='round' d='m20 20-4.2-4.2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.dashboard-search-topbar .dashboard-search-keyword-wrap:focus-within {
+    transform: translateY(-1px);
+}
+
+.dashboard-search-keyword-wrap:hover {
+    transform: translateY(-1px);
+}
+
+.dashboard-search-input,
+.dashboard-search-select,
+.dashboard-search-date,
+.dashboard-search-users-toggle,
+.dashboard-search-btn {
+    height: 46px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, transform 0.22s ease;
+}
+
+.dashboard-search-input {
+    width: 100%;
+    min-width: 0;
+    padding: 0 18px 0 58px;
+    border-radius: 14px;
+    border: 1.5px solid #dbe4f2;
+    background: #f8fbff;
+    color: #1e293b;
+    font-size: 16px;
+    line-height: 46px;
+    transition: border 0.18s;
+}
+
+.dashboard-search-input::placeholder {
+    color: #587198;
+    opacity: 1;
+    font-weight: 600;
+}
+
+.dashboard-search-inline-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 12px;
+    width: min(860px, 100%);
+}
+
+.dashboard-search-select,
+.dashboard-search-date {
+    width: 100%;
+    min-width: 0;
+    padding: 0 14px;
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #28405f;
+    font-size: 13px;
+    height: 42px;
+    line-height: 42px;
+}
+
+.dashboard-search-date {
+    min-width: 0;
+}
+
+.dashboard-search-users {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+}
+
+.dashboard-search-advanced {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(210, 221, 236, 0.9);
+}
+
+.dashboard-search-advanced[hidden] {
+    display: none !important;
+}
+
+.dashboard-search-filters-toggle {
+    width: 52px;
+    height: 46px;
+    flex: 0 0 52px;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #476fb6;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.dashboard-search-filters-toggle:hover {
+    background: #f8fbff;
+    border-color: #b7cae8;
+    transform: translateY(-1px);
+}
+
+.dashboard-search-filters-toggle svg {
+    width: 24px;
+    height: 24px;
+}
+
+.dashboard-search-users-toggle {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 14px;
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #28405f;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.dashboard-search-users-toggle::after {
+    content: "";
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23256cc0' stroke-width='2.1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M4 7h16M7 12h10M10 17h4'/%3E%3Ccircle cx='9' cy='7' r='1.5' fill='%23256cc0' stroke='none'/%3E%3Ccircle cx='15' cy='12' r='1.5' fill='%23256cc0' stroke='none'/%3E%3Ccircle cx='12' cy='17' r='1.5' fill='%23256cc0' stroke='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.dashboard-search-users-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    width: 100%;
+    min-width: 220px;
+    padding: 10px 0;
+    display: grid;
+    gap: 4px;
+    border: 1px solid rgba(214, 225, 242, 0.95);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(10px);
+    max-height: min(320px, 45vh);
+    overflow-y: auto;
+}
+
+.dashboard-search-users-menu[hidden] {
+    display: none !important;
+}
+
+.dashboard-search-users-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: transparent;
+    color: #28405f;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.dashboard-search-users-option:hover {
+    background: #eef4ff;
+    color: #1f3f7a;
+}
+
+.dashboard-search-users-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    margin-bottom: 0;
+    padding: 0;
+    flex: 0 0 16px;
+    accent-color: #4c5bd4;
+}
+
+.dashboard-search-users-option span {
+    display: block;
+    line-height: 1.35;
+}
+
+#adminSearchUsersOptions,
+#pendingSearchUsersOptions {
+    display: grid;
+    gap: 4px;
+    max-height: 88px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #c3d1ea #eef3fb;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar,
+#pendingSearchUsersOptions::-webkit-scrollbar {
+    width: 6px;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar-track,
+#pendingSearchUsersOptions::-webkit-scrollbar-track {
+    background: #eef3fb;
+    border-radius: 6px;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar-thumb,
+#pendingSearchUsersOptions::-webkit-scrollbar-thumb {
+    background: #c3d1ea;
+    border-radius: 6px;
+}
+
+#adminSearchUsersOptions::-webkit-scrollbar-thumb:hover,
+#pendingSearchUsersOptions::-webkit-scrollbar-thumb:hover {
+    background: #a8b9d8;
+}
+
+.dashboard-search-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+.dashboard-search-btn {
+    min-width: 92px;
+    padding: 0 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+    box-shadow: none;
+}
+
+.dashboard-search-btn.primary {
+    background: #2d4186;
+    color: #fff;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 10px 28px;
+    border: none;
+    box-shadow: 0 2px 8px #4a6cf71a;
+    transition: background 0.18s;
+}
+
+.dashboard-search-btn.primary:hover {
+    background: #1d2e5c;
+}
+
+.dashboard-search-btn.secondary {
+    background: #f5f8ff;
+    color: #4a6cf7;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 10px 28px;
+    border: none;
+    box-shadow: 0 2px 8px #4a6cf71a;
+    transition: background 0.18s;
+}
+
+.dashboard-search-btn.secondary:hover {
+    background: #eaf1ff;
+}
+
+.dashboard-search-select:hover,
+.dashboard-search-date:hover,
+.dashboard-search-users-toggle:hover {
+    border-color: #b7cae8;
+}
+
+.dashboard-search-input:focus,
+.dashboard-search-select:focus,
+.dashboard-search-date:focus,
+.dashboard-search-users-toggle:focus {
+    outline: none;
+    border-color: #4c5bd4;
+    box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.12);
+}
+
+.dashboard-search-input:focus {
+    border-color: #4c5bd4;
+    box-shadow: 0 0 0 3px rgba(76, 91, 212, 0.15);
+}
+
+@media (max-width: 1480px) {
+    .dashboard-search-inline-filters {
+        grid-template-columns: repeat(2, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 1400px) {
+    .feed-dashboard-topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "toggle toggle"
+            "title actions";
+        align-items: center;
+        justify-items: stretch;
+        padding: 18px 20px 14px 20px;
+        gap: 12px;
+    }
+
+    .feed-sidebar-toggle {
+        grid-area: toggle;
+        position: static;
+        transform: none;
+        justify-self: start;
+    }
+
+    .feed-topbar-title {
+        grid-area: title;
+        display: block;
+        width: auto;
+        max-width: 100%;
+        margin-right: 0;
+        white-space: normal;
+        justify-self: start;
+    }
+
+    .app-topbar-actions {
+        grid-area: actions;
+        display: inline-flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        width: auto;
+        margin-left: 0;
+        justify-self: end;
+        align-self: center;
+        gap: 10px;
+    }
+
+    .dashboard-search-topbar {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .dashboard-search-keyword-wrap,
+    .dashboard-search-actions {
+        width: 100%;
+    }
+
+    .dashboard-search-actions {
+        justify-content: flex-end;
+        margin-left: 0;
+    }
+
+    .user-feed-shell .feed-dashboard-topbar {
+        display: grid;
+        grid-template-columns: max-content max-content;
+        grid-template-areas:
+            "toggle toggle"
+            "title actions"
+            "links links";
+        align-items: start;
+        justify-content: start;
+        gap: 10px 0;
+    }
+
+    .user-feed-shell .feed-topbar-title {
+        grid-area: title;
+        min-width: 0;
+        margin-right: 0;
+        white-space: normal;
+    }
+
+    .user-feed-shell .app-topbar-actions {
+        grid-area: actions;
+        margin-left: -64px;
+        justify-self: start;
+    }
+
+    .user-feed-shell .feed-dashboard-toplinks {
+        grid-area: links;
+        justify-self: start;
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+
+    .dashboard-search-inline-filters {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+}

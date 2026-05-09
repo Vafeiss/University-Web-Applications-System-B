@@ -1,0 +1,40 @@
+/**
+ * File: index.css
+ * Layer: Frontend Styles
+ * Module: User Dashboard
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the authenticated user dashboard. Covers top menu,
+ * token balance badge, shortcut cards, notifications dropdown and
+ * welcome section.
+ *
+ * Sections:
+ * - Top menu and navigation
+ * - Token balance badge
+ * - Welcome banner
+ * - Shortcut cards grid
+ * - Notifications dropdown
+ * - Logout and profile links
+ *
+ * Used By:
+ * - index.php
+ *
+ * Author: Pelagia Koniotaki & Antriani Theofanous 
+ * Date: 2026
+ */
+
+.dashboard-top-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.dashboard-token-badge {
+    pointer-events: none;
+}
+
+.dashboard-card {
+    width: 500px;
+}

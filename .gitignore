@@ -1,0 +1,33 @@
+# ============================================
+# .gitignore — αρχεία που ΔΕΝ ανεβαίνουν στο git
+# ============================================
+
+# --- Sensitive credentials (NEVER commit) ---
+.env
+.vscode/sftp.json
+backend/config/database.php
+backend/config/mail.php
+
+# --- Composer dependencies (φτιάχνονται με composer install) ---
+vendor/
+
+# --- User uploads (μην ανεβαίνει user content) ---
+uploads/*
+!uploads/.gitkeep
+!uploads/.gitignore
+
+# --- Server / runtime files ---
+error_log
+*.log
+.ftpquota
+
+# --- IDE / OS files ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Build artifacts ---
+deployment-package.zip
+*.zip
+node_modules/

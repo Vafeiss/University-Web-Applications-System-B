@@ -1,0 +1,127 @@
+/**
+ * File: profile_view.css
+ * Layer: Frontend Styles
+ * Module: Profile View
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the public profile view page. Covers profile header,
+ * stats, followers/following lists, user's posts and action buttons.
+ *
+ * Sections:
+ * - Profile shell and header
+ * - Avatar and user info
+ * - Stats (posts / followers / following)
+ * - Tabs for posts / saved / about
+ * - Follow / unfollow button
+ * - List of posts by user
+ *
+ * Used By:
+ * - profile_view.php
+ *
+ * Author: Pelagia Koniotaki
+ * Date: 2026
+ */
+
+body {
+    background: linear-gradient(180deg, #f3f6fb 0%, #eef2f8 100%);
+}
+
+.profile-shell {
+    max-width: 1100px;
+    margin: 18px auto;
+}
+
+.profile-card {
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(24, 42, 74, 0.08);
+}
+
+.profile-page-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.profile-title {
+    margin-bottom: 2px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 800;
+    color: #1f2d45;
+}
+
+.profile-subtitle {
+    margin-bottom: 14px;
+    text-align: center;
+    color: #60708c;
+    font-size: 11px;
+}
+
+.profile-info-item {
+    height: 100%;
+    padding: 9px 11px;
+    border: 1px solid #d6dfec;
+    border-radius: 12px;
+    background: #f8fbff;
+}
+
+.profile-label {
+    color: #5f6f89;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.profile-value {
+    margin-top: 4px;
+    color: #1f2d45;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.profile-section-title {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #1f2d45;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.profile-interests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border: 1px solid #c9d8f3;
+    border-radius: 999px;
+    background: #eaf1ff;
+    color: #214e9d;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .profile-page-top {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-title {
+        font-size: 24px;
+    }
+
+    .profile-value {
+        font-size: 13px;
+    }
+}

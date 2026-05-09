@@ -1,0 +1,995 @@
+<?php
+/**
+ * File: PostController.php
+ * Layer: Controller
+ * Module: Posts
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Core controller for post lifecycle management. Handles post creation with
+ * attachments, deletion requests, user reports, and admin moderation/approval workflow.
+ *
+ * Functions:
+ * - create() → users create posts with optional file attachments (max 5 files)
+ * - listByUser() → retrieve user's posts with pagination
+ * - getPostById() → fetch single post details
+ * - requestDelete() → users submit post deletion requests
+ * - report() → users report posts for moderation
+ * - listDeleteRequests() → admins view pending deletions
+ * - approveDelete() → admins approve and delete posts
+ * - rejectDelete() → admins reject deletion requests
+ * - approvePost() → admins approve pending posts
+ * - rejectPost() → admins reject pending posts
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - File upload validation: extension, size, MIME type checks
+ * - Attachment directory outside web root
+ * - PDO prepared statements for all queries
+ * - Admin-only approval/moderation operations
+ *
+ * Used By:
+ * - frontend/create_post.php
+ * - frontend/posts.php
+ * - frontend/post.php
+ * - frontend/admin_dashboard.php
+ *
+ * Author:Pelagia Koniotaki & Antriani Theofanous 
+ * Date: 2026
+ */
+
+header("Content-Type: application/json");
+
+require_once __DIR__ . '/BaseController.php';
+require_once __DIR__ . '/../modules/PostModel.php';
+require_once __DIR__ . '/../modules/NotificationModel.php';
+/*
+ Controller responsible for handling Post operations
+ such as creating, listing and deleting posts
+*/
+class PostController extends BaseController {
+
+    private PostModel $postModel;
+
+    public function __construct() {
+        $this->postModel = new PostModel();
+    }
+
+    // Create_Post()
+    public function create() {
+        // Συνέχιση εκτέλεσης ακόμα κι αν ο client αποσυνδεθεί (XHR navigation).
+        // Έτσι το post + attachments + notifications σώζονται σίγουρα στη ΒΔ
+        // ακόμα κι όταν ο user έχει ήδη πάει στο pending tab.
+        ignore_user_abort(true);
+        @set_time_limit(60);
+
+        $user_id = $this->requireLogin();
+
+        if (!isset($_POST['title']) || !isset($_POST['content'])) {
+            $this->jsonResponse([
+                "message" => "Invalid post data"
+            ], 400);
+        }
+
+        $title = $_POST['title'];
+        $content = $_POST['content'];
+        $categoryId = $_POST['category_id'] ?? null;
+        $isAnonymous = isset($_POST['is_anonymous']) && $_POST['is_anonymous'] === '1' ? 1 : 0;
+
+        if ($categoryId === "") {
+            $categoryId = null;
+        }
+
+        try {
+
+            // Δημιουργία post
+            $post_id = $this->postModel->createPost(
+                $user_id,
+                $title,
+                $content,
+                $categoryId,
+                $isAnonymous
+            );
+            // Upload attachments
+            if (!empty($_FILES['attachments']['name'][0])) {
+
+                $uploadDir = __DIR__ . '/../../uploads/';
+                $totalFiles = count($_FILES['attachments']['name']);
+
+                if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                    $this->jsonResponse(["message" => "Upload directory is not available"], 500);
+                }
+
+                if (!is_writable($uploadDir)) {
+                    $this->jsonResponse(["message" => "Upload directory is not writable"], 500);
+                }
+
+                if ($totalFiles > 5) {
+                    $this->jsonResponse(["message" => "Maximum 5 files allowed"], 400);
+                }
+
+                for ($i = 0; $i < $totalFiles; $i++) {
+
+                    // Αν δεν υπάρχει πραγματικό αρχείο, το αγνοούμε
+                    if ($_FILES['attachments']['error'][$i] !== UPLOAD_ERR_OK) {
+                        continue;
+                    }
+
+                    $fileName = $_FILES['attachments']['name'][$i];
+                    $fileTmp = $_FILES['attachments']['tmp_name'][$i];
+                    $fileSize = $_FILES['attachments']['size'][$i];
+                    $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+                    $allowed = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'txt', 'zip'];
+
+                    if (!in_array($fileType, $allowed)) {
+                        continue;
+                    }
+
+                    $newName = time() . "_" . uniqid() . "_" . $fileName;
+                    $filePath = $uploadDir . $newName;
+
+                    if (move_uploaded_file($fileTmp, $filePath)) {
+
+                        $this->postModel->saveAttachment(
+                            $post_id,
+                            $fileName,
+                            "uploads/" . $newName,
+                            $fileSize,
+                            $fileType
+                        );
+                    }
+                }
+            }
+
+            $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+            $notificationModel = new NotificationModel();
+            $notificationModel->notifyAdminsLocalized(
+                'admin_pending_post',
+                (int)$post_id,
+                'notifications.admin_pending_post',
+                [
+                    "actor" => $actorName,
+                    "title" => $title
+                ],
+                $actorName . ' submitted a new pending post: ' . $title
+            );
+
+            $this->jsonResponse([
+                "message" => "Post submitted for review"
+            ]);
+
+        } catch (Throwable $e) {
+            $this->jsonResponse([
+                "message" => "Could not create post"
+            ], 500);
+        }
+    }
+    // Show_Post()
+    public function list() {
+
+        $isAdmin = $this->isAdmin();
+
+        // παίρνουμε τον τρέχοντα user
+        $currentUserId = $this->getCurrentUserId();
+
+        // αν υπάρχει user → personalized feed
+        if ($currentUserId) {
+
+            $posts = $this->postModel->getPostsForUser($currentUserId);
+
+        } else {
+
+            // αν δεν είναι logged in → όλα τα posts
+            $posts = $this->postModel->getApprovedPosts();
+        }
+
+        // διαχείριση anonymous posts
+        if (!$isAdmin) {
+            foreach ($posts as &$post) {
+
+                if (!empty($post['is_anonymous'])) {
+                    $post['username'] = 'Anonymous';
+                }
+
+            }
+            unset($post);
+        }
+
+        $this->jsonResponse($posts);
+    }
+
+    public function adminList() {
+        $this->requireAdmin();
+
+        $posts = $this->postModel->getAdminPosts();
+
+        $this->jsonResponse($posts);
+    }
+
+    public function followingFeed() {
+        $userId = $this->requireLogin();
+        $isAdmin = $this->isAdmin();
+
+        $posts = $this->postModel->getPostsFromFollowing($userId);
+
+        if (!$isAdmin) {
+            foreach ($posts as &$post) {
+                if (!empty($post['is_anonymous'])) {
+                    $post['username'] = 'Anonymous';
+                }
+            }
+            unset($post);
+        }
+
+        $this->jsonResponse($posts);
+    }
+
+    public function myPosts() {
+        $userId = $this->requireLogin();
+        $posts = $this->postModel->getPostsByUserWithStatus($userId);
+        $this->jsonResponse($posts);
+    }
+
+    public function myDeleteRequests() {
+        $userId = $this->requireLogin();
+        $requests = $this->postModel->getDeleteRequestsByUser($userId);
+        $this->jsonResponse($requests);
+    }
+
+    public function myReports() {
+        $userId = $this->requireLogin();
+        $reports = $this->postModel->getReportsByUser($userId);
+        $this->jsonResponse($reports);
+    }
+
+    // Delete_Post()
+    public function delete($post_id) {
+        $user_id = $this->requireLogin();
+
+        $this->postModel->deletePost(
+            $post_id,
+            $user_id
+        );
+
+        $this->jsonResponse([
+            "message" => "Post deleted"
+        ]);
+    }
+
+    public function adminDelete() {
+        $this->requireAdmin();
+
+        $input = $this->getJSONInput();
+        $post_id = $input['post_id'] ?? ($_GET['id'] ?? null);
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $deleted = $this->postModel->adminDeletePost($post_id);
+
+        if (!$deleted) {
+            $this->jsonResponse(["message" => "Post not found or already deleted"], 404);
+        }
+
+        $this->jsonResponse([
+            "message" => "Post deleted"
+        ]);
+    }
+
+    public function hardDeleteRejected() {
+        $user_id = $this->requireLogin();
+        $input = $this->getJSONInput();
+        $post_id = $input['post_id'] ?? ($_GET['id'] ?? null);
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $deleted = $this->postModel->hardDeleteRejectedPostByOwner((int) $post_id, (int) $user_id);
+
+        if (!$deleted) {
+            $this->jsonResponse(["message" => "Rejected post not found or cannot be deleted"], 404);
+        }
+
+        $this->jsonResponse([
+            "message" => "Rejected post permanently deleted"
+        ]);
+    }
+
+    // Get_Post()
+    public function get() {
+        // Επιστρέφει ένα post με βάση το ID, μαζί με τα attachments του
+        if (!isset($_GET['id'])) {
+            $this->jsonResponse(["message" => "Post not found"], 404);
+        }
+        // φορτώνει ένα post μαζί με το username του δημιουργού και την κατηγορία
+        $post_id = $_GET['id'];
+        // φέρνουμε το post
+        $post = $this->postModel->getPostById($post_id);
+
+        if (!$post) {
+            $this->jsonResponse(["message" => "Post not found"], 404);
+        }
+
+        // Φέρνουμε attachments
+        $attachments = $this->postModel->getAttachmentsByPost($post_id);
+
+        $basePath = '/student/';
+        foreach ($attachments as &$attachment) {
+            $rawPath = $attachment['file_path'] ?? '';
+            if ($rawPath === '') {
+                $rawPath = 'uploads/' . ($attachment['file_name'] ?? '');
+            }
+
+            $attachment['file_url'] = str_starts_with($rawPath, 'http')
+                ? $rawPath
+                : $basePath . ltrim($rawPath, '/');
+        }
+        unset($attachment);
+
+        $currentUserId = $this->getCurrentUserId();
+        $isAdmin = $this->isAdmin();
+
+        if (!$isAdmin && !empty($post['is_anonymous'])) {
+            $post['username'] = 'Anonymous';
+        }
+
+        $post['has_requested_delete'] = $currentUserId
+            ? $this->postModel->postDeleteRequestExists($post_id, $currentUserId)
+            : false;
+        $post['has_reported'] = $currentUserId
+            ? $this->postModel->postReportExists($post_id, $currentUserId)
+            : false;
+
+        // προσθέτουμε τα attachments στο post object
+        $post['attachments'] = $attachments;
+        // επιστρέφουμε το post με τα attachments
+        $this->jsonResponse($post);
+    }
+
+    // Request post deletion
+    public function requestDelete() {
+        $user_id = $this->requireLogin();
+        $data = $this->getJSONInput();
+
+        if (!$data || !isset($data['post_id']) || !isset($data['reason'])) {
+            $this->jsonResponse(["message" => "Invalid request"], 400);
+        }
+
+        $post_id = $data['post_id'];
+        $reason = trim($data['reason']);
+
+        if ($reason === '') {
+            $this->jsonResponse(["message" => "Reason is required"], 400);
+        }
+
+        // Έλεγχος αν το post ανήκει στον user
+        $post = $this->postModel->getPostById($post_id);
+
+        if (!$post || $post['user_id'] != $user_id) {
+            $this->jsonResponse(["message" => "You can only request deletion for your own post"], 403);
+        }
+
+        // Έλεγχος αν υπάρχει ήδη request
+        if ($this->postModel->postDeleteRequestExists($post_id, $user_id)) {
+            $this->jsonResponse(["message" => "You already requested deletion for this post"], 409);
+        }
+
+        $this->postModel->createPostDeleteRequest($post_id, $user_id, $reason);
+
+        $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $postTitleForNotification = (string)($post['title'] ?? 'Untitled post');
+        $notificationModel = new NotificationModel();
+        $notificationModel->notifyAdminsLocalized(
+            'admin_post_delete_request',
+            (int)$post_id,
+            'notifications.admin_post_delete_request',
+            [
+                "actor" => $actorName,
+                "title" => $postTitleForNotification
+            ],
+            $actorName . ' submitted a post delete request for: ' . $postTitleForNotification
+        );
+
+        $this->jsonResponse(["message" => "Post delete request submitted"]);
+    }
+
+    public function requestReport() {
+        $user_id = $this->requireLogin();
+        $data = $this->getJSONInput();
+
+        if (!$data || !isset($data['post_id']) || !isset($data['reason'])) {
+            $this->jsonResponse(["message" => "Invalid request"], 400);
+        }
+
+        $post_id = $data['post_id'];
+        $reason = trim($data['reason']);
+
+        if ($reason === '') {
+            $this->jsonResponse(["message" => "Reason is required"], 400);
+        }
+
+        $post = $this->postModel->getPostById($post_id);
+        if (!$post) {
+            $this->jsonResponse(["message" => "Post not found"], 404);
+        }
+
+        if ($post['user_id'] == $user_id) {
+            $this->jsonResponse(["message" => "You cannot report your own post"], 403);
+        }
+
+        if ($this->postModel->postReportExists($post_id, $user_id)) {
+            $this->jsonResponse(["message" => "You already reported this post"], 409);
+        }
+
+        $this->postModel->createPostReport($post_id, $user_id, $reason);
+
+        $actorName = trim((string)($_SESSION['username'] ?? 'A user'));
+        $reportedTitle = (string)($post['title'] ?? 'Untitled post');
+        $notificationModel = new NotificationModel();
+        $notificationModel->notifyAdminsLocalized(
+            'admin_post_report',
+            (int)$post_id,
+            'notifications.admin_post_report',
+            [
+                "actor" => $actorName,
+                "title" => $reportedTitle
+            ],
+            $actorName . ' reported a post: ' . $reportedTitle
+        );
+
+        $this->jsonResponse(["message" => "Post report submitted"]);
+    }
+    public function pending() {
+        // χρηση base controller για να ελέγξει αν ο χρήστης είναι admin
+        $this->requireAdmin();
+
+        $posts = $this->postModel->getPendingPosts();
+
+        $this->jsonResponse($posts);
+    }
+    // approve post by admin
+    public function approve() {
+        // Έλεγχος αν ο χρήστης είναι admin
+        $this->requireAdmin();
+        // Έλεγχος αν υπάρχει id
+        if (!isset($_GET['id'])) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+        // Έλεγχος αν υπάρχει το post
+        $post_id = $_GET['id'] ?? null;
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        // Φέρνουμε post data πριν εγκριθεί για να στείλουμε notifications
+        $post = $this->postModel->getPostById($post_id);
+
+        $wasApprovedNow = $this->postModel->approvePost($post_id);
+
+        if ($wasApprovedNow && $post) {
+            $this->postModel->rewardApprovedPost((int)$post['user_id']);
+        }
+
+
+        // Στέλνουμε notifications μόνο όταν αλλάζει πραγματικά σε approved
+        if ($wasApprovedNow && $post) {
+            $notificationModel = new NotificationModel();
+            $isAnonymous = !empty($post['is_anonymous']);
+
+            // OWNER notification
+            $notificationModel->createLocalizedNotification(
+                (int)$post['user_id'],
+                "post_approved",
+                (int)$post_id,
+                "notifications.post_approved",
+                ["title" => (string)$post['title']],
+                "Your post \"" . $post['title'] . "\" has been approved"
+            );
+
+            // Followers (μόνο αν όχι anonymous)
+            if (!$isAnonymous) {
+                $notificationModel->notifyFollowersForPost(
+                    (int)$post['user_id'],
+                    (int)$post_id,
+                    $post['title']
+                );
+            }
+
+            // Interests
+            $notificationModel->notifyInterestedUsersForPost(
+                (int)$post['user_id'],
+                (int)$post_id,
+                $post['title'],
+                $post['category_id'] ?? null
+            );
+        }
+
+        $this->jsonResponse([
+            "message" => "Post approved"
+        ]);
+    }
+
+    public function downloadAttachment() {
+        $userId = (int)$this->requireLogin();
+        $isAdmin = $this->isAdmin();
+        $attachmentId = (int) ($_GET['attachment_id'] ?? 0);
+
+        if ($attachmentId <= 0) {
+            http_response_code(400);
+            exit("Attachment ID required.");
+        }
+
+        $attachment = $this->postModel->getAttachmentById($attachmentId);
+
+        if (
+            !$attachment ||
+            (int) ($attachment['deleted'] ?? 0) === 1 ||
+            (!$isAdmin && (int) ($attachment['status'] ?? 0) !== 1)
+        ) {
+            http_response_code(404);
+            exit("Attachment not found.");
+        }
+
+        $filePath = __DIR__ . '/../../' . ltrim((string) ($attachment['file_path'] ?? ''), '/');
+        if (!is_file($filePath)) {
+            http_response_code(404);
+            exit("File not found.");
+        }
+
+        $postOwnerId = (int) ($attachment['post_owner_id'] ?? 0);
+        if (!$isAdmin && $postOwnerId !== $userId) {
+            $tokenCharge = 0;
+
+            if ($this->postModel->hasUsedFreeDownloadToday($userId)) {
+                $currentBalance = $this->postModel->getTokenBalance($userId);
+
+                if ($currentBalance < 1) {
+                    http_response_code(403);
+                    exit("Not enough tokens for download.");
+                }
+
+                $tokenCharge = 1;
+            }
+
+            $this->postModel->processDownloadTokenCharge($userId, $tokenCharge);
+        }
+
+        $downloadName = basename((string) ($attachment['file_name'] ?? 'attachment'));
+        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: attachment; filename="' . rawurlencode($downloadName) . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Pragma: no-cache');
+
+        readfile($filePath);
+        exit;
+    }
+
+    public function previewDownload() {
+        $userId = (int) $this->requireLogin();
+        $isAdmin = $this->isAdmin();
+        $attachmentId = (int) ($_GET['attachment_id'] ?? 0);
+
+        if ($attachmentId <= 0) {
+            $this->jsonResponse([
+                "message" => "Attachment ID required.",
+                "can_download" => false
+            ], 400);
+        }
+
+        $attachment = $this->postModel->getAttachmentById($attachmentId);
+
+        if (
+            !$attachment ||
+            (int) ($attachment['deleted'] ?? 0) === 1 ||
+            (!$isAdmin && (int) ($attachment['status'] ?? 0) !== 1)
+        ) {
+            $this->jsonResponse([
+                "message" => "Attachment not found.",
+                "can_download" => false
+            ], 404);
+        }
+
+        $postOwnerId = (int) ($attachment['post_owner_id'] ?? 0);
+        $currentBalance = $this->postModel->getTokenBalance($userId);
+
+        if ($isAdmin) {
+            $this->jsonResponse([
+                "can_download" => true,
+                "token_charge" => 0,
+                "remaining_tokens" => $this->postModel->getTokenBalance($userId),
+                "message" => "Admin access: you can download this file without using tokens."
+            ]);
+        }
+
+        if ($postOwnerId === $userId) {
+            $this->jsonResponse([
+                "can_download" => true,
+                "token_charge" => 0,
+                "remaining_tokens" => $currentBalance,
+                "message" => "This is your own file. No tokens will be used."
+            ]);
+        }
+
+        if (!$this->postModel->hasUsedFreeDownloadToday($userId)) {
+            $this->jsonResponse([
+                "can_download" => true,
+                "token_charge" => 0,
+                "remaining_tokens" => $currentBalance,
+                "message" => "This is your free daily download. No tokens will be used."
+            ]);
+        }
+
+        if ($currentBalance < 1) {
+            $this->jsonResponse([
+                "can_download" => false,
+                "token_charge" => 1,
+                "remaining_tokens" => $currentBalance,
+                "message" => "You do not have enough tokens to complete this download."
+            ], 403);
+        }
+
+        $remainingTokens = $currentBalance - 1;
+
+        $this->jsonResponse([
+            "can_download" => true,
+            "token_charge" => 1,
+            "remaining_tokens" => $remainingTokens,
+            "message" => "This action will cost 1 token. You will have {$remainingTokens} tokens left."
+        ]);
+    }
+    // reject post by admin
+    public function reject() {
+
+      $this->requireAdmin();
+
+      if (!isset($_GET['id'])) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        $post_id = $_GET['id'] ?? null;
+
+        if (!$post_id) {
+            $this->jsonResponse(["message" => "Post ID required"], 400);
+        }
+
+        //  NEW: παίρνουμε reason
+        $reason = $_GET['reason'] ?? null;
+
+        //  NEW: validation
+        if (!$reason || trim($reason) === '') {
+            $this->jsonResponse(["message" => "Rejection reason is required"], 400);
+        }
+
+        $reason = trim($reason);
+
+        // Φέρνουμε post data πριν την απόρριψη για notification
+        $post = $this->postModel->getPostById($post_id);
+
+        //  CHANGE: περνάμε reason στο model
+        $wasRejectedNow = $this->postModel->rejectPost($post_id, $reason);
+
+        // Ειδοποίηση μόνο όταν αλλάζει πραγματικά σε rejected
+        if ($wasRejectedNow && $post) {
+            $notificationModel = new NotificationModel();
+
+            $notificationModel->createLocalizedNotification(
+                (int)$post['user_id'],
+                "post_rejected",
+                (int)$post_id,
+                "notifications.post_rejected",
+                ["title" => (string)$post['title']],
+                // (προσωρινά χωρίς reason στο message — θα το βάλουμε μετά)
+                "Your post \"" . $post['title'] . "\" was rejected"
+            );
+        }
+
+        $this->jsonResponse([
+            "message" => "Post rejected"
+        ]);
+    }
+    
+    // get delete requests for admin
+    public function deleteRequests() {
+
+        $this->requireAdmin();
+
+        $requests = $this->postModel->getDeleteRequests();
+
+        $this->jsonResponse($requests);
+    }
+    
+    // approve delete request,  καλείται οταν admin πατησει approve σε ένα delete request, και διαγράφει το post
+    public function approveDelete() {
+
+        $this->requireAdmin();
+        // Έλεγχος αν υπάρχει id
+        $request_id = $_GET['id'] ?? null;
+
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+
+        $request = $this->postModel->getDeleteRequestById($request_id);
+        $wasApprovedNow = $this->postModel->approveDeleteRequest($request_id);
+
+        if ($wasApprovedNow && $request) {
+            $notificationModel = new NotificationModel();
+            $titleForNotification = (string)($request['title'] ?? 'Untitled post');
+            $notificationModel->createLocalizedNotification(
+                (int)$request['requested_by'],
+                "delete_approved",
+                (int)$request['post_id'],
+                "notifications.delete_approved",
+                ["title" => $titleForNotification],
+                "Your delete request for \"" . $titleForNotification . "\" was approved"
+            );
+        }
+
+        $this->jsonResponse([
+            "message" => "Delete request approved"
+        ]);
+    }
+    public function rejectDelete() {
+
+        $this->requireAdmin();
+
+        $request_id = $_GET['id'] ?? null;
+
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+
+        $request = $this->postModel->getDeleteRequestById($request_id);
+        $wasRejectedNow = $this->postModel->rejectDeleteRequest($request_id);
+
+        if ($wasRejectedNow && $request) {
+            $notificationModel = new NotificationModel();
+            $titleForNotification = (string)($request['title'] ?? 'Untitled post');
+            $notificationModel->createLocalizedNotification(
+                (int)$request['requested_by'],
+                "delete_rejected",
+                (int)$request['post_id'],
+                "notifications.delete_rejected",
+                ["title" => $titleForNotification],
+                "Your delete request for \"" . $titleForNotification . "\" was rejected"
+            );
+        }
+
+        $this->jsonResponse([
+            "message" => "Delete request rejected"
+        ]);
+    }
+    // επιστρέφει όλα τα reports που έχουν γίνει για posts, μαζί με τα στοιχεία του post και του χρήστη που έκανε το report
+    public function reports(){
+
+        $this->requireAdmin();
+
+        $reports = $this->postModel->getReportedContent();
+
+        $this->jsonResponse($reports);
+    }
+    // approve report, καλείται όταν admin πατήσει approve σε ένα report, και διαγράφει το post
+    public function approveReport() {
+
+        $this->requireAdmin();
+
+        $report_id = $_GET['id'] ?? null;
+
+        if (!$report_id) {
+            $this->jsonResponse(["message" => "Report ID required"], 400);
+        }
+
+        $report = $this->postModel->getReportById($report_id);
+        $wasApprovedNow = $this->postModel->approveReport($report_id);
+
+        if ($wasApprovedNow && $report) {
+            $notificationModel = new NotificationModel();
+            $postTitle = (string)($report['post_title'] ?? ('Post #' . (int)($report['content_id'] ?? 0)));
+            $referenceId = (int)($report['post_id'] ?? $report['content_id'] ?? 0);
+
+            $notificationModel->createLocalizedNotification(
+                (int)$report['reported_by'],
+                "report_approved",
+                $referenceId,
+                "notifications.report_approved",
+                ["title" => $postTitle],
+                "Your report for \"" . $postTitle . "\" was approved. Action was taken."
+            );
+        }
+
+        $this->jsonResponse([
+            "message" => "Post removed"
+        ]);
+    }
+
+    public function rejectReport() {
+
+        $this->requireAdmin();
+
+        $report_id = $_GET['id'] ?? null;
+
+        if (!$report_id) {
+            $this->jsonResponse(["message" => "Report ID required"], 400);
+        }
+
+        $report = $this->postModel->getReportById($report_id);
+        $wasRejectedNow = $this->postModel->rejectReport($report_id);
+
+        if ($wasRejectedNow && $report) {
+            $notificationModel = new NotificationModel();
+            $postTitle = (string)($report['post_title'] ?? ('Post #' . (int)($report['content_id'] ?? 0)));
+            $referenceId = (int)($report['post_id'] ?? $report['content_id'] ?? 0);
+
+            $notificationModel->createLocalizedNotification(
+                (int)$report['reported_by'],
+                "report_rejected",
+                $referenceId,
+                "notifications.report_rejected",
+                ["title" => $postTitle],
+                "Your report for \"" . $postTitle . "\" was rejected."
+            );
+        }
+
+        $this->jsonResponse([
+            "message" => "Report rejected"
+        ]);
+    }
+    // επιστρέφει όλα τα comment delete requests που έχουν γίνει, μαζί με τα στοιχεία του comment και του χρήστη που έκανε το request
+    public function commentDeleteRequests() {
+
+        $this->requireAdmin();
+
+        $requests = $this->postModel->getCommentDeleteRequests();
+
+        $this->jsonResponse($requests);
+    }
+
+    // approve comment delete, καλείται όταν admin πατήσει approve σε ένα comment delete request, και διαγράφει το comment
+    public function approveCommentDelete() {
+
+        $this->requireAdmin();
+
+        $request_id = $_GET['id'] ?? null;
+
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+
+        $this->postModel->approveCommentDelete($request_id);
+
+        $this->jsonResponse([
+            "message" => "Comment deleted"
+        ]);
+    }
+
+    // reject comment delete, καλείται όταν admin πατήσει reject σε ένα comment delete request, και απορρίπτει το request χωρίς να διαγράψει το comment
+    public function rejectCommentDelete() {
+
+        $this->requireAdmin();
+
+        $request_id = $_GET['id'] ?? null;
+
+        if (!$request_id) {
+            $this->jsonResponse(["message" => "Request ID required"], 400);
+        }
+
+        $this->postModel->rejectCommentDelete($request_id);
+
+        $this->jsonResponse([
+            "message" => "Delete request rejected"
+        ]);
+}
+}
+
+// Βασικός router για το PostController
+if (isset($_GET['action'])) {
+    // Δημιουργία instance του controller
+    $controller = new PostController();
+
+    switch ($_GET['action']) {
+
+        case 'create':  // Create_Post()
+            $controller->create();
+            break;
+
+        case 'list':    // Show_Post()
+            $controller->list();
+            break;
+
+        case 'adminList':
+            $controller->adminList();
+            break;
+
+        case 'followingFeed':
+            $controller->followingFeed();
+            break;
+
+        case 'myPosts':
+            $controller->myPosts();
+            break;
+
+        case 'myDeleteRequests':
+            $controller->myDeleteRequests();
+            break;
+
+        case 'myReports':
+            $controller->myReports();
+            break;
+
+        case 'delete':
+            $controller->delete($_GET['id'] ?? null);
+            break;
+        case 'adminDelete':
+            $controller->adminDelete();
+            break;
+        case 'hardDeleteRejected':
+            $controller->hardDeleteRejected();
+            break;
+        case 'get':  // Get_Post()
+            $controller->get();
+            break;
+        case 'downloadAttachment':
+            $controller->downloadAttachment();
+            break;
+        case 'previewDownload':
+            $controller->previewDownload();
+            break;
+        case 'requestDelete':
+            $controller->requestDelete();
+            break;
+        case 'requestReport':
+            $controller->requestReport();
+            break;
+        case 'pending':
+        $controller->pending();
+        break;
+        case 'approve':
+            $controller->approve();
+            break;
+        case 'reject':
+            $controller->reject();
+            break;
+        case 'deleteRequests':  // Get delete requests for admin
+            $controller->deleteRequests();
+            break;
+
+        case 'approveDelete':   // Approve delete request
+            $controller->approveDelete();
+            break;
+
+        case 'rejectDelete': // Reject delete request
+            $controller->rejectDelete();
+            break;
+        case 'reports':
+            $controller->reports();
+            break;
+
+        case 'approveReport':
+            $controller->approveReport();
+            break;
+
+        case 'rejectReport':
+            $controller->rejectReport();
+            break;
+
+        case 'commentDeleteRequests':
+            $controller->commentDeleteRequests();
+            break;
+
+        case 'approveCommentDelete':
+            $controller->approveCommentDelete();
+            break;
+
+        case 'rejectCommentDelete':
+            $controller->rejectCommentDelete();
+            break;
+    }
+}

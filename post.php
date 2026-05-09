@@ -1,0 +1,118 @@
+<?php
+/**
+ * File: post.php
+ * Layer: Frontend Page
+ * Module: Single Post View
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Displays single post with full details, comments, and user interactions.
+ * Supports post viewing, commenting, reporting, deletion requests, and admin
+ * moderation preview. Dynamically determines back navigation based on admin context.
+ *
+ * Features:
+ * - Single post display with user info
+ * - Comments listing and creation
+ * - Comment deletion requests
+ * - Post reporting interface
+ * - Post deletion request submission
+ * - Admin preview mode (from dashboard)
+ * - Multiple admin source contexts (pending, delete requests, reports, etc.)
+ * - Attachment display
+ * - Anonymous post handling
+ *
+ * Security:
+ * - requireLogin() enforces authentication
+ * - Ban checking via BanGuard middleware
+ * - Admin preview requires explicit flag
+ * - Input validation on post_id parameter
+ *
+ * Used By:
+ * - posts.php (post list navigation)
+ * - admin_dashboard.php (admin moderation)
+ *
+ * Author: Pelagia Koniotaki
+ * Date: 2026
+ */
+
+session_start();
+require_once __DIR__ . "/backend/middleware/BanGuard.php";
+enforceFrontendUserNotBanned();
+
+/* Έλεγχος αν ο χρήστης είναι συνδεδεμένος */
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+/* Έλεγχος αν υπάρχει id */
+if (!isset($_GET['id'])) {
+    echo "Post not found";
+    exit();
+}
+
+$post_id = $_GET['id'];
+$css_version = filemtime(__DIR__ . '/css/post.css');
+$js_version = filemtime(__DIR__ . '/js/post.js');
+$is_admin_preview = isset($_GET['admin_preview']) && $_GET['admin_preview'] === '1';
+$admin_source = $_GET['admin_source'] ?? '';
+$is_admin_session = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+
+if ($is_admin_session && !$is_admin_preview && $admin_source === 'dashboard_posts') {
+    $back_href = 'admin_dashboard.php?section=posts';
+    $back_label = 'Back to dashboard';
+} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_posts') {
+    $back_href = 'admin_dashboard.php?section=posts';
+    $back_label = 'Back to all posts';
+} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_pending') {
+    $back_href = 'admin_dashboard.php?section=pending';
+    $back_label = 'Back to pending posts';
+} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_delete_requests') {
+    $back_href = 'admin_dashboard.php?section=deleteRequests';
+    $back_label = 'Back to post delete requests';
+} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_comment_delete_requests') {
+    $back_href = 'admin_dashboard.php?section=commentDeleteRequests';
+    $back_label = 'Back to comment delete requests';
+} elseif ($is_admin_session && $is_admin_preview && $admin_source === 'dashboard_reports') {
+    $back_href = 'admin_dashboard.php?section=reports';
+    $back_label = 'Back to reports';
+} elseif ($is_admin_session && $is_admin_preview) {
+    $back_href = 'admin_dashboard.php?section=pending';
+    $back_label = 'Back to pending posts';
+} else {
+    $back_href = 'posts.php';
+    $back_label = 'Back to posts';
+}
+?>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>View Post</title>
+<link rel="stylesheet" href="css/post.css?v=<?php echo $css_version; ?>">
+
+</head>
+
+<body>
+
+<div class="post-container">
+<a href="<?php echo $back_href; ?>" class="back-link">← <?php echo $back_label; ?></a>
+
+<!-- εδώ θα εμφανιστεί το post -->
+<div id="post"></div>
+
+</div>
+
+<!-- Φόρτωση JS αρχείου -->
+<script src="js/post.js?v=<?php echo $js_version; ?>"></script>
+
+<script>
+window.currentUserId = <?php echo (int) $_SESSION['user_id']; ?>;
+window.isAdminSession = <?php echo $is_admin_session ? 'true' : 'false'; ?>;
+loadPost(<?php echo $post_id; ?>);
+</script>
+</body>
+
+</html>

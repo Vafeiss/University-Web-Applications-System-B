@@ -1,0 +1,221 @@
+/**
+ * File: moderation_panel.css
+ * Layer: Frontend Styles
+ * Module: Moderation Panel
+ * System: University Web Applications System B
+ *
+ * Description:
+ * Styling for the admin moderation control panel, including the
+ * container layout, lists of banned users and action controls.
+ *
+ * Sections:
+ * - Page background and layout
+ * - Main container
+ * - Lists of flagged items / banned users
+ * - Action buttons
+ * - Form inputs for ban / unban
+ *
+ * Used By:
+ * - moderation_panel.php
+ *
+ * Author: Pelagia Koniotaki
+ * Date: 2026
+ */
+
+body {
+    padding: 20px;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding: 25px;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    margin-bottom: 30px;
+    color: #1877f2;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f2f5;
+}
+
+.bulk-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.bulk-checkbox {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.bulk-checkbox-label {
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bulk-actions-wrap {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.post-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 20px;
+    border: 1px solid #dddfe2;
+    border-left: 6px solid #1877f2;
+    border-radius: 8px;
+}
+
+.post-content {
+    flex-grow: 1;
+}
+
+.post-checkbox {
+    margin-top: 5px;
+    cursor: pointer;
+    transform: scale(1.5);
+}
+
+.post-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.post-card-title {
+    margin: 8px 0;
+}
+
+.username {
+    color: #1877f2;
+    font-weight: 700;
+}
+
+.status-badge-pending {
+    padding: 4px 12px;
+    border: 1px solid #ffe0b2;
+    border-radius: 20px;
+    background-color: #fff3e0;
+    color: #ef6c00;
+    font-size: 0.75em;
+    font-weight: 700;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity 0.3s ease;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.btn-approve {
+    background-color: #42b72a;
+    color: #ffffff;
+}
+
+.btn-reject {
+    background-color: #f02849;
+    color: #ffffff;
+}
+
+.btn-bulk {
+    padding: 10px 20px;
+    font-size: 0.9em;
+}
+
+.btn-compact {
+    font-size: 0.8em;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 0.8em;
+    font-weight: 700;
+}
+
+.badge-approved {
+    background-color: #42b72a;
+}
+
+.badge-rejected {
+    background-color: #f02849;
+}
+
+.empty-msg {
+    padding: 20px;
+    color: #8d949e;
+    text-align: center;
+    font-style: italic;
+}
+
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    margin-bottom: 24px;
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.tabs {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
