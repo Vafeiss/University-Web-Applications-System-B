@@ -34,26 +34,19 @@
 
 session_start();
 
-/* =========================
-   ACCESS CONTROL
-========================= */
-
+// Έλεγχος πρόσβασης — μόνο logged in users μπαίνουν εδώ
 require_once __DIR__ . "/backend/middleware/AuthGuard.php";
 requireLogin();
 
-/* =========================
-   DATABASE CONNECTION
-========================= */
 
+// Σύνδεση με τη βάση δεδομένων
 require_once __DIR__ . "/backend/config/database.php";
 
 $db = new Database();
 $conn = $db->connect();
 
-/* =========================
-   CHECK PROFILE COMPLETION
-========================= */
 
+// Παίρνουμε τα στοιχεία προφίλ του χρήστη για να δούμε αν τα έχει ήδη συμπληρώσει
 $stmt = $conn->prepare("
     SELECT university, year
     FROM users
@@ -66,17 +59,16 @@ $stmt->execute([
 
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-/* Redirect if profile already completed */
-
+// Αν ο χρήστης έχει ήδη ολοκληρώσει το προφίλ του (έχει university και year),
+// δεν χρειάζεται να ξανασυμπληρώσει — τον στέλνουμε στην αρχική
 if ($user && $user["university"] !== null && $user["year"] !== null) {
     header("Location: index.php");
     exit;
 }
 
-/* =========================
-   LOAD INTEREST CATEGORIES
-========================= */
 
+// Φέρνουμε όλες τις διαθέσιμες κατηγορίες για το dropdown των interests.
+// Με GROUP BY name αποφεύγουμε διπλοεγγραφές και κρατάμε το μικρότερο id.
 $stmt = $conn->query("
      SELECT MIN(category_id) AS category_id, name
      FROM categories
@@ -85,8 +77,11 @@ $stmt = $conn->query("
 ");
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Παίρνουμε τυχόν error μήνυμα από το URL (πχ ?error=missing_fields)
 $error = $_GET["error"] ?? "";
 
+// Cache-busting για το CSS: με filemtime ο browser ξαναφορτώνει
+// το CSS κάθε φορά που το αρχείο αλλάζει
 $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
 
 ?>
@@ -101,10 +96,10 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
 
 <title>Complete Profile</title>
 
-<!-- Bootstrap -->
+<!-- Bootstrap από CDN για το βασικό grid/responsive layout -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Custom Styles -->
+<!-- Δικά μας styles: global + page-specific για το profile_setup -->
 <link rel="stylesheet" href="/student/assets/style.css">
 <link rel="stylesheet" href="/student/css/profile_setup.css?v=<?php echo $profileSetupCssVersion; ?>">
 
@@ -231,56 +226,68 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
 </div>
 
 <script>
-/* Interests — multi-select dropdown */
+// Dropdown για τα interests — επιτρέπει πολλαπλή επιλογή (checkboxes)
 (function initInterestsDropdown() {
+    // Βρίσκουμε τα στοιχεία του dropdown
     const dropdown = document.getElementById("interestsDropdown");
     const trigger = document.getElementById("interestsTrigger");
     const label = document.getElementById("interestsLabel");
     const checkboxes = Array.from(document.querySelectorAll(".setup-interest-checkbox"));
 
+    // Αν δεν υπάρχουν, βγαίνουμε (defensive check)
     if (!dropdown || !trigger || !label) return;
 
+    // Ενημέρωση του label με βάση τα τικαρισμένα checkboxes
     function updateInterestLabel() {
         const selected = checkboxes
             .filter((checkbox) => checkbox.checked)
             .map((checkbox) => checkbox.parentElement.textContent.trim());
 
+        // Καμία επιλογή → εμφάνιση placeholder
         if (selected.length === 0) {
             label.textContent = "Choose interests";
             return;
         }
 
+        // 1-2 επιλογές → εμφάνιση των ονομάτων
         if (selected.length <= 2) {
             label.textContent = selected.join(", ");
             return;
         }
 
+        // 3+ επιλογές → εμφάνιση μετρητή για να μη ξεχειλίζει το UI
         label.textContent = selected.length + " interests selected";
     }
 
+    // Helper: άνοιγμα/κλείσιμο dropdown
     function setOpen(isOpen) {
         dropdown.classList.toggle("is-open", isOpen);
         trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
 
+    // Click στο trigger → toggle
     trigger.addEventListener("click", function () {
         setOpen(!dropdown.classList.contains("is-open"));
     });
 
+    // Click έξω από το dropdown → κλείσιμο
     document.addEventListener("click", function (event) {
         if (!dropdown.contains(event.target)) {
             setOpen(false);
         }
     });
 
+    // Κάθε αλλαγή σε checkbox ξανα-υπολογίζει το label
     checkboxes.forEach(function (checkbox) {
         checkbox.addEventListener("change", updateInterestLabel);
     });
 
+    // Αρχικό render του label
     updateInterestLabel();
 })();
 
-/* University — single-select dropdown */
+
+// Dropdown για το university — επιτρέπει μόνο μία επιλογή (radio buttons)
 (function initUniversityDropdown() {
     const dropdown = document.getElementById("universityDropdown");
     const trigger = document.getElementById("universityTrigger");
@@ -294,16 +301,20 @@ $profileSetupCssVersion = filemtime(__DIR__ . '/css/profile_setup.css');
         trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
 
+    // Toggle dropdown με click στο trigger
     trigger.addEventListener("click", function () {
         setOpen(!dropdown.classList.contains("is-open"));
     });
 
+    // Click έξω → close
     document.addEventListener("click", function (event) {
         if (!dropdown.contains(event.target)) {
             setOpen(false);
         }
     });
 
+    // Όταν ο χρήστης επιλέξει university, ενημερώνουμε το label
+    // και κλείνουμε το dropdown
     radios.forEach(function (radio) {
         radio.addEventListener("change", function () {
             if (radio.checked) {
